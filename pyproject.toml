@@ -25,16 +25,18 @@ python-dotenv = "^1.0.0"
 pre-commit = "^3.4.0"
 pydantic = "^2.3.0"
 pytest-env = "^1.0.1"
+faker = "^19.6.2"
+pytest-docker = "^2.0.1"
 
 [tool.pytest.ini_options]
 env = [
-    "THIS_PROJECT_ROOT_DIRECTORY=./tests/mocks",
-    "THIS_PROJECT_SOURCE_DATA_DIR=source_data",
-    "THIS_PROJECT_RDBMS_HOST=localhost",
-    "THIS_PROJECT_RDBMS_PORT=5432",
-    "THIS_PROJECT_RDBMS_DBNAME=capdb-test",
-    "THIS_PROJECT_RDBMS_USERNAME=sqldbms",
-    "THIS_PROJECT_RDBMS_PASSWORD=sqldbms",
+    "KP_ROOT_DIRECTORY=./tests/mocks",
+    "KP_SOURCE_DATA_DIR=source_data",
+    "KP_RDBMS_HOST=localhost",
+    "KP_RDBMS_PORT=5432",
+    "KP_RDBMS_DBNAME=capdb-test",
+    "KP_RDBMS_USERNAME=sqldbms",
+    "KP_RDBMS_PASSWORD=sqldbms",
 ]
 pythonpath = [
   "."
