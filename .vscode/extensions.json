@@ -1,0 +1,28 @@
+{
+    "recommendations": [
+      // Python
+      "ms-python.python",
+      // Linting / Formatting
+      "njpwerner.autodocstring",
+      "matangover.mypy",
+  
+      // PR management / Reviewing
+      "github.vscode-pull-request-github",
+      "waderyan.gitblame",
+      "donjayamanne.githistory",
+      "GitHub.vscode-pull-request-github",
+      "GitHub.copilot",
+      "GitHub.copilot-chat",
+
+  
+      // Showing todo comments
+      "gruntfuggly.todo-tree",
+  
+      // Collaborating
+      "ms-vsliveshare.vsliveshare",
+
+      // CI
+      "github.vscode-github-actions",
+  
+    ]
+  }
