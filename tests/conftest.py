@@ -1,6 +1,6 @@
 from contextlib import _GeneratorContextManager
 import os
-from typing import Any, Callable, Generator
+from typing import Annotated, Any, Callable, Generator
 from faker import Faker
 import pytest
 import lib
@@ -24,13 +24,16 @@ def app_container() -> Container:
 
 
 @pytest.fixture(scope="session")
-def docker_compose_file(pytestconfig) -> str:  # TODO: missing type annotation
-    return os.path.join(str(pytestconfig.rootdir), "tests", "docker-compose.yml")
+def docker_compose_file(pytestconfig: Annotated[pytest.Config, pytest.fixture]) -> str:
+    return os.path.join(str(pytestconfig.rootdir), "tests", "docker-compose.yml")  # type: ignore
 
 
 # set autouse=True to automatically inject the postgres into all tests
 @pytest.fixture(scope="session")
-def with_rdbms(app_container: Container, docker_services) -> Database:  # TODO: missing type annotation
+def with_rdbms(
+    app_container: Container,
+    docker_services: pytest.fixture,  # type: ignore
+) -> Database:
     """Ensure that a postgres container is running before running tests"""
 
     def is_responsive() -> bool:
@@ -41,7 +44,7 @@ def with_rdbms(app_container: Container, docker_services) -> Database:  # TODO: 
             return False
 
     try:
-        docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_responsive())
+        docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_responsive())  # type: ignore
     except Exception as e:
         pytest.fail(f"Failed to start postgres container, error: {e}")
 
@@ -49,12 +52,12 @@ def with_rdbms(app_container: Container, docker_services) -> Database:  # TODO: 
 
 
 @pytest.fixture(scope="session")
-def with_rdbms_migrations(request, with_rdbms) -> None:  # TODO: missing type annotation
+def with_rdbms_migrations(request: pytest.FixtureRequest, with_rdbms: Database) -> None:
     """Run alembic migrations before running tests and tear them down after"""
-    alembic_ini_path = os.path.join(str(request.config.rootdir), "alembic.ini")
+    alembic_ini_path = os.path.join(str(request.config.rootdir), "alembic.ini")  # type: ignore
     alembic_cfg = Config(alembic_ini_path)
 
-    alembic_scripts_path = os.path.join(str(request.config.rootdir), "alembic")
+    alembic_scripts_path = os.path.join(str(request.config.rootdir), "alembic")  # type: ignore
     alembic_cfg.set_main_option("script_location", alembic_scripts_path)
 
     alembic_cfg.set_main_option("sqlalchemy.url", container.db().url)
@@ -67,7 +70,7 @@ def with_rdbms_migrations(request, with_rdbms) -> None:  # TODO: missing type an
 
 
 @pytest.fixture(scope="function")
-def db_session(with_rdbms_migrations) -> Generator
+def db_session(with_rdbms_migrations: None) -> Generator[Callable[[], _GeneratorContextManager[Session]], None, None]:
     """Create a new database session for each test"""
     yield container.db().session
 

@@ -27,6 +27,7 @@ pydantic = "^2.3.0"
 pytest-env = "^1.0.1"
 faker = "^19.6.2"
 pytest-docker = "^2.0.1"
+docker = "^6.1.3"
 
 [tool.pytest.ini_options]
 env = [
@@ -34,9 +35,9 @@ env = [
     "KP_SOURCE_DATA_DIR=source_data",
     "KP_RDBMS_HOST=localhost",
     "KP_RDBMS_PORT=5432",
-    "KP_RDBMS_DBNAME=capdb-test",
-    "KP_RDBMS_USERNAME=sqldbms",
-    "KP_RDBMS_PASSWORD=sqldbms",
+    "KP_RDBMS_DBNAME=kp-db",
+    "KP_RDBMS_USERNAME=postgres",
+    "KP_RDBMS_PASSWORD=postgres",
 ]
 pythonpath = [
   "."
