@@ -20,6 +20,12 @@ https://github.com/<your_username>/kernel-planckster/settings/actions
 
 and enable GitHub Actions for your fork by selecting the `Allow all actions and reusable workflows` option.
 
+
+### Database Models
+
+![Database Models](docs/kernel-planckster-db-models.png)
+
+
 ### Setup
 
 ```bash
