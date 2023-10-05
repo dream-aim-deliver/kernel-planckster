@@ -3,12 +3,12 @@ log:
   format: "[%(asctime)s] [%(levelname)s] [%(name)s]: %(message)s"
 
 files:
-  root_directory: "${THIS_PROJECT_ROOT_DIRECTORY:./test/mocks}"
-  source_data_directory: "${THIS_PROJECT_SOURCE_DATA_DIR:source_data}"
+  root_directory: "${KP_ROOT_DIRECTORY:./test/mocks}"
+  source_data_directory: "${KP_SOURCE_DATA_DIR:source_data}"
 
 rdbms:
-  host: ${THIS_PROJECT_RDBMS_HOST:localhost}
-  port: ${THIS_PROJECT_RDBMS_PORT:5432}
-  database: ${THIS_PROJECT_RDBMS_DBNAME:capdb-test}
-  username: ${THIS_PROJECT_RDBMS_USERNAME:sqldbms}
-  password: ${THIS_PROJECT_RDBMS_PASSWORD:sqldbms}
+  host: ${KP_RDBMS_HOST:localhost}
+  port: ${KP_RDBMS_PORT:5432}
+  database: ${KP_RDBMS_DBNAME:capdb-test}
+  username: ${KP_RDBMS_USERNAME:sqldbms}
+  password: ${KP_RDBMS_PASSWORD:sqldbms}
