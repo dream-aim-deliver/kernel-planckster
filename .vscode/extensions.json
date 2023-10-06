@@ -5,6 +5,7 @@
       // Linting / Formatting
       "njpwerner.autodocstring",
       "matangover.mypy",
+      "ms-python.black-formatter",
   
       // PR management / Reviewing
       "github.vscode-pull-request-github",
