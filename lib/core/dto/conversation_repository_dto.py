@@ -8,11 +8,13 @@ class ConversationDTO(BaseDTO[Conversation]):
     """
     Basic DTO for conversations
 
+    @param conversation_id: The id of the conversation
+    @type conversation_id: int | None
     @param data: The conversation to be created
     @type data: Conversation | List[Conversation] | None | List[None]
     """
 
-    pass
+    conversation_id: int | None = None
 
 
 class GetConversationResearchContextDTO(BaseDTO[ResearchContext]):
@@ -37,24 +39,12 @@ class ListConversationMessagesDTO(BaseDTO[TMessageBase]):
     data: List[TMessageBase] | List[None] | None = None
 
 
-class ListConversationsDTO(BaseDTO[Conversation]):
-    """
-    DTO for listing conversations from a research context
-
-    @param data: The conversations to be listed
-    @type data: List[Conversation] | List[None] | None
-    """
-
-    data: List[Conversation] | List[None] | None = None
-
-
 class ListConversationSourcesDTO(BaseDTO[SourceData]):
     """
     A DTO for listing the data sources of the research context of a conversation
 
     @param source_data: The source data of the research context of the conversation
-    @type source_data: List[SourceData] | List[None] | None
+    @type source_data: List[SourceData] | None
     """
 
-    # TODO: are we allowing research contexts without source data?
-    data: List[SourceData] | List[None] | None = None
+    data: List[SourceData] | None = None
