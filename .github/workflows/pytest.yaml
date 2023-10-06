@@ -21,7 +21,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: '3.10.12'
         cache: 'poetry'
 
     - name: Install dependencies
@@ -29,9 +29,15 @@ jobs:
         sudo apt-get update
         sudo apt-get install python3-dev libpq-dev # psycopg2
         python -m pip install --upgrade pip
-        poetry env use 3.10
+        poetry env use 3.10.12
         poetry install --no-root
 
+    - name: Test Containers
+      run: |
+        docker-compose -f tests/docker-compose.yml up -d
+        sleep 30
+        docker ps -a
+        docker-compose -f tests/docker-compose.yml down
     - name: Run pytest
       run: |
         poetry run pytest -s
