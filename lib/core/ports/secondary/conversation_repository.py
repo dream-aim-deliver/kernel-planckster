@@ -7,7 +7,6 @@ from lib.core.dto.conversation_repository_dto import (
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
-    ListConversationsDTO,
 )
 from lib.core.entity.models import TMessageBase
 
@@ -61,14 +60,7 @@ class ConversationRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def update_conversation(
-        self,
-        conversation_id: int,
-        # TODO: are we allowing changing titles?
-        conversation_title: str,
-        # TODO: are we allowing updates with empty lists of messages? no, right?
-        messages: List[TMessageBase] | List[None],
-    ) -> ConversationDTO:
+    def update_conversation(self, conversation_id: int, conversation_title: str) -> ConversationDTO:
         """
         Updates a conversation in the research context.
 
@@ -76,22 +68,8 @@ class ConversationRepository(ABC):
         @type conversation_id: int
         @param conversation_title: The title of the conversation.
         @type conversation_title: str
-        @param messages: The messages to add to the conversation.
-        @type messages: List[TMessageBase] | List[None]
         @return: A DTO containing the result of the operation.
         @rtype: ConversationDTO
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def list_conversations(self, research_context_id: int) -> ListConversationsDTO:
-        """
-        Lists all conversations in the research context.
-
-        @param research_context_id: The ID of the research context to list conversations for.
-        @type research_context_id: int
-        @return: A DTO containing the result of the operation.
-        @rtype: ListConversationsDTO
         """
         raise NotImplementedError
 
