@@ -1,68 +1,60 @@
-from typing import Generic, Literal, List
+from typing import List
 
 from lib.core.sdk.dto import BaseDTO
-from lib.core.entity.models import Conversation, SourceData, TMessageBase
+from lib.core.entity.models import Conversation, ResearchContext, SourceData, TMessageBase
 
 
-class SuccessConversationDTO(BaseDTO):
+class ConversationDTO(BaseDTO[Conversation]):
     """
-    Successful DTO for conversations
+    Basic DTO for conversations
 
-    @param status: The status of the operation
-    @type status: Literal["success"]
-    """
-
-    status: Literal["success"]
-
-
-class ErrorConversationDTO(BaseDTO):
-    """
-    Error DTO for conversations
-
-    @param status: The status of the operation
-    @type status: Literal["error"]
+    @param data: The conversation to be created
+    @type data: Conversation | List[Conversation] | None | List[None]
     """
 
-    status: Literal["error"]
+    pass
 
 
-class GetConversationDTO(BaseDTO, Conversation, Generic[TMessageBase]):
+class GetConversationResearchContextDTO(BaseDTO[ResearchContext]):
     """
-    Successful DTO for conversations
+    DTO for a research context obtained from a conversation
 
-    @param status: The status of the operation
-    @type status: Literal["success"]
-    @param messages: The messages of the conversation
-    @type messages: List[TMessageBase] | List[None]
+    @param data: The research context of the conversation
+    @type data: ResearchContext
     """
 
-    status: Literal["success"]
-    messages: List[TMessageBase] | List[None]
+    data: ResearchContext
 
 
-class ListConversationsDTO(BaseDTO):
+class ListConversationMessagesDTO(BaseDTO[TMessageBase]):
     """
-    DTO for listing conversations
+    DTO for listing messages from a conversation
 
-    @param status: The status of the operation
-    @type status: Literal["success"]
-    @param notes: The notes of the conversation
-    @type notes: List[Conversation] | List[None]
+    @param data: The messages of the conversation
+    @type data: List[TMessageBase] | List[None]
     """
 
-    status: Literal["success"]
-    notes: List[Conversation] | List[None]
+    data: List[TMessageBase] | List[None]
 
 
-class ListConversationSourcesDTO(BaseDTO):
+class ListConversationsDTO(BaseDTO[Conversation]):
+    """
+    DTO for listing conversations from a research context
+
+    @param data: The conversations to be listed
+    @type data: List[Conversation] | List[None]
+    """
+
+    data: List[Conversation] | List[None]
+
+
+class ListConversationSourcesDTO(BaseDTO[SourceData]):
     """
     A DTO for listing the data sources of the research context of a conversation
 
-    @param status: The status of the operation
-    @type status: Literal["success"]
     @param source_data: The source data of the research context of the conversation
     @type source_data: List[SourceData] | List[None]
     """
 
-    status: Literal["success"]
-    source_data: List[SourceData] | List[None]  # TODO: are we allowing research contexts without source data?
+    # TODO: are we allowing research contexts without source data?
+    data: List[SourceData] | List[None]

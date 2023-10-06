@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel
-from typing import List, TypeVar
+from typing import TypeVar
 from datetime import datetime
 
 
@@ -44,17 +44,21 @@ class BaseSoftDeleteKernelPlancksterModel(BaseKernelPlancksterModel):
         return super().__str__() + f", deleted: {self.deleted}, deleted_at: {self.deleted_at}"
 
 
-class User(BaseKernelPlancksterModel):
+class User(BaseSoftDeleteKernelPlancksterModel):
     """
     Represents a user in the system
 
-    @param planckster_user_uuid: the id of the user
+    @param id: the id of the user
+    @type id: int
+    @param sid: the sid of the user
+    @type sid: str
     """
 
-    planckster_user_uuid: str
+    id: int
+    sid: str
 
     def __str__(self) -> str:
-        return "User: " + super().__str__() + f", planckster_user_uuid: {self.planckster_user_uuid}"
+        return "User: " + super().__str__() + f", id: {self.id}, sid: {self.sid}"
 
 
 class KnowledgeSource(BaseSoftDeleteKernelPlancksterModel):
@@ -87,7 +91,6 @@ class SourceData(BaseSoftDeleteKernelPlancksterModel):
     @param type: the type of the source_data (e.g., pdf, txt, etc.)
     @param lfn: the logical file name of the source_data
     @param protocol: the protocol used to store the source_data
-    @param knowledge_source: the knowledge source associated with this source_data
     """
 
     id: int
@@ -95,7 +98,6 @@ class SourceData(BaseSoftDeleteKernelPlancksterModel):
     type: str
     lfn: str
     protocol: ProtocolEnum
-    knowledge_source: KnowledgeSource
 
     def __str__(self) -> str:
         return (
@@ -105,7 +107,7 @@ class SourceData(BaseSoftDeleteKernelPlancksterModel):
         )
 
 
-class EmbeddingModel(BaseModel):
+class EmbeddingModel(BaseSoftDeleteKernelPlancksterModel):
     """
     An embedding model is a model that can be used to embed a vector storde associated with a research context (including its source data), into a vector space
 
@@ -117,42 +119,32 @@ class EmbeddingModel(BaseModel):
     name: str
 
 
-class LLM(BaseModel):
+class LLM(BaseSoftDeleteKernelPlancksterModel):
     """
     A LLM (Language Learning Model) is a model that can be used to generate a response to a user query, given a vectorized research context
 
     @param id: the id of the LLM
     @param name: the name of the LLM
-    @param embedding_models: the embedding models associated with this LLM
     """
 
     id: int
     llm_name: str
-    embedding_models: List[EmbeddingModel]
 
 
-class ResearchContext(BaseModel):
+class ResearchContext(BaseSoftDeleteKernelPlancksterModel):
     """
     A research context belongs to a research topic, and is defined using a subset of the collection of source_data of the research topic
     This is the context in which conversations will happen
 
     @param id: the id of the research context
     @param title: the title of the research context
-    @param planckster_tagger_node_id: the id of the planckster tagger node associated to this research context
-    @param user: the user this research context belongs to
-    @param llm: the LLM associated to this research context
-    @param source_data: the source data associated to this research context
     """
 
     id: int
     title: str
-    planckster_tagger_node_id: str
-    user: User
-    llm: LLM
-    source_data: List[SourceData]
 
 
-class VectorStore(BaseModel):
+class VectorStore(BaseSoftDeleteKernelPlancksterModel):
     """
     Represents a vector store, a vectorization of a research context to be inputted to an LLM
 
@@ -160,16 +152,12 @@ class VectorStore(BaseModel):
     @param name: the name of the vector store
     @param lfn: the logical file name of the vector store
     @param protocol: the protocol used to store the vector store
-    @param research_context: the research context this vector store is associated with
-    @param embedding_model: the embedding model used to generate the vector store
     """
 
     id: int
     name: str
     lfn: str
     protocol: ProtocolEnum
-    research_context: ResearchContext
-    embedding_model: EmbeddingModel
 
 
 class Conversation(BaseSoftDeleteKernelPlancksterModel):
@@ -179,12 +167,10 @@ class Conversation(BaseSoftDeleteKernelPlancksterModel):
 
     @param id: the id of the conversation
     @param title: the title of the conversation
-    @param research_context: the research context this conversation is associated with
     """
 
     id: int
     title: str
-    research_context: ResearchContext
 
 
 class MessageBase(BaseSoftDeleteKernelPlancksterModel):
@@ -194,13 +180,11 @@ class MessageBase(BaseSoftDeleteKernelPlancksterModel):
     @param id: the id of the message
     @param content: the content of the message
     @param timestamp: the datetime when the message was sent
-    @param conversation: the conversation this message is associated with
     """
 
     id: int
     content: str
     timestamp: datetime
-    conversation: Conversation
 
 
 TMessageBase = TypeVar("TMessageBase", bound=MessageBase)
@@ -209,11 +193,9 @@ TMessageBase = TypeVar("TMessageBase", bound=MessageBase)
 class MessageQuery(MessageBase):
     """
     Represents the query of a user to an agent
-
-    @param user: the user that made the query
     """
 
-    user: User
+    pass
 
 
 class MessageResponse(MessageBase):
@@ -225,7 +207,7 @@ class MessageResponse(MessageBase):
     pass
 
 
-class Citation(BaseModel):
+class Citation(BaseSoftDeleteKernelPlancksterModel):
     """
     Represents a citation for a part of a source_data, in an agent's response to a user query
 
@@ -236,6 +218,4 @@ class Citation(BaseModel):
     """
 
     id: int
-    source_data: SourceData
     citation_metadata: str
-    message_response: MessageResponse

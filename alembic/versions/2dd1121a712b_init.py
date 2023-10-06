@@ -69,12 +69,14 @@ def upgrade() -> None:
     )
     op.create_table(
         "user",
-        sa.Column("planckster_user_uuid", sa.String(), nullable=False),
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("sid", sa.String(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="USER_CREATED_NN"),
         sa.CheckConstraint("UPDATED_AT IS NOT NULL", name="USER_UPDATED_NN"),
-        sa.PrimaryKeyConstraint("planckster_user_uuid"),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("sid"),
         mysql_engine="InnoDB",
     )
     op.create_table(
@@ -94,7 +96,7 @@ def upgrade() -> None:
         "research_context",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("title", sa.String(), nullable=False),
-        sa.Column("user_id", sa.String(), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("llm_id", sa.Integer(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
         sa.Column("deleted_at", sa.DateTime(), nullable=False),
@@ -109,7 +111,7 @@ def upgrade() -> None:
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],
-            ["user.planckster_user_uuid"],
+            ["user.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
         mysql_engine="InnoDB",
