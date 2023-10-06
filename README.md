@@ -13,7 +13,12 @@ gh repo clone <your-username>/kernel-planckster
 
 git remote add upstream https://github.com/dream-aim-deliver/kernel-planckster.git
 ```
+Then head over to 
+```
+https://github.com/<your_username>/kernel-planckster/settings/actions
+```
 
+and enable GitHub Actions for your fork by selecting the `Allow all actions and reusable workflows` option.
 
 ### Setup
 
