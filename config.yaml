@@ -9,6 +9,6 @@ files:
 rdbms:
   host: ${KP_RDBMS_HOST:localhost}
   port: ${KP_RDBMS_PORT:5432}
-  database: ${KP_RDBMS_DBNAME:capdb-test}
-  username: ${KP_RDBMS_USERNAME:sqldbms}
-  password: ${KP_RDBMS_PASSWORD:sqldbms}
+  database: ${KP_RDBMS_DBNAME:kp-db}
+  username: ${KP_RDBMS_USERNAME:postgres}
+  password: ${KP_RDBMS_PASSWORD:postgres}
