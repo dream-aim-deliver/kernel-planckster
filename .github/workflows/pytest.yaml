@@ -32,6 +32,12 @@ jobs:
         poetry env use 3.10.12
         poetry install --no-root
 
+    - name: Test Containers
+      run: |
+        docker-compose -f tests/docker-compose.yml up -d
+        sleep 30
+        docker ps -a
+        docker-compose -f docker-compose.test.yml down
     - name: Run pytest
       run: |
         poetry run pytest -s
