@@ -1,6 +1,10 @@
 from distutils import core
 from typing import List
-from lib.core.dto.conversation_repository_dto import ConversationDTO, GetConversationResearchContextDTO
+from lib.core.dto.conversation_repository_dto import (
+    ConversationDTO,
+    GetConversationResearchContextDTO,
+    ListConversationMessagesDTO,
+)
 from lib.core.entity.models import (
     LLM,
     Conversation,
@@ -15,7 +19,14 @@ from lib.core.entity.models import (
 )
 from lib.core.ports.secondary.conversation_repository import ConversationRepository
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
-from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAConversation, SQLAResearchContext, SQLAUser
+from lib.infrastructure.repository.sqla.models import (
+    SQLALLM,
+    SQLAConversation,
+    SQLAMessageQuery,
+    SQLAMessageResponse,
+    SQLAResearchContext,
+    SQLAUser,
+)
 
 
 class SQLAConversationRepository(ConversationRepository):
@@ -84,10 +95,8 @@ class SQLAConversationRepository(ConversationRepository):
 
         return ConversationDTO(status="success")
 
-
     def get_conversation_research_context(self, conversation_id: int) -> GetConversationResearchContextDTO:
-        """
-        """
+        """ """
         if conversation_id is None:
             errorDTO = GetConversationResearchContextDTO(
                 status=False,
@@ -147,3 +156,62 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_research_context,
         )
 
+    def list_conversation_messages(self, conversation_id: int) -> ListConversationMessagesDTO[TMessageBase]:
+        """ """
+        if conversation_id is None:
+            errorDTO = ListConversationMessagesDTO[TMessageBase](
+                status=False,
+                errorCode=-1,
+                errorMessage="Conversation ID cannot be None",
+                errorName="Conversation ID not provided",
+                errorType="ConversationIdNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_conversation: SQLAConversation | None = (
+            self.session.query(SQLAConversation).filter_by(id=conversation_id).first()
+        )
+
+        if sqla_conversation is None:
+            self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
+            errorDTO = ListConversationMessagesDTO[TMessageBase](
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Conversation with ID {conversation_id} not found in the database.",
+                errorName="Conversation not found",
+                errorType="ConversationNotFound",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        core_messages: List[MessageBase] = []
+
+        for sqla_message in sqla_conversation.messages:
+            if isinstance(sqla_message, SQLAMessageQuery):
+                core_message_query = MessageQuery(
+                    created_at=sqla_message.created_at,
+                    updated_at=sqla_message.updated_at,
+                    deleted=sqla_message.deleted,
+                    deleted_at=sqla_message.deleted_at,
+                    id=sqla_message.id,
+                    content=sqla_message.content,
+                    timestamp=sqla_message.timestamp,
+                )
+                core_messages.append(core_message_query)
+            if isinstance(sqla_message, SQLAMessageResponse):
+                core_message_response = MessageResponse(
+                    created_at=sqla_message.created_at,
+                    updated_at=sqla_message.updated_at,
+                    deleted=sqla_message.deleted,
+                    deleted_at=sqla_message.deleted_at,
+                    id=sqla_message.id,
+                    content=sqla_message.content,
+                    timestamp=sqla_message.timestamp,
+                )
+                core_messages.append(core_message_response)
+
+        return ListConversationMessagesDTO[TMessageBase](
+            status=True,
+            data=core_messages,
+        )
