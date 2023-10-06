@@ -144,6 +144,15 @@ class SoftModelBase(ModelBase):
 
 
 class SQLAUser(Base, ModelBase):  # type: ignore
+    """
+    SQLAlchemy User model
+
+    @param planckster_user_uuid: The UUID of the user
+    @type planckster_user_uuid: str
+    @param research_contexts: The research contexts of the user
+    @type research_contexts: List[SQLAResearchContext]
+    """
+
     __tablename__ = "user"
 
     planckster_user_uuid: Mapped[str] = mapped_column("planckster_user_uuid", String, primary_key=True)
@@ -154,6 +163,21 @@ class SQLAUser(Base, ModelBase):  # type: ignore
 
 
 class SQLAKnowledgeSource(Base, SoftModelBase):  # type: ignore
+    """
+    SQLAlchemy Knowledge Source model
+
+    @param id: The ID of the knowledge source
+    @type id: int
+    @param source: The source of the knowledge source
+    @type source: str
+    @param content_metadata: The content metadata of the knowledge source
+    @type content_metadata: str
+    @param type: The type of the knowledge source
+    @type type: str
+    @param source_data: The source data of the knowledge source
+    @type source_data: List[SQLASourceData]
+    """
+
     __tablename__ = "knowledge_source"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -174,6 +198,25 @@ SourceDataResearchContextAssociation = Table(
 
 
 class SQLASourceData(Base, SoftModelBase):  # type: ignore
+    """
+    SQLAlchemy Source Data model
+
+    @param id: The ID of the source data
+    @type id: int
+    @param name: The name of the source data
+    @type name: str
+    @param type: The type of the source data
+    @type type: str
+    @param lfn: The LFN of the source data
+    @type lfn: str
+    @param protocol: The protocol of the source data
+    @type protocol: ProtocolEnum
+    @param knowledge_source_id: The ID of the knowledge source of the source data
+    @type knowledge_source_id: int
+    @param citations: The citations of the source data by the llm associated to the research contexts this source data belongs to
+    @type citations: List[SQLACitation]
+    """
+
     __tablename__ = "source_data"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -197,6 +240,17 @@ EmbeddingModelLLMAssociation = Table(
 
 
 class SQLAEmbeddingModel(Base, SoftModelBase):  # type: ignore
+    """
+    SQLAlchemy Embedding Model model
+
+    @param id: The ID of the embedding model
+    @type id: int
+    @param name: The name of the embedding model
+    @type name: str
+    @param vector_stores: The vector stores of the embedding model
+    @type vector_stores: List[SQLAVectorStore]
+    """
+
     __tablename__ = "embedding_model"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -205,6 +259,19 @@ class SQLAEmbeddingModel(Base, SoftModelBase):  # type: ignore
 
 
 class SQLALLM(Base, SoftModelBase):  # type: ignore
+    """
+    SQLAlchemy LLM model
+
+    @param id: The ID of the llm
+    @type id: int
+    @param llm_name: The name of the llm
+    @type llm_name: str
+    @param embedding_models: The embedding models of the llm
+    @type embedding_models: List[SQLAEmbeddingModel]
+    @param research_contexts: The research contexts of the llm
+    @type research_contexts: List[SQLAResearchContext]
+    """
+
     __tablename__ = "llm"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -216,6 +283,25 @@ class SQLALLM(Base, SoftModelBase):  # type: ignore
 
 
 class SQLAVectorStore(Base, ModelBase):  # type: ignore
+    """
+    SQLAlchemy Vector Store model
+
+    @param id: The ID of the vector store
+    @type id: int
+    @param name: The name of the vector store
+    @type name: str
+    @param lfn: The LFN of the vector store
+    @type lfn: str
+    @param protocol: The protocol of the vector store
+    @type protocol: ProtocolEnum
+    @param research_context_id: The ID of the research context of the vector store
+    @type research_context_id: int
+    @param research_context: The research context of the vector store
+    @type research_context: SQLAResearchContext
+    @param embedding_model_id: The ID of the embedding model of the vector store
+    @type embedding_model_id: int
+    """
+
     __tablename__ = "vector_store"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -228,6 +314,25 @@ class SQLAVectorStore(Base, ModelBase):  # type: ignore
 
 
 class SQLAResearchContext(Base, SoftModelBase):  # type: ignore
+    """
+    SQLAlchemy Research Context model
+
+    @param id: The ID of the research context
+    @type id: int
+    @param title: The title of the research context
+    @type title: str
+    @param user_id: The ID of the user of the research context
+    @type user_id: str
+    @param llm_id: The ID of the llm of the research context
+    @type llm_id: int
+    @param source_data: The source data of the research context
+    @type source_data: List[SQLASourceData]
+    @param vector_store: The vector store of the research context
+    @type vector_store: SQLAVectorStore
+    @param conversations: The conversations of the research context
+    @type conversations: List[SQLAConversation]
+    """
+
     __tablename__ = "research_context"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -244,6 +349,19 @@ class SQLAResearchContext(Base, SoftModelBase):  # type: ignore
 
 
 class SQLAConversation(Base, SoftModelBase):  # type: ignore
+    """
+    SQLAlchemy Conversation model
+
+    @param id: The ID of the conversation
+    @type id: int
+    @param title: The title of the conversation
+    @type title: str
+    @param research_context_id: The ID of the research context of the conversation
+    @type research_context_id: int
+    @param messages: The messages of the conversation
+    @type messages: List[SQLAMessageBase]
+    """
+
     __tablename__ = "conversation"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -253,6 +371,19 @@ class SQLAConversation(Base, SoftModelBase):  # type: ignore
 
 
 class SQLACitation(Base, SoftModelBase):  # type: ignore
+    """
+    SQLAlchemy Citation model
+
+    @param id: The ID of the citation
+    @type id: int
+    @param source_data_id: The ID of the source data of the citation
+    @type source_data_id: int
+    @param citation_metadata: The metadata of the citation
+    @type citation_metadata: str
+    @param message_response_id: The ID of the message response of the citation
+    @type message_response_id: int
+    """
+
     __tablename__ = "citation"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -262,6 +393,21 @@ class SQLACitation(Base, SoftModelBase):  # type: ignore
 
 
 class SQLAMessageBase(Base, SoftModelBase):  # type: ignore
+    """
+    SQLAlchemy Message Base model
+
+    @param id: The ID of the message
+    @type id: int
+    @param content: The content of the message
+    @type content: str
+    @param timestamp: The timestamp of the message
+    @type timestamp: datetime
+    @param type: The type of the message
+    @type type: str
+    @param conversation_id: The ID of the conversation of the message
+    @type conversation_id: int
+    """
+
     __tablename__ = "message_base"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -277,6 +423,21 @@ class SQLAMessageBase(Base, SoftModelBase):  # type: ignore
 
 
 class SQLAMessageQuery(SQLAMessageBase):
+    """
+    SQLAlchemy Message Query model
+
+    @param id: The ID of the message
+    @type id: int
+    @param content: The content of the message
+    @type content: str
+    @param timestamp: The timestamp of the message
+    @type timestamp: datetime
+    @param type: The type of the message
+    @type type: str
+    @param conversation_id: The ID of the conversation of the message
+    @type conversation_id: int
+    """
+
     __tablename__ = "message_query"
 
     id: Mapped[int] = mapped_column(ForeignKey("message_base.id"), primary_key=True)
@@ -287,6 +448,23 @@ class SQLAMessageQuery(SQLAMessageBase):
 
 
 class SQLAMessageResponse(SQLAMessageBase):
+    """
+    SQLAlchemy Message Response model
+
+    @param id: The ID of the message
+    @type id: int
+    @param content: The content of the message
+    @type content: str
+    @param timestamp: The timestamp of the message
+    @type timestamp: datetime
+    @param type: The type of the message
+    @type type: str
+    @param conversation_id: The ID of the conversation of the message
+    @type conversation_id: int
+    @param citations: The citations from source data used to produce the message
+    @type citations: List[SQLACitation]
+    """
+
     __tablename__ = "message_response"
 
     id: Mapped[int] = mapped_column(ForeignKey("message_base.id"), primary_key=True)
