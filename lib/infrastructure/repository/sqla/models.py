@@ -147,19 +147,23 @@ class SQLAUser(Base, ModelBase):  # type: ignore
     """
     SQLAlchemy User model
 
-    @param planckster_user_uuid: The UUID of the user
-    @type planckster_user_uuid: str
+    @param id: The ID of the user
+    @type id: int
+    param sid: The SID of the user
+    @type sid: str
     @param research_contexts: The research contexts of the user
     @type research_contexts: List[SQLAResearchContext]
     """
 
     __tablename__ = "user"
 
-    planckster_user_uuid: Mapped[str] = mapped_column("planckster_user_uuid", String, primary_key=True)
+    id: Mapped[str] = mapped_column("id", String, primary_key=True)
+    sid: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+
     research_contexts: Mapped[List["SQLAResearchContext"]] = relationship("SQLAResearchContext", backref="user")
 
     def __repr__(self) -> str:
-        return f"<User(planckster_user_uuid={self.planckster_user_uuid})>"
+        return f"<User(id={self.id})>"
 
 
 class SQLAKnowledgeSource(Base, SoftModelBase):  # type: ignore
@@ -337,7 +341,7 @@ class SQLAResearchContext(Base, SoftModelBase):  # type: ignore
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
-    user_id: Mapped[str] = mapped_column(ForeignKey("user.planckster_user_uuid"), nullable=False)
+    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"), nullable=False)
     llm_id: Mapped[int] = mapped_column(ForeignKey("llm.id"), nullable=False)
     source_data: Mapped[List["SQLASourceData"]] = relationship(
         "SQLASourceData", secondary=SourceDataResearchContextAssociation
