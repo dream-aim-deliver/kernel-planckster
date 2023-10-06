@@ -80,7 +80,8 @@ class SQLAConversationRepository(ConversationRepository):
 
         try:
             sqla_new_conversation.save(session=self.session)
-
+            new_conversation = self.session.query(SQLAConversation).filter_by(id=sqla_new_conversation.id)[-1]
+            return ConversationDTO(status="success", conversation_id=new_conversation.id)
         except Exception as e:
             self.logger.error(f"Error while creating new conversation: {e}")
             errorDTO = ConversationDTO(
@@ -93,10 +94,18 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
+<<<<<<< HEAD
         return ConversationDTO(status="success")
 
     def get_conversation_research_context(self, conversation_id: int) -> GetConversationResearchContextDTO:
         """ """
+=======
+    def get_conversation_research_context(self, conversation_id: int) -> GetConversationResearchContextDTO:
+        """ """
+
+    def get_conversation(self, conversation_id: int) -> GetConversationDTO[TMessageBase] | ErrorConversationDTO:
+        """ """
+>>>>>>> bd17aa7 (sqla: return id of newly created conversation #13)
         if conversation_id is None:
             errorDTO = GetConversationResearchContextDTO(
                 status=False,
@@ -155,6 +164,7 @@ class SQLAConversationRepository(ConversationRepository):
             status=True,
             data=core_research_context,
         )
+<<<<<<< HEAD
 
     def list_conversation_messages(self, conversation_id: int) -> ListConversationMessagesDTO[TMessageBase]:
         """ """
@@ -215,3 +225,5 @@ class SQLAConversationRepository(ConversationRepository):
             status=True,
             data=core_messages,
         )
+=======
+>>>>>>> bd17aa7 (sqla: return id of newly created conversation #13)
