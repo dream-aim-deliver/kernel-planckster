@@ -1,6 +1,6 @@
 from distutils import core
 from typing import List
-from lib.core.dto.conversation_repository_dto import ErrorConversationDTO, GetConversationDTO, SuccessConversationDTO
+from lib.core.dto.conversation_repository_dto import ConversationDTO
 from lib.core.entity.models import (
     LLM,
     Conversation,
@@ -25,7 +25,7 @@ class SQLAConversationRepository(ConversationRepository):
         with session_factory() as session:
             self.session = session
 
-    def new_conversation(self, research_context_id: int) -> SuccessConversationDTO | ErrorConversationDTO:
+    def new_conversation(self, research_context_id: int, conversation_title: str) -> ConversationDTO:
         """
         Creates a new conversation in the research context.
 
@@ -35,7 +35,7 @@ class SQLAConversationRepository(ConversationRepository):
         @rtype: SuccessConversationDTO | ErrorConversationDTO
         """
         if research_context_id is None:
-            errorDTO = ErrorConversationDTO(
+            errorDTO = ConversationDTO(
                 status="error",
                 errorCode=-1,
                 errorMessage="Research Context ID cannot be None",
@@ -51,7 +51,7 @@ class SQLAConversationRepository(ConversationRepository):
 
         if sqla_research_context is None:
             self.logger.error(f"Research Context with ID {research_context_id} not found in the database.")
-            errorDTO = ErrorConversationDTO(
+            errorDTO = ConversationDTO(
                 status="error",
                 errorCode=-1,
                 errorMessage=f"Research Context with ID {research_context_id} not found in the database.",
@@ -62,18 +62,17 @@ class SQLAConversationRepository(ConversationRepository):
             return errorDTO
 
         sqla_new_conversation: SQLAConversation = SQLAConversation(
-            title="New Conversation",  # TODO: is this ok as default?
+            title=conversation_title,
             research_context_id=research_context_id,
             messages=[],
         )
 
         try:
-            self.session.add(sqla_new_conversation)
-            self.session.commit()
+            sqla_new_conversation.save(session=self.session)
 
         except Exception as e:
             self.logger.error(f"Error while creating new conversation: {e}")
-            errorDTO = ErrorConversationDTO(
+            errorDTO = ConversationDTO(
                 status="error",
                 errorCode=-1,  # TODO: is this code ok?
                 errorMessage=f"Error while creating new conversation: {e}",
@@ -83,7 +82,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        return SuccessConversationDTO(status="success")
+        return ConversationDTO(status="success")
 
     def get_conversation(self, conversation_id: int) -> GetConversationDTO[TMessageBase] | ErrorConversationDTO:
         """ """

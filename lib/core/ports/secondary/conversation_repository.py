@@ -3,18 +3,18 @@ import logging
 from typing import List
 
 from lib.core.dto.conversation_repository_dto import (
-    SuccessConversationDTO,
-    ErrorConversationDTO,
-    GetConversationDTO,
-    ListConversationsDTO,
+    ConversationDTO,
+    GetConversationResearchContextDTO,
+    ListConversationMessagesDTO,
     ListConversationSourcesDTO,
+    ListConversationsDTO,
 )
 from lib.core.entity.models import TMessageBase
 
 
 class ConversationRepository(ABC):
     """
-    Abstract base class for conversation repositories.
+    Abstract base class for the conversation repository.
 
     @cvar logger: The logger for this class.
     @type logger: logging.Logger
@@ -24,26 +24,39 @@ class ConversationRepository(ABC):
         self.logger = logging.getLogger(self.__class__.__name__)
 
     @abstractmethod
-    def new_conversation(self, research_context_id: int) -> SuccessConversationDTO | ErrorConversationDTO:
+    def new_conversation(self, research_context_id: int, conversation_title: str) -> ConversationDTO:
         """
         Creates a new conversation in the research context.
 
         @param research_context_id: The ID of the research context to create the conversation in.
         @type research_context_id: int
+        @param conversation_title: The title of the conversation.
+        @type conversation_title: str
         @return: A DTO containing the result of the operation.
-        @rtype: SuccessConversationDTO | ErrorConversationDTO
+        @rtype: ConversationDTO
         """
         raise NotImplementedError
 
     @abstractmethod
-    def get_conversation(self, conversation_id: int) -> GetConversationDTO[TMessageBase] | ErrorConversationDTO:
+    def get_conversation_research_context(self, research_context_id: int) -> GetConversationResearchContextDTO:
         """
-        Displays information about a conversation in the research context.
+        Gets the research context of a conversation.
 
-        @param conversation_id: The ID of the conversation to display.
+        @param research_context_id: The ID of the research context to get the conversation for.
+        @type research_context_id: int
+        @return: A DTO containing the result of the operation.
+        @rtype: GetConversationResearchContextDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_conversation_messages(self, conversation_id: int) -> ListConversationMessagesDTO[TMessageBase]:
+        """
+        Lists all messages in a conversation.
+
+        @param conversation_id: The ID of the conversation to list messages for.
         @type conversation_id: int
         @return: A DTO containing the result of the operation.
-        @rtype: GetConversationDTO[TMessageBase] | ErrorConversationDTO
         """
         raise NotImplementedError
 
@@ -51,10 +64,11 @@ class ConversationRepository(ABC):
     def update_conversation(
         self,
         conversation_id: int,
-        conversation_title: str,  # TODO: are we allowing changing titles?
-        messages: List[TMessageBase]
-        | List[None],  # TODO: are we allowing updates with empty lists of messages? no, right?
-    ) -> SuccessConversationDTO | ErrorConversationDTO:
+        # TODO: are we allowing changing titles?
+        conversation_title: str,
+        # TODO: are we allowing updates with empty lists of messages? no, right?
+        messages: List[TMessageBase] | List[None],
+    ) -> ConversationDTO:
         """
         Updates a conversation in the research context.
 
@@ -65,30 +79,30 @@ class ConversationRepository(ABC):
         @param messages: The messages to add to the conversation.
         @type messages: List[TMessageBase] | List[None]
         @return: A DTO containing the result of the operation.
-        @rtype: SuccessConversationDTO | ErrorConversationDTO
+        @rtype: ConversationDTO
         """
         raise NotImplementedError
 
     @abstractmethod
-    def list_conversations(self, research_context_id: int) -> ListConversationsDTO | ErrorConversationDTO:
+    def list_conversations(self, research_context_id: int) -> ListConversationsDTO:
         """
         Lists all conversations in the research context.
 
         @param research_context_id: The ID of the research context to list conversations for.
         @type research_context_id: int
         @return: A DTO containing the result of the operation.
-        @rtype: ListConversationsDTO | ErrorConversationDTO
+        @rtype: ListConversationsDTO
         """
         raise NotImplementedError
 
     @abstractmethod
-    def list_conversation_sources(self, conversation_id: int) -> ListConversationSourcesDTO | ErrorConversationDTO:
+    def list_conversation_sources(self, conversation_id: int) -> ListConversationSourcesDTO:
         """
         Lists all data sources of the research context of a conversation.
 
         @param conversation_id: The ID of the conversation to list data sources for.
         @type conversation_id: int
         @return: A DTO containing the result of the operation.
-        @rtype: ListConversationSourcesDTO | ErrorConversationDTO
+        @rtype: ListConversationSourcesDTO
         """
         raise NotImplementedError
