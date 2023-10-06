@@ -23,7 +23,7 @@ class GetConversationResearchContextDTO(BaseDTO[ResearchContext]):
     @type data: ResearchContext
     """
 
-    data: ResearchContext
+    data: ResearchContext | None = None
 
 
 class ListConversationMessagesDTO(BaseDTO[TMessageBase]):
@@ -34,7 +34,7 @@ class ListConversationMessagesDTO(BaseDTO[TMessageBase]):
     @type data: List[TMessageBase] | List[None]
     """
 
-    data: List[TMessageBase] | List[None]
+    data: List[TMessageBase] | List[None] | None = None
 
 
 class ListConversationsDTO(BaseDTO[Conversation]):
@@ -45,7 +45,7 @@ class ListConversationsDTO(BaseDTO[Conversation]):
     @type data: List[Conversation] | List[None]
     """
 
-    data: List[Conversation] | List[None]
+    data: List[Conversation] | List[None] | None = None
 
 
 class ListConversationSourcesDTO(BaseDTO[SourceData]):
@@ -57,4 +57,4 @@ class ListConversationSourcesDTO(BaseDTO[SourceData]):
     """
 
     # TODO: are we allowing research contexts without source data?
-    data: List[SourceData] | List[None]
+    data: List[SourceData] | List[None] | None = None

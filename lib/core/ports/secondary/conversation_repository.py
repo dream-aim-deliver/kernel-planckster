@@ -38,7 +38,7 @@ class ConversationRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_conversation_research_context(self, research_context_id: int) -> GetConversationResearchContextDTO:
+    def get_conversation_research_context(self, conversation_id: int) -> GetConversationResearchContextDTO:
         """
         Gets the research context of a conversation.
 
