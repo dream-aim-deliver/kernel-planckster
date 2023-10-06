@@ -44,7 +44,7 @@ def with_rdbms(
             return False
 
     try:
-        docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_responsive())  # type: ignore
+        docker_services.wait_until_responsive(timeout=60.0, pause=0.1, check=lambda: is_responsive())  # type: ignore
     except Exception as e:
         pytest.fail(f"Failed to start postgres container, error: {e}")
 
