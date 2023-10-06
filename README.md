@@ -10,6 +10,8 @@ Please avoid pushing to this repository directory directly, either to the main b
 
 ```bash
 gh repo clone <your-username>/kernel-planckster
+
+git remote add upstream https://github.com/dream-aim-deliver/kernel-planckster.git
 ```
 
 
