@@ -1,8 +1,7 @@
 from enum import Enum
-from pydantic import BaseModel, Field
-from typing import List
+from pydantic import BaseModel
+from typing import List, TypeVar
 from datetime import datetime
-from uuid import uuid4
 
 
 class ProtocolEnum(Enum):
@@ -173,7 +172,7 @@ class VectorStore(BaseModel):
     embedding_model: EmbeddingModel
 
 
-class Conversation(BaseModel):
+class Conversation(BaseSoftDeleteKernelPlancksterModel):
     """
     Represents a conversation between a user and an agent, within in a research context
     This is where messages will be exchanged
@@ -202,6 +201,9 @@ class MessageBase(BaseSoftDeleteKernelPlancksterModel):
     content: str
     timestamp: datetime
     conversation: Conversation
+
+
+TMessageBase = TypeVar("TMessageBase", bound=MessageBase)
 
 
 class MessageQuery(MessageBase):
