@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "caps-starter-template"
+name = "kernel-planckster"
 version = "0.1.0"
-description = "Template Repository for Clean Architecture Python Project"
+description = "Core management system for Max Planck Institute Data Systems Group's Satellite Data Augmentation Project"
 authors = ["Mayank Sharma <imptodefeat@gmail.com>", "Luis Alejandro Bordo García <bgluiszz@gmail.com>"]
 license = "MIT"
 readme = "README.md"
