@@ -1,8 +1,8 @@
-"""init
+"""initialization
 
-Revision ID: 2dd1121a712b
+Revision ID: e1556eaba8ad
 Revises: 
-Create Date: 2023-10-06 00:53:53.792184
+Create Date: 2023-10-21 22:08:02.719369
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "2dd1121a712b"
+revision: str = "e1556eaba8ad"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,7 +26,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
-        sa.Column("deleted_at", sa.DateTime(), nullable=False),
+        sa.Column("deleted_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="EMBEDDING_MODEL_CREATED_NN"),
@@ -41,9 +41,8 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("source", sa.String(), nullable=False),
         sa.Column("content_metadata", sa.String(), nullable=False),
-        sa.Column("type", sa.String(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
-        sa.Column("deleted_at", sa.DateTime(), nullable=False),
+        sa.Column("deleted_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="KNOWLEDGE_SOURCE_CREATED_NN"),
@@ -56,12 +55,9 @@ def upgrade() -> None:
         "llm",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("llm_name", sa.String(), nullable=False),
-        sa.Column("deleted", sa.Boolean(), nullable=False),
-        sa.Column("deleted_at", sa.DateTime(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="LLM_CREATED_NN"),
-        sa.CheckConstraint("DELETED IS NOT NULL", name="LLM_DELETED_NN"),
         sa.CheckConstraint("UPDATED_AT IS NOT NULL", name="LLM_UPDATED_NN"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("llm_name"),
@@ -99,7 +95,7 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("llm_id", sa.Integer(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
-        sa.Column("deleted_at", sa.DateTime(), nullable=False),
+        sa.Column("deleted_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="RESEARCH_CONTEXT_CREATED_NN"),
@@ -125,7 +121,7 @@ def upgrade() -> None:
         sa.Column("protocol", sa.Enum("S3", "NAS", "LOCAL", name="protocolenum"), nullable=False),
         sa.Column("knowledge_source_id", sa.Integer(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
-        sa.Column("deleted_at", sa.DateTime(), nullable=False),
+        sa.Column("deleted_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="SOURCE_DATA_CREATED_NN"),
@@ -145,7 +141,7 @@ def upgrade() -> None:
         sa.Column("title", sa.String(), nullable=True),
         sa.Column("research_context_id", sa.Integer(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
-        sa.Column("deleted_at", sa.DateTime(), nullable=False),
+        sa.Column("deleted_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="CONVERSATION_CREATED_NN"),
@@ -203,7 +199,7 @@ def upgrade() -> None:
         sa.Column("type", sa.String(), nullable=False),
         sa.Column("conversation_id", sa.Integer(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
-        sa.Column("deleted_at", sa.DateTime(), nullable=False),
+        sa.Column("deleted_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="MESSAGE_BASE_CREATED_NN"),
@@ -243,7 +239,7 @@ def upgrade() -> None:
         sa.Column("citation_metadata", sa.String(), nullable=False),
         sa.Column("message_response_id", sa.Integer(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
-        sa.Column("deleted_at", sa.DateTime(), nullable=False),
+        sa.Column("deleted_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="CITATION_CREATED_NN"),
