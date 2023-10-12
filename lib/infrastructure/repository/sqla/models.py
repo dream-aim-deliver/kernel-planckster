@@ -134,7 +134,7 @@ class SoftModelBase(ModelBase):
 
     @declared_attr
     def deleted_at(cls: Base) -> MappedColumn[Any]:  # pylint: disable=no-self-argument
-        return mapped_column("deleted_at", DateTime)
+        return mapped_column("deleted_at", DateTime, nullable=True)
 
     def delete(self, flush: bool = True, session: Session | None = None) -> None:
         """Delete this object"""
@@ -157,7 +157,7 @@ class SQLAUser(Base, ModelBase):  # type: ignore
 
     __tablename__ = "user"
 
-    id: Mapped[str] = mapped_column("id", String, primary_key=True)
+    id: Mapped[int] = mapped_column("id", Integer, primary_key=True)
     sid: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
     research_contexts: Mapped[List["SQLAResearchContext"]] = relationship("SQLAResearchContext", backref="user")
@@ -176,8 +176,6 @@ class SQLAKnowledgeSource(Base, SoftModelBase):  # type: ignore
     @type source: str
     @param content_metadata: The content metadata of the knowledge source
     @type content_metadata: str
-    @param type: The type of the knowledge source
-    @type type: str
     @param source_data: The source data of the knowledge source
     @type source_data: List[SQLASourceData]
     """
@@ -187,7 +185,6 @@ class SQLAKnowledgeSource(Base, SoftModelBase):  # type: ignore
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     source: Mapped[str] = mapped_column(String, nullable=False)
     content_metadata: Mapped[str] = mapped_column(String, nullable=False)
-    type: Mapped[str]
     source_data: Mapped[List["SQLASourceData"]] = relationship(
         "SQLASourceData", backref="knowledge_source", cascade="all, delete"
     )
@@ -262,7 +259,7 @@ class SQLAEmbeddingModel(Base, SoftModelBase):  # type: ignore
     vector_stores: Mapped[List["SQLAVectorStore"]] = relationship("SQLAVectorStore", backref="embedding_model")
 
 
-class SQLALLM(Base, SoftModelBase):  # type: ignore
+class SQLALLM(Base, ModelBase):  # type: ignore
     """
     SQLAlchemy LLM model
 
@@ -341,7 +338,7 @@ class SQLAResearchContext(Base, SoftModelBase):  # type: ignore
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
-    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     llm_id: Mapped[int] = mapped_column(ForeignKey("llm.id"), nullable=False)
     source_data: Mapped[List["SQLASourceData"]] = relationship(
         "SQLASourceData", secondary=SourceDataResearchContextAssociation
