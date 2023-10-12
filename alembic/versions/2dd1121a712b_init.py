@@ -41,7 +41,6 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("source", sa.String(), nullable=False),
         sa.Column("content_metadata", sa.String(), nullable=False),
-        sa.Column("type", sa.String(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
         sa.Column("deleted_at", sa.DateTime(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),

@@ -176,8 +176,6 @@ class SQLAKnowledgeSource(Base, SoftModelBase):  # type: ignore
     @type source: str
     @param content_metadata: The content metadata of the knowledge source
     @type content_metadata: str
-    @param type: The type of the knowledge source
-    @type type: str
     @param source_data: The source data of the knowledge source
     @type source_data: List[SQLASourceData]
     """
@@ -187,7 +185,6 @@ class SQLAKnowledgeSource(Base, SoftModelBase):  # type: ignore
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     source: Mapped[str] = mapped_column(String, nullable=False)
     content_metadata: Mapped[str] = mapped_column(String, nullable=False)
-    type: Mapped[str]
     source_data: Mapped[List["SQLASourceData"]] = relationship(
         "SQLASourceData", backref="knowledge_source", cascade="all, delete"
     )
