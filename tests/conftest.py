@@ -1,15 +1,31 @@
 from contextlib import _GeneratorContextManager
+import datetime
 import os
-from typing import Annotated, Any, Callable, Generator
+import random
+from typing import Annotated, Any, Callable, Generator, Generic, List, Tuple, TypeVar
 from faker import Faker
+from faker.proxy import UniqueProxy
 import pytest
+from tomlkit import date
 import lib
+from lib.core.entity.models import Citation
 from lib.infrastructure.config.containers import Container
 from alembic.config import Config
 from alembic import command
 from sqlalchemy.orm import Session
 
 from lib.infrastructure.repository.sqla.database import Database, TDatabaseFactory
+from lib.infrastructure.repository.sqla.models import (
+    ModelBase,
+    SQLACitation,
+    SQLAConversation,
+    SQLAKnowledgeSource,
+    SQLAMessageBase,
+    SQLAMessageQuery,
+    SQLAMessageResponse,
+    SQLAResearchContext,
+    SQLAUser,
+)
 
 
 container = Container()
@@ -76,5 +92,132 @@ def db_session(with_rdbms_migrations: None) -> Generator[Callable[[], _Generator
 
 
 @pytest.fixture(scope="function")
-def fake() -> Faker:
-    return Faker()
+def fake() -> UniqueProxy:
+    return Faker().unique
+
+
+@pytest.fixture(scope="function")
+def fake_kp_datetimes() -> Tuple[str, str, bool, str]:
+    fake = Faker().unique
+
+    dt1 = fake.date_time_between(start_date="-5y", end_date="-1m")
+
+    dt2 = fake.date_time_between_dates(
+        datetime_start=dt1, datetime_end=datetime.datetime.now() - datetime.timedelta(weeks=1)
+    )
+
+    dt3 = fake.date_time_between_dates(datetime_start=dt2, datetime_end=datetime.datetime.now())
+
+    created_at = dt1.strftime("%Y-%m-%d %H:%M:%S")
+    updated_at = dt2.strftime("%Y-%m-%d %H:%M:%S")
+    deleted = Faker().boolean()
+    deleted_at = dt3.strftime("%Y-%m-%d %H:%M:%S") if deleted else None
+
+    return created_at, updated_at, deleted, deleted_at
+
+
+def message_query() -> SQLAMessageQuery:
+    fake = Faker().unique
+
+    dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
+
+    return SQLAMessageQuery(
+        content=fake.text(max_nb_chars=70) + "?",
+        timestamp=dt1,
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_message_query() -> SQLAMessageQuery:
+    return message_query()
+
+
+def message_response() -> SQLAMessageResponse:
+    fake = Faker().unique
+
+    dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
+
+    return SQLAMessageResponse(
+        content=fake.text(max_nb_chars=70),
+        timestamp=dt1,
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_message_response() -> SQLAMessageResponse:
+    return message_response()
+
+
+def message_pair() -> Tuple[SQLAMessageQuery, SQLAMessageResponse]:
+    fake = Faker().unique
+
+    dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
+
+    dt2 = fake.date_time_between_dates(
+        datetime_start=dt1, datetime_end=datetime.datetime.now() - datetime.timedelta(weeks=1)
+    )
+
+    message_query = SQLAMessageQuery(
+        content=fake.text(max_nb_chars=70) + "?",
+        timestamp=dt1,
+    )
+    message_response = SQLAMessageResponse(
+        content=fake.text(max_nb_chars=70),
+        timestamp=dt2,
+    )
+
+    return message_query, message_response
+
+
+@pytest.fixture(scope="function")
+def fake_message_pair() -> Tuple[SQLAMessageQuery, SQLAMessageResponse]:
+    return message_pair()
+
+
+TMessagePair = Tuple[SQLAMessageQuery, SQLAMessageResponse]
+
+
+def conversation(number_of_message_pairs: int = 2) -> SQLAConversation:
+    """
+    Creates a conversation with a title and a list of messages
+    The messages are created by calling message_pair() number_of_message_pairs times, which will create a list alternating a SQLAMessageQuery and a SQLAMessageResponse
+    """
+    fake = Faker().unique
+
+    fake_title = fake.text(max_nb_chars=70)
+
+    nested_tup = tuple(message_pair() for _ in range(number_of_message_pairs))
+    fake_messages_init = tuple(message for tup in nested_tup for message in tup)
+    fake_messages: List[SQLAMessageBase] = list(fake_messages_init)
+
+    return SQLAConversation(
+        title=fake_title,
+        messages=fake_messages,
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_conversation() -> SQLAConversation:
+    return conversation()
+
+
+def research_context(number_of_conversations: int = 2, up_bound_messages_per_conversation: int = 5) -> SQLAResearchContext:
+    """
+    Creates a research context with a title and a list of conversations
+    The conversations are created by calling conversation() number_of_conversations times, with an upper bound of maximum possible message pairs per conversation of up_bound_messages_per_conversation
+    """
+    fake = Faker().unique
+
+    fake_title = fake.name()
+
+    fake_conversations_init = tuple(conversation(random.randint(1, up_bound_messages_per_conversation)) for _ in range(number_of_conversations))
+    fake_conversations = list(fake_conversations_init)
+
+    return SQLAResearchContext(
+        title = fake_title,
+        conversations = fake_conversations,
+    )
+
+@pytest.fixture(scope="function")
+def fake_research_context() -> SQLAResearchContext:
+    return research_context()
