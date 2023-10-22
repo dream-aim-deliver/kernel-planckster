@@ -14,6 +14,11 @@ def test_add_conversation_to_research_context(
 ) -> None:
     user_with_conv = fake_user_with_conversation
     user_sid = user_with_conv.sid
+    llm = SQLALLM(
+        llm_name=fake.name(),
+        research_contexts=user_with_conv.research_contexts,
+    )
+
     researchContext = user_with_conv.research_contexts[0]
 
     conversation = researchContext.conversations[0]
@@ -26,11 +31,6 @@ def test_add_conversation_to_research_context(
     message_2_content = message_2.content
     message_1_type = message_1.type
     message_2_type = message_2.type
-
-    llm = SQLALLM(
-        llm_name=fake.name(),
-        research_contexts=[researchContext],
-    )
 
     with db_session() as session:
         researchContext.save(session=session, flush=True)
