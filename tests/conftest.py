@@ -2,24 +2,19 @@ from contextlib import _GeneratorContextManager
 import datetime
 import os
 import random
-from typing import Annotated, Any, Callable, Generator, Generic, List, Tuple, TypeVar
+from typing import Annotated, Callable, Generator, List, Tuple
 from faker import Faker
 from faker.proxy import UniqueProxy
 import pytest
-from tomlkit import date
 import lib
-from lib.core.entity.models import Citation
 from lib.infrastructure.config.containers import Container
 from alembic.config import Config
 from alembic import command
 from sqlalchemy.orm import Session
 
-from lib.infrastructure.repository.sqla.database import Database, TDatabaseFactory
+from lib.infrastructure.repository.sqla.database import Database
 from lib.infrastructure.repository.sqla.models import (
-    ModelBase,
-    SQLACitation,
     SQLAConversation,
-    SQLAKnowledgeSource,
     SQLAMessageBase,
     SQLAMessageQuery,
     SQLAMessageResponse,
@@ -153,9 +148,7 @@ def message_pair() -> Tuple[SQLAMessageQuery, SQLAMessageResponse]:
 
     dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
 
-    dt2 = fake.date_time_between_dates(
-        datetime_start=dt1, datetime_end=datetime.datetime.now() - datetime.timedelta(weeks=1)
-    )
+    dt2 = fake.date_time_between_dates(datetime_start=dt1, datetime_end=datetime.datetime.now())
 
     message_query = SQLAMessageQuery(
         content=fake.text(max_nb_chars=70)[:-1] + "?",
@@ -182,11 +175,16 @@ def conversation(number_of_message_pairs: int = 2) -> SQLAConversation:
     Creates a conversation with a title and a list of messages
     The messages are created by calling message_pair() number_of_message_pairs times, which will create a list alternating a SQLAMessageQuery and a SQLAMessageResponse
     """
+
     fake = Faker().unique
 
     fake_title = fake.text(max_nb_chars=70)
 
+    # To prevent range errors
+    if number_of_message_pairs <= 1:
+        number_of_message_pairs = 2
     nested_tup = tuple(message_pair() for _ in range(number_of_message_pairs))
+
     fake_messages_init = tuple(message for tup in nested_tup for message in tup)
     fake_messages: List[SQLAMessageBase] = list(fake_messages_init)
 
