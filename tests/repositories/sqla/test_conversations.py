@@ -1,25 +1,22 @@
-from typing import Callable
-from keyring import delete_password
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from faker import Faker
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
-    SQLAMessageQuery,
-    SQLAMessageResponse,
-    SQLAResearchContext,
     SQLAUser,
 )
-from tests.conftest import TMessagePair
 
 
 def test_add_conversation_to_research_context(
-    db_session: TDatabaseFactory, fake: Faker, fake_conversation: SQLAConversation, fake_message_pair: TMessagePair, fake_research_context: SQLAResearchContext
+    db_session: TDatabaseFactory,
+    fake: Faker,
+    fake_user_with_conversation: SQLAUser,
 ) -> None:
+    user_with_conv = fake_user_with_conversation
+    user_sid = user_with_conv.sid
+    researchContext = user_with_conv.research_contexts[0]
 
-    user_sid = fake.name()
-
-    conversation = fake_conversation
+    conversation = researchContext.conversations[0]
     conversation_title = conversation.title
 
     message_1 = conversation.messages[0]
@@ -30,21 +27,10 @@ def test_add_conversation_to_research_context(
     message_1_type = message_1.type
     message_2_type = message_2.type
 
-    researchContext = SQLAResearchContext(
-        title=fake.name(),
-        conversations=[conversation],
-    )
-
     llm = SQLALLM(
         llm_name=fake.name(),
         research_contexts=[researchContext],
     )
-
-    user = SQLAUser(
-        sid=user_sid,
-        research_contexts=[researchContext],
-    )
-
 
     with db_session() as session:
         researchContext.save(session=session, flush=True)

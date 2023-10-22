@@ -122,7 +122,7 @@ def message_query() -> SQLAMessageQuery:
     dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
 
     return SQLAMessageQuery(
-        content=fake.text(max_nb_chars=70) + "?",
+        content=fake.text(max_nb_chars=70)[:-1] + "?",
         timestamp=dt1,
     )
 
@@ -138,7 +138,7 @@ def message_response() -> SQLAMessageResponse:
     dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
 
     return SQLAMessageResponse(
-        content=fake.text(max_nb_chars=70),
+        content=fake.text(max_nb_chars=70)[:-1],
         timestamp=dt1,
     )
 
@@ -158,11 +158,11 @@ def message_pair() -> Tuple[SQLAMessageQuery, SQLAMessageResponse]:
     )
 
     message_query = SQLAMessageQuery(
-        content=fake.text(max_nb_chars=70) + "?",
+        content=fake.text(max_nb_chars=70)[:-1] + "?",
         timestamp=dt1,
     )
     message_response = SQLAMessageResponse(
-        content=fake.text(max_nb_chars=70),
+        content=fake.text(max_nb_chars=70)[:-1],
         timestamp=dt2,
     )
 
@@ -201,7 +201,9 @@ def fake_conversation() -> SQLAConversation:
     return conversation()
 
 
-def research_context(number_of_conversations: int = 2, up_bound_messages_per_conversation: int = 5) -> SQLAResearchContext:
+def research_context(
+    number_of_conversations: int = 2, up_bound_messages_per_conversation: int = 5
+) -> SQLAResearchContext:
     """
     Creates a research context with a title and a list of conversations
     The conversations are created by calling conversation() number_of_conversations times, with an upper bound of maximum possible message pairs per conversation of up_bound_messages_per_conversation
@@ -210,14 +212,35 @@ def research_context(number_of_conversations: int = 2, up_bound_messages_per_con
 
     fake_title = fake.name()
 
-    fake_conversations_init = tuple(conversation(random.randint(1, up_bound_messages_per_conversation)) for _ in range(number_of_conversations))
+    fake_conversations_init = tuple(
+        conversation(random.randint(1, up_bound_messages_per_conversation)) for _ in range(number_of_conversations)
+    )
     fake_conversations = list(fake_conversations_init)
 
     return SQLAResearchContext(
-        title = fake_title,
-        conversations = fake_conversations,
+        title=fake_title,
+        conversations=fake_conversations,
     )
+
 
 @pytest.fixture(scope="function")
 def fake_research_context() -> SQLAResearchContext:
     return research_context()
+
+
+def user_with_conversation() -> SQLAUser:
+    fake = Faker().unique
+
+    fake_sid = fake.name()
+
+    fake_research_context = research_context()
+
+    return SQLAUser(
+        sid=fake_sid,
+        research_contexts=[fake_research_context],
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_user_with_conversation() -> SQLAUser:
+    return user_with_conversation()
