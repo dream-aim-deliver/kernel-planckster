@@ -202,7 +202,7 @@ def fake_conversation() -> SQLAConversation:
 
 
 def research_context(
-    number_of_conversations: int = 2, up_bound_messages_per_conversation: int = 5
+    number_of_conversations: int = 4, up_bound_message_pairs_per_conversation: int = 5
 ) -> SQLAResearchContext:
     """
     Creates a research context with a title and a list of conversations
@@ -213,7 +213,8 @@ def research_context(
     fake_title = fake.name()
 
     fake_conversations_init = tuple(
-        conversation(random.randint(1, up_bound_messages_per_conversation)) for _ in range(number_of_conversations)
+        conversation(random.randrange(1, up_bound_message_pairs_per_conversation))
+        for _ in range(number_of_conversations)
     )
     fake_conversations = list(fake_conversations_init)
 
@@ -228,16 +229,18 @@ def fake_research_context() -> SQLAResearchContext:
     return research_context()
 
 
-def user_with_conversation() -> SQLAUser:
+def user_with_conversation(number_of_research_contexts: int = 2) -> SQLAUser:
     fake = Faker().unique
 
     fake_sid = fake.name()
 
-    fake_research_context = research_context()
+    fake_research_contexts_init = tuple(research_context() for _ in range(number_of_research_contexts))
+    fake_research_contexts = list(fake_research_contexts_init)
+    #    fake_research_context = research_context()
 
     return SQLAUser(
         sid=fake_sid,
-        research_contexts=[fake_research_context],
+        research_contexts=fake_research_contexts,
     )
 
 
