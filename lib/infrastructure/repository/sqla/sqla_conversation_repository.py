@@ -87,7 +87,7 @@ class SQLAConversationRepository(ConversationRepository):
 
         try:
             sqla_new_conversation.save(session=self.session)
-            new_conversation = self.session.query(SQLAConversation).filter_by(id=sqla_new_conversation.id)[-1]
+            new_conversation = self.session.query(SQLAConversation).filter_by(id=sqla_new_conversation.id)[0]
 
             return ConversationDTO(status=True, conversation_id=new_conversation.id)
 
@@ -172,7 +172,6 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_research_context,
         )
 
-
     def list_conversation_messages(self, conversation_id: int) -> ListConversationMessagesDTO[TMessageBase]:
         """
         Lists all messages in a conversation.
@@ -238,7 +237,6 @@ class SQLAConversationRepository(ConversationRepository):
             status=True,
             data=core_messages,
         )
-
 
     def update_conversation(self, conversation_id: int, conversation_title: str) -> ConversationDTO:
         """
@@ -395,4 +393,3 @@ class SQLAConversationRepository(ConversationRepository):
             status=True,
             data=core_source_data,
         )
-
