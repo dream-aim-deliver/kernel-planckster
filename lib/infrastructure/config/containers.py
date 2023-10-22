@@ -5,6 +5,7 @@ from dependency_injector import containers, providers
 
 
 from lib.infrastructure.repository.sqla.database import Database
+from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLAConversationRepository
 
 # from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLAConversationRepository
 
@@ -29,10 +30,10 @@ class Container(containers.DeclarativeContainer):
     )
 
     # Repositories:
-    # sqla_conversation_repository: providers.Factory[SQLAConversationRepository] = providers.Factory(
-    #    SQLAConversationRepository,
-    #    session_factory=db.provided.session,
-    # )
+    sqla_conversation_repository: providers.Factory[SQLAConversationRepository] = providers.Factory(
+        SQLAConversationRepository,
+        session_factory=db.provided.session,
+    )
 
     # Gateways:
 
