@@ -15,6 +15,7 @@ class ConversationDTO(BaseDTO[Conversation]):
     """
 
     conversation_id: int | None = None
+    data: Conversation | None = None
 
 
 class GetConversationResearchContextDTO(BaseDTO[ResearchContext]):

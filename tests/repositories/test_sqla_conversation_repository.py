@@ -3,18 +3,20 @@ from lib.core.dto.conversation_repository_dto import (
     ConversationDTO,
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
+    ListConversationSourcesDTO,
 )
-from lib.core.entity.models import MessageBase, MessageQuery, MessageResponse, TMessageBase
+from lib.core.entity.models import MessageBase
 from lib.infrastructure.config.containers import Container
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
+    SQLAKnowledgeSource,
     SQLAResearchContext,
     SQLAUser,
 )
-from tests.conftest import conversation
+from tests.conftest import conversation, source_data
 
 
 ############
@@ -48,7 +50,6 @@ def test_create_new_conversation(
         conv_DTO: ConversationDTO = conversation_repository.new_conversation(
             research_context_id=researchContext.id, conversation_title=conversation_title
         )
-        session.commit()
 
     assert conv_DTO.status == True
     assert conv_DTO.errorCode == None
@@ -284,3 +285,246 @@ def test_error_list_conversation_messages_conversation_id_not_found(
     assert list_conv_msgs_DTO.errorMessage == f"Conversation with ID {irrealistic_ID} not found in the database."
     assert list_conv_msgs_DTO.errorName == "Conversation not found"
     assert list_conv_msgs_DTO.errorType == "ConversationNotFound"
+
+
+############
+# Update Conversation Feature
+############
+
+
+def test_update_conversation(
+    app_container: Container,
+    db_session: TDatabaseFactory,
+    fake: Faker,
+    fake_user_with_conversation: SQLAUser,
+    fake_conversation: SQLAConversation,
+) -> None:
+    conversation_repository = app_container.sqla_conversation_repository()
+
+    user_with_conv = fake_user_with_conversation
+    llm = SQLALLM(
+        llm_name=fake.name(),
+        research_contexts=user_with_conv.research_contexts,
+    )
+
+    researchContext = user_with_conv.research_contexts[0]
+
+    conversation = researchContext.conversations[0]
+    conversation_title = conversation.title
+
+    new_conversation_title = fake.name()
+
+    id = None
+    with db_session() as session:
+        user_with_conv.save(session=session, flush=True)
+
+        result = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+
+        if result is None:
+            raise Exception("Conversation not found")
+
+        id = result.id
+        conv_DTO: ConversationDTO = conversation_repository.update_conversation(
+            conversation_id=id, conversation_title=new_conversation_title
+        )
+
+        old_conversation = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+
+    if conv_DTO.conversation_id is None:
+        raise Exception("Conversation not found")
+
+    assert old_conversation == None
+    assert conv_DTO.status == True
+    assert conv_DTO.errorCode == None
+    assert conv_DTO.conversation_id == id
+
+
+def test_error_update_conversation_none_research_context_id(
+    app_container: Container, db_session: TDatabaseFactory
+) -> None:
+    conversation_repository = app_container.sqla_conversation_repository()
+
+    conv_DTO: ConversationDTO = conversation_repository.update_conversation(conversation_id=None, conversation_title="test")  # type: ignore
+
+    assert conv_DTO.status == False
+    assert conv_DTO.errorCode == -1
+    assert conv_DTO.errorMessage == "Conversation ID cannot be None"
+    assert conv_DTO.errorName == "Conversation ID not provided"
+    assert conv_DTO.errorType == "ConversationIdNotProvided"
+
+
+def test_error_update_conversation_none_conversation_title(
+    app_container: Container, db_session: TDatabaseFactory
+) -> None:
+    conversation_repository = app_container.sqla_conversation_repository()
+
+    conv_DTO: ConversationDTO = conversation_repository.update_conversation(conversation_id=1, conversation_title=None)  # type: ignore
+
+    assert conv_DTO.status == False
+    assert conv_DTO.errorCode == -1
+    assert conv_DTO.errorMessage == "Conversation title cannot be None"
+    assert conv_DTO.errorName == "Conversation title not provided"
+    assert conv_DTO.errorType == "ConversationTitleNotProvided"
+
+
+def test_error_update_conversation_conversation_id_not_found(
+    app_container: Container, db_session: TDatabaseFactory
+) -> None:
+    conversation_repository = app_container.sqla_conversation_repository()
+
+    irrealistic_ID = 99999999
+    conv_DTO: ListConversationMessagesDTO = conversation_repository.update_conversation(conversation_id=irrealistic_ID, conversation_title="test")  # type: ignore
+
+    assert conv_DTO.status == False
+    assert conv_DTO.errorCode == -1
+    assert conv_DTO.errorMessage == f"Conversation with ID {irrealistic_ID} not found in the database."
+    assert conv_DTO.errorName == "Conversation not found"
+    assert conv_DTO.errorType == "ConversationNotFound"
+
+
+############
+# List Conversation Sources Feature
+############
+
+
+def test_list_conversation_sources(
+    app_container: Container,
+    db_session: TDatabaseFactory,
+    fake: Faker,
+    fake_user_with_conversation: SQLAUser,
+    fake_knowledge_source_with_source_data: SQLAKnowledgeSource,
+) -> None:
+    conversation_repository = app_container.sqla_conversation_repository()
+
+    user_with_conv = fake_user_with_conversation
+    llm = SQLALLM(
+        llm_name=fake.name(),
+        research_contexts=user_with_conv.research_contexts,
+    )
+    researchContext = user_with_conv.research_contexts[0]
+
+    ks_with_sd = fake_knowledge_source_with_source_data
+    source_data = ks_with_sd.source_data
+    source_data_names = tuple(source.name for source in source_data)
+    source_data_lfns = tuple(source.lfn for source in source_data)
+
+    researchContext.source_data = source_data
+
+    conversation = researchContext.conversations[0]
+    conversation_title = conversation.title
+
+    with db_session() as session:
+        researchContext.save(session=session, flush=True)
+        session.commit()
+
+    id = None
+    with db_session() as session:
+        result = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+
+        if result is None:
+            raise Exception("Conversation not found")
+
+        id = result.id
+
+        list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(
+            conversation_id=id
+        )
+
+    if list_conv_srcs_DTO.data is None:
+        raise Exception("Source Data of Conversation not found")
+
+    sql_srcs_names = tuple(source.name for source in list_conv_srcs_DTO.data)
+    sql_srcs_lfns = tuple(source.lfn for source in list_conv_srcs_DTO.data)
+
+    assert list_conv_srcs_DTO.status == True
+    assert list_conv_srcs_DTO.errorCode == None
+    assert isinstance(list_conv_srcs_DTO.data, list)
+
+    for name in source_data_names:
+        assert name in sql_srcs_names
+
+    for lfn in source_data_lfns:
+        assert lfn in sql_srcs_lfns
+
+
+def test_error_list_conversation_sources_none_conversation_id(
+    app_container: Container, db_session: TDatabaseFactory
+) -> None:
+    conversation_repository = app_container.sqla_conversation_repository()
+
+    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(conversation_id=None)  # type: ignore
+
+    assert list_conv_srcs_DTO.status == False
+    assert list_conv_srcs_DTO.errorCode == -1
+    assert list_conv_srcs_DTO.errorMessage == "Conversation ID cannot be None"
+    assert list_conv_srcs_DTO.errorName == "Conversation ID not provided"
+    assert list_conv_srcs_DTO.errorType == "ConversationIdNotProvided"
+
+
+def test_error_list_conversation_sources_none_sqla_conversation(
+    app_container: Container, db_session: TDatabaseFactory
+) -> None:
+    conversation_repository = app_container.sqla_conversation_repository()
+
+    irrealistic_ID = 99999999
+    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(
+        conversation_id=irrealistic_ID
+    )
+
+    assert list_conv_srcs_DTO.status == False
+    assert list_conv_srcs_DTO.errorCode == -1
+    assert list_conv_srcs_DTO.errorMessage == f"Conversation with ID {irrealistic_ID} not found in the database."
+    assert list_conv_srcs_DTO.errorName == "Conversation not found"
+    assert list_conv_srcs_DTO.errorType == "ConversationNotFound"
+
+
+def test_error_list_conversation_sources_research_context_no_source_data(
+    app_container: Container,
+    db_session: TDatabaseFactory,
+    fake: Faker,
+    fake_user_with_conversation: SQLAUser,
+    fake_knowledge_source_with_source_data: SQLAKnowledgeSource,
+) -> None:
+    conversation_repository = app_container.sqla_conversation_repository()
+
+    user_with_conv = fake_user_with_conversation
+    llm = SQLALLM(
+        llm_name=fake.name(),
+        research_contexts=user_with_conv.research_contexts,
+    )
+    researchContext = user_with_conv.research_contexts[0]
+    researchContext_title = researchContext.title
+
+    conversation = researchContext.conversations[0]
+    conversation_title = conversation.title
+
+    with db_session() as session:
+        researchContext.save(session=session, flush=True)
+        session.commit()
+
+    conv_id = None
+    rc_id = None
+    with db_session() as session:
+        conv_sqla_query = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+
+        if conv_sqla_query is None:
+            raise Exception("Conversation not found")
+
+        conv_id = conv_sqla_query.id
+
+        rc_sqla_query = session.query(SQLAResearchContext).filter_by(title=researchContext_title).first()
+
+        if rc_sqla_query is None:
+            raise Exception("Research Context not found")
+
+        rc_id = rc_sqla_query.id
+
+        list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(
+            conversation_id=conv_id
+        )
+
+    assert list_conv_srcs_DTO.status == False
+    assert list_conv_srcs_DTO.errorCode == -1
+    assert list_conv_srcs_DTO.errorMessage == f"Research Context with ID {rc_id} has no source data."
+    assert list_conv_srcs_DTO.errorName == "Research Context has no source data"
+    assert list_conv_srcs_DTO.errorType == "ResearchContextHasNoSourceData"
