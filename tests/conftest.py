@@ -1,12 +1,14 @@
 from contextlib import _GeneratorContextManager
 import datetime
+from importlib import metadata
 import os
 import random
-from typing import Annotated, Callable, Generator, List, Tuple
+from typing import Annotated, Callable, Generator, List, Protocol, Tuple
 from faker import Faker
 from faker.proxy import UniqueProxy
 import pytest
 import lib
+from lib.core.entity.models import ProtocolEnum
 from lib.infrastructure.config.containers import Container
 from alembic.config import Config
 from alembic import command
@@ -15,10 +17,12 @@ from sqlalchemy.orm import Session
 from lib.infrastructure.repository.sqla.database import Database
 from lib.infrastructure.repository.sqla.models import (
     SQLAConversation,
+    SQLAKnowledgeSource,
     SQLAMessageBase,
     SQLAMessageQuery,
     SQLAMessageResponse,
     SQLAResearchContext,
+    SQLASourceData,
     SQLAUser,
 )
 
@@ -170,7 +174,7 @@ def fake_message_pair() -> Tuple[SQLAMessageQuery, SQLAMessageResponse]:
 TMessagePair = Tuple[SQLAMessageQuery, SQLAMessageResponse]
 
 
-def conversation(number_of_message_pairs: int = 2) -> SQLAConversation:
+def conversation(number_of_message_pairs: int = 1) -> SQLAConversation:
     """
     Creates a conversation with a title and a list of messages
     The messages are created by calling message_pair() number_of_message_pairs times, which will create a list alternating a SQLAMessageQuery and a SQLAMessageResponse
@@ -180,10 +184,7 @@ def conversation(number_of_message_pairs: int = 2) -> SQLAConversation:
 
     fake_title = fake.text(max_nb_chars=70)
 
-    # To prevent range errors
-    if number_of_message_pairs <= 1:
-        number_of_message_pairs = 2
-    nested_tup = tuple(message_pair() for _ in range(number_of_message_pairs))
+    nested_tup = tuple(message_pair() for _ in range(number_of_message_pairs + 1))
 
     fake_messages_init = tuple(message for tup in nested_tup for message in tup)
     fake_messages: List[SQLAMessageBase] = list(fake_messages_init)
@@ -200,7 +201,8 @@ def fake_conversation() -> SQLAConversation:
 
 
 def research_context(
-    number_of_conversations: int = 4, up_bound_message_pairs_per_conversation: int = 5
+    number_of_conversations: int = 4,
+    up_bound_message_pairs_per_conversation: int = 5,
 ) -> SQLAResearchContext:
     """
     Creates a research context with a title and a list of conversations
@@ -211,8 +213,8 @@ def research_context(
     fake_title = fake.name()
 
     fake_conversations_init = tuple(
-        conversation(random.randrange(1, up_bound_message_pairs_per_conversation))
-        for _ in range(number_of_conversations)
+        conversation(random.randrange(1, up_bound_message_pairs_per_conversation + 1))
+        for _ in range(number_of_conversations + 1)
     )
     fake_conversations = list(fake_conversations_init)
 
@@ -232,7 +234,7 @@ def user_with_conversation(number_of_research_contexts: int = 2) -> SQLAUser:
 
     fake_sid = fake.name()
 
-    fake_research_contexts_init = tuple(research_context() for _ in range(number_of_research_contexts))
+    fake_research_contexts_init = tuple(research_context() for _ in range(number_of_research_contexts + 1))
     fake_research_contexts = list(fake_research_contexts_init)
     #    fake_research_context = research_context()
 
@@ -245,3 +247,48 @@ def user_with_conversation(number_of_research_contexts: int = 2) -> SQLAUser:
 @pytest.fixture(scope="function")
 def fake_user_with_conversation() -> SQLAUser:
     return user_with_conversation()
+
+
+def source_data() -> SQLASourceData:
+    fake = Faker().unique
+
+    protocols = [
+        attr_name.__str__().lower() for attr_name in vars(ProtocolEnum) if not attr_name.__str__().startswith("_")
+    ]
+
+    sd_filename = fake.file_name()
+    sd_name = sd_filename.split(".")[0]
+    sd_type = sd_filename.split(".")[1]
+    sd_path = fake.file_path(depth=3).split(".")[0] + "/" + sd_filename
+    sd_protocol_choice: str = random.choice(protocols)
+    sd_protocol = ProtocolEnum(sd_protocol_choice)
+    sd_lfn = f"{sd_protocol_choice}:/{sd_path}"
+
+    return SQLASourceData(name=sd_name, type=sd_type, lfn=sd_lfn, protocol=sd_protocol)
+
+
+@pytest.fixture(scope="function")
+def fake_source_data() -> SQLASourceData:
+    return source_data()
+
+
+def knowledge_source_with_source_data(number_of_source_data: int = 3) -> SQLAKnowledgeSource:
+    fake = Faker().unique
+
+    fake_source = fake.name()
+
+    fake_metadata = fake.text(max_nb_chars=70)
+
+    fake_source_data_init = tuple(source_data() for _ in range(number_of_source_data + 1))
+    fake_source_data = list(fake_source_data_init)
+
+    return SQLAKnowledgeSource(
+        source=fake_source,
+        content_metadata=fake_metadata,
+        source_data=fake_source_data,
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_knowledge_source_with_source_data() -> SQLAKnowledgeSource:
+    return knowledge_source_with_source_data()
