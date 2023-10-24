@@ -1,4 +1,5 @@
 from typing import List
+
 from lib.core.dto.conversation_repository_dto import (
     ConversationDTO,
     GetConversationResearchContextDTO,
@@ -6,6 +7,7 @@ from lib.core.dto.conversation_repository_dto import (
     ListConversationSourcesDTO,
 )
 from lib.core.entity.models import (
+    Conversation,
     MessageBase,
     MessageQuery,
     MessageResponse,
@@ -88,6 +90,7 @@ class SQLAConversationRepository(ConversationRepository):
         try:
             sqla_new_conversation.save(session=self.session)
             new_conversation = self.session.query(SQLAConversation).filter_by(id=sqla_new_conversation.id)[0]
+            self.session.commit()
 
             return ConversationDTO(status=True, conversation_id=new_conversation.id)
 
@@ -288,11 +291,10 @@ class SQLAConversationRepository(ConversationRepository):
             return errorDTO
 
         try:
-            sqla_conversation.update({"title": conversation_title})
+            sqla_conversation.update({"title": conversation_title}, session=self.session)
+            self.session.commit()
 
-            updated_conversation = self.session.query(SQLAConversation).filter_by(id=sqla_conversation.id)[-1]
-
-            return ConversationDTO(status=True, conversation_id=updated_conversation.id)
+            return ConversationDTO(status=True, conversation_id=sqla_conversation.id)
 
         except Exception as e:
             self.logger.error(f"Error while updating the conversation: {e}")
