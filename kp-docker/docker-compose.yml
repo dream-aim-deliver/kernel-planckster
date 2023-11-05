@@ -1,0 +1,8 @@
+version: '3'
+services:
+  kp-repo:
+    image: kp-repo:latest
+    container_name: kernel-planckster
+    tty: true
+    stdin_open: true
+    hostname: kernel-planckster
