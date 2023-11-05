@@ -23,7 +23,7 @@ def main() -> None:
     client.fput_object(
         "testbucket",
         "testfile",
-        "path/testfile",
+        "testfile",
     )
     print(
         "'/home/user/Photos/asiaphotos.zip' is successfully uploaded as "
