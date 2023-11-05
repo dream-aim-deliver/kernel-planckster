@@ -4,7 +4,7 @@ FROM python:3.10-bookworm
 RUN apt-get -y update && apt-get -y upgrade
 
 
-git clone https://github.com/dream-aim-deliver/kernel-planckster.git /kernel-planckster
+RUN git clone https://github.com/dream-aim-deliver/kernel-planckster.git /kernel-planckster
 
 WORKDIR /kernel-planckster
 
