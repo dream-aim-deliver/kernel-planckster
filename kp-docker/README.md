@@ -20,7 +20,12 @@ docker compose up -d
 docker exec -it kernel-planckster bash
 ```
 
-5. Working in this directory, stop and remove the container:
+5. To activate the environment with the python dependencies, inside the container:
+```bash
+poetry shell
+```
+
+6. Working in this directory, stop and remove the container:
 ```bash
 docker compose down
 ```
