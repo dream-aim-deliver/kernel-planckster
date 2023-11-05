@@ -6,7 +6,7 @@ def main() -> None:
     # Create a client with the MinIO server playground, its access key
     # and secret key.
     client = Minio(
-        "http://139.19.179.6:9000",
+        "139.19.179.6:9000",
         access_key="minio_access_key",
         secret_key="minio_secret_key",
         secure=False
