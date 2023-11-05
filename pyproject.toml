@@ -16,6 +16,8 @@ fastapi = "^0.103.2"
 uvicorn = "^0.23.2"
 pydantic-settings = "^2.0.3"
 psycopg2 = "^2.9.9"
+minio = "^7.1.17"
+urllib3 = "^2.0.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.2"
