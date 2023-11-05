@@ -25,6 +25,8 @@ docker exec -it kernel-planckster bash
 poetry shell
 ```
 
+Inside the container, you can do git pull if the main repo has
+
 6. Working in this directory, stop and remove the container:
 ```bash
 docker compose down
