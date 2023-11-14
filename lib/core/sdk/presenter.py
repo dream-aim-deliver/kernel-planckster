@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Protocol, Type, TypeVar, Union
+from typing import Any, Generic, Protocol, Type, TypeVar, Union, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict
 from lib.core.sdk.usecase import DummyErrorResponse, DummyResponse
@@ -16,6 +16,7 @@ from lib.core.sdk.viewmodel import (
 T = TypeVar("T", bound=BaseModel, covariant=True)
 
 
+@runtime_checkable
 class Presentable(Protocol[T]):
     """
     A base class for presenters
@@ -69,36 +70,36 @@ class DummyPresenter:
 #         print(view_model)
 
 
-class TestFeature(
-    BaseModel,
-    Generic[
-        TBaseResponse,
-        TBaseSuccessViewModel,
-    ],
-):
-    name: str
-    presenter_class: Type[Presentable[BaseSuccessViewModel]]
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+# class TestFeature(
+#     BaseModel,
+#     Generic[
+#         TBaseResponse,
+#         TBaseSuccessViewModel,
+#     ],
+# ):
+#     name: str
+#     presenter_class: Type[Presentable[BaseSuccessViewModel]]
+#     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    def __init__(self, **data: Any) -> None:
-        super().__init__(**data)
-        presenter_class = self.presenter_class
-        self.presenter = presenter_class()
-        self.register_endpoints()
+#     def __init__(self, **data: Any) -> None:
+#         super().__init__(**data)
+#         presenter_class = self.presenter_class
+#         self.presenter = presenter_class()
+#         self.register_endpoints()
 
-    def register_endpoints(self) -> None:
-        view_model: BaseSuccessViewModel = self.presenter.present_success(
-            response=BaseResponse(status=True, result="Hello World!")
-        )
-        print(view_model)
-
-
-class DummyFeature(TestFeature[BaseResponse, DummyViewModel]):
-    def __init__(self, **data: Any) -> None:
-        data["presenter_class"] = DummyPresenter
-        super().__init__(**data)
+#     def register_endpoints(self) -> None:
+#         view_model: BaseSuccessViewModel = self.presenter.present_success(
+#             response=BaseResponse(status=True, result="Hello World!")
+#         )
+#         print(view_model)
 
 
-feature = DummyFeature(
-    name="Dummy Feature",
-)
+# class DummyFeature(TestFeature[BaseResponse, DummyViewModel]):
+#     def __init__(self, **data: Any) -> None:
+#         data["presenter_class"] = DummyPresenter
+#         super().__init__(**data)
+
+
+# feature = DummyFeature(
+#     name="Dummy Feature",
+# )
