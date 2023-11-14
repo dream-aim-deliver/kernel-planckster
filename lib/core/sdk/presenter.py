@@ -13,13 +13,15 @@ from lib.core.sdk.viewmodel import (
     BaseSuccessViewModel,
 )
 
+T = TypeVar("T", bound=BaseModel, covariant=True)
 
-class Presentable(Protocol):
+
+class Presentable(Protocol[T]):
     """
     A base class for presenters
     """
 
-    def present_success(self, response: BaseResponse) -> BaseSuccessViewModel:
+    def present_success(self, response: BaseResponse) -> T:
         raise NotImplementedError("You must implement the present_success method in your presenter")
 
     def present_error(self, response: BaseErrorResponse) -> BaseErrorViewModel:
@@ -67,14 +69,15 @@ class DummyPresenter:
 #         print(view_model)
 
 
-class TestFeatureGeneric(
+class TestFeature(
     BaseModel,
     Generic[
         TBaseResponse,
         TBaseSuccessViewModel,
     ],
 ):
-    presenter_class: Type[Presentable]
+    name: str
+    presenter_class: Type[Presentable[BaseSuccessViewModel]]
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(self, **data: Any) -> None:
@@ -90,6 +93,12 @@ class TestFeatureGeneric(
         print(view_model)
 
 
-feature = TestFeatureGeneric[BaseResponse, BaseSuccessViewModel](
-    presenter_class=DummyPresenter,
+class DummyFeature(TestFeature[BaseResponse, DummyViewModel]):
+    def __init__(self, **data: Any) -> None:
+        data["presenter_class"] = DummyPresenter
+        super().__init__(**data)
+
+
+feature = DummyFeature(
+    name="Dummy Feature",
 )
