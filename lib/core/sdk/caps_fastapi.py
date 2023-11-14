@@ -45,7 +45,7 @@ class FastAPIFeature(BaseModel):
 
     def register_endpoints(self, router: APIRouter) -> None:
         @router.get(f"{self.endpoint}")
-        def register_endpoint(request: Request) -> BaseSuccessViewModel | None:
+        def register_endpoint(request: Request) -> BaseSuccessViewModel | BaseErrorViewModel:
             presenter = self.presenter
             if presenter is None:
                 raise HTTPException(status_code=500, detail="Presenter is not defined")
@@ -55,11 +55,13 @@ class FastAPIFeature(BaseModel):
                 )
             return self._process_view_model(view_model)
 
-    def _process_view_model(self, view_model: BaseSuccessViewModel | BaseErrorViewModel) -> BaseSuccessViewModel | None:
+    def _process_view_model(
+        self, view_model: BaseSuccessViewModel | BaseErrorViewModel
+    ) -> BaseSuccessViewModel | BaseErrorViewModel:
         if isinstance(view_model, BaseSuccessViewModel):
             return view_model
         else:
-            raise HTTPException(status_code=view_model.errorCode, detail=view_model.errorMessage)
+            raise HTTPException(status_code=view_model.errorCode, detail=view_model)
 
 
 class BaseDataStructure(BaseModel):
