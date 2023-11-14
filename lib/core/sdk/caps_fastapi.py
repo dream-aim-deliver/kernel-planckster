@@ -14,24 +14,24 @@ from lib.core.sdk.viewmodel import (
 )
 
 
-class FastAPIFeature(BaseModel):
+class FastAPIFeature(BaseModel, Generic[TBaseSuccessViewModel]):
     name: str
     description: str
     group: str
     verb: Literal["GET", "POST", "PUT", "DELETE"] = "GET"
     endpoint: str
     router: APIRouter | None = None
-    presenter: Presentable[BaseSuccessViewModel] | None
+    presenter: Presentable[TBaseSuccessViewModel] | None
 
-    model_config = ConfigDict(arbitrary_types_allowed=True, ignored_types=(Presentable,))
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        ignored_types=(Presentable,),
+    )
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
         group = data["group"]
         name = data["name"]
-        # presenter_class = self.presenter_class
-        # if presenter_class is not None:
-        #     self.presenter: Presentable[BaseSuccessViewModel] = presenter_class()
         self.router: APIRouter = APIRouter(
             prefix=f"/{group}", tags=[group], responses={404: {"description": f"Not found {name}"}}
         )
@@ -45,23 +45,23 @@ class FastAPIFeature(BaseModel):
 
     def register_endpoints(self, router: APIRouter) -> None:
         @router.get(f"{self.endpoint}")
-        def register_endpoint(request: Request) -> BaseSuccessViewModel | BaseErrorViewModel:
+        def register_endpoint(request: Request) -> TBaseSuccessViewModel | BaseErrorViewModel:
             presenter = self.presenter
             if presenter is None:
                 raise HTTPException(status_code=500, detail="Presenter is not defined")
             else:
-                view_model: BaseSuccessViewModel = presenter.present_success(
+                view_model: TBaseSuccessViewModel = presenter.present_success(
                     response=BaseResponse(status=True, result="Hello World!")
                 )
-            return self._process_view_model(view_model)
+                return view_model
 
-    def _process_view_model(
-        self, view_model: BaseSuccessViewModel | BaseErrorViewModel
-    ) -> BaseSuccessViewModel | BaseErrorViewModel:
-        if isinstance(view_model, BaseSuccessViewModel):
-            return view_model
-        else:
-            raise HTTPException(status_code=view_model.errorCode, detail=view_model)
+    # def _process_view_model(
+    #     self, view_model: TBaseSuccessViewModel | BaseErrorViewModel
+    # ) -> TBaseSuccessViewModel | BaseErrorViewModel:
+    #     if view_model.status:
+    #         return view_model
+    #     else:
+    #         raise HTTPException(status_code=view_model.errorCode, detail=view_model)
 
 
 class BaseDataStructure(BaseModel):
