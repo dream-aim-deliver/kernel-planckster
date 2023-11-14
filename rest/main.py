@@ -6,6 +6,7 @@ import subprocess
 
 from fastapi.responses import JSONResponse
 from lib.core.sdk.caps_fastapi import FastAPIFeature
+from lib.core.sdk.presenter import Presentable
 from lib.core.sdk.usecase_models import BaseErrorResponse, BaseResponse
 from lib.core.sdk.viewmodel import BaseErrorViewModel, BaseSuccessViewModel
 
@@ -35,9 +36,11 @@ class DemoPresenter:
 
 
 class DemoFeature(FastAPIFeature):
+    presenter: Presentable[DemoSuccessViewModel] = DemoPresenter()
+    # model_config = FastAPIFeature.model_config
+
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
-        # self.presenter: DemoPresenter = DemoPresenter()
 
 
 demoFeature = DemoFeature(
@@ -46,7 +49,7 @@ demoFeature = DemoFeature(
     group="demo",
     verb="GET",
     endpoint="/endpoint",
-    # presenter_class=DemoPresenter,
+    presenter_class=DemoPresenter,
 )
 
 

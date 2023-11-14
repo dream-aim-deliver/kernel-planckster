@@ -21,7 +21,7 @@ class FastAPIFeature(BaseModel):
     verb: Literal["GET", "POST", "PUT", "DELETE"] = "GET"
     endpoint: str
     router: APIRouter | None = None
-    # presenter_class: Type[Presentable[BaseSuccessViewModel]] | None = Field(alias=None)
+    presenter: Presentable[BaseSuccessViewModel] | None
 
     model_config = ConfigDict(arbitrary_types_allowed=True, ignored_types=(Presentable,))
 
@@ -46,17 +46,20 @@ class FastAPIFeature(BaseModel):
     def register_endpoints(self, router: APIRouter) -> None:
         @router.get(f"{self.endpoint}")
         def register_endpoint(request: Request) -> BaseSuccessViewModel | None:
-            # view_model: BaseSuccessViewModel = self.presenter.present_success(
-            #     response=BaseResponse(status=True, result="Hello World!")
-            # )
-            # return self._process_view_model(view_model)
-            return BaseSuccessViewModel(status=True, result="Hello World!")
+            presenter = self.presenter
+            if presenter is None:
+                raise HTTPException(status_code=500, detail="Presenter is not defined")
+            else:
+                view_model: BaseSuccessViewModel = presenter.present_success(
+                    response=BaseResponse(status=True, result="Hello World!")
+                )
+            return self._process_view_model(view_model)
 
-    # def _process_view_model(self, view_model: BaseSuccessViewModel | BaseErrorViewModel) -> BaseSuccessViewModel | None:
-    #     if isinstance(view_model, BaseSuccessViewModel):
-    #         return view_model
-    #     else:
-    #         raise HTTPException(status_code=view_model.errorCode, detail=view_model.errorMessage)
+    def _process_view_model(self, view_model: BaseSuccessViewModel | BaseErrorViewModel) -> BaseSuccessViewModel | None:
+        if isinstance(view_model, BaseSuccessViewModel):
+            return view_model
+        else:
+            raise HTTPException(status_code=view_model.errorCode, detail=view_model.errorMessage)
 
 
 class BaseDataStructure(BaseModel):
