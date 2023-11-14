@@ -1,13 +1,32 @@
+from contextlib import asynccontextmanager
 from functools import lru_cache
-from typing import Dict
-from fastapi import FastAPI, Response
+from typing import Any
+from fastapi import APIRouter, FastAPI, Request, Response
 import subprocess
 
 from fastapi.responses import JSONResponse
+from lib.core.sdk.caps_fastapi import FastAPIFeature
 
 from rest.config import Settings
 
-app = FastAPI()
+demoFeature = FastAPIFeature(
+    name="Demo",
+    description="Demo Feature",
+    base="demo",
+    verb="GET",
+    endpoint="/endpoint",
+)
+
+
+@asynccontextmanager
+async def load_features(app: FastAPI) -> Any:
+    router: APIRouter | None = demoFeature.router
+    if router is not None:
+        app.router.include_router(router)
+    yield None
+
+
+app = FastAPI(lifespan=load_features)
 
 
 @lru_cache()
