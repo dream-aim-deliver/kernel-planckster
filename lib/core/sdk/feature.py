@@ -1,13 +1,37 @@
-from typing import Generic, Literal
+from typing import Generic, Literal, Type
 
-from lib.core.sdk.controller import BaseController, TBaseControllerParameters
-from lib.core.sdk.presenter import BasePresenter
-from lib.core.sdk.usecase import BaseUseCase
+from lib.core.sdk.controller import (
+    BaseController,
+    DummyController,
+    DummyControllerParameters,
+    # TBaseController,
+    TBaseControllerParameters,
+)
+from lib.core.sdk.presenter import BasePresenter, DummyPresenter, DummyViewModel, TBasePresenter
+from lib.core.sdk.usecase import (
+    BaseUseCase,
+    DummyErrorResponse,
+    DummyRequest,
+    DummyResponse,
+    DummyUseCase,
+    TBaseUseCase,
+)
 from lib.core.sdk.usecase_models import TBaseRequest, TBaseResponse, TBaseErrorResponse
 from lib.core.sdk.viewmodel import TBaseViewModel
 
 
-class BaseFeature(Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel]):
+class BaseFeature(
+    Generic[
+        TBaseControllerParameters,
+        TBaseRequest,
+        TBaseResponse,
+        TBaseErrorResponse,
+        TBaseViewModel,
+        # TBaseController,
+        TBaseUseCase,
+        TBasePresenter,
+    ]
+):
     def __init__(
         self,
         name: str,
@@ -15,9 +39,9 @@ class BaseFeature(Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse
         version: str,
         verb: Literal["GET", "POST", "PUT", "DELETE"],
         endpoint: str,
-        usecase: BaseUseCase[TBaseRequest, TBaseResponse, TBaseErrorResponse],
-        controller: BaseController[TBaseControllerParameters, TBaseRequest],
-        presenter: BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
+        controller: type[BaseController[TBaseControllerParameters, TBaseRequest]],
+        usecase: type[BaseUseCase[TBaseRequest, TBaseResponse, TBaseErrorResponse]],
+        presenter: type[BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel]],
         auth_required: bool = False,
         enabled: bool = True,
     ) -> None:
@@ -28,10 +52,9 @@ class BaseFeature(Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse
         self._endpoint = endpoint
         self._auth_required = auth_required
         self._enabled = enabled
-        self._usecase = usecase
-        self._presenter = presenter
-        self._controller = controller
-        self._presenter = presenter
+        self._usecase = usecase()
+        self._presenter = presenter()
+        self._controller = controller(self._usecase, self._presenter)
 
     @property
     def name(self) -> str:
@@ -91,6 +114,9 @@ class BaseFeature(Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse
     def __hash__(self) -> int:
         return hash((self.name, self.version))
 
-    def load(self) -> None:
+    def register(self) -> None:
         if not self.enabled:
             raise Exception(f"Cannot load {self}. Feature {self} is disabled")
+
+    def execute(self, parameters: TBaseControllerParameters) -> TBaseViewModel | None:
+        return self.controller.execute(parameters)
