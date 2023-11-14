@@ -1,31 +1,56 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, List, Literal, Type, TypeVar
-from fastapi import APIRouter, FastAPI, Request, Response
-from pydantic import BaseModel, ConfigDict
+from typing import Any, Generic, Literal, TypeVar
+from fastapi import APIRouter, Request, Response
+from pydantic import BaseModel, ConfigDict, validator
+
+from lib.core.sdk.presenter import BasePresenter
+from lib.core.sdk.usecase_models import TBaseErrorResponse, TBaseResponse
+from lib.core.sdk.viewmodel import TBaseViewModel
 
 
-class FastAPIFeature(BaseModel):
+class FastAPIFeature(BaseModel, Generic[TBaseResponse, TBaseErrorResponse, TBaseViewModel]):
     name: str
     description: str
-    base: str
+    group: str
     verb: Literal["GET", "POST", "PUT", "DELETE"] = "GET"
     endpoint: str
     router: APIRouter | None = None
+    presenter_class: type[BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel]] | None = None
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
-        base = data["base"]
+        group = data["group"]
         name = data["name"]
+        presenter_class = self.presenter_class
+        if presenter_class is not None:
+            self.presenter: BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel] = presenter_class()
         self.router: APIRouter = APIRouter(
-            prefix=f"/{base}", tags=[base], responses={404: {"description": f"Not found {name}"}}
+            prefix=f"/{group}", tags=[group], responses={404: {"description": f"Not found {name}"}}
         )
         self.register_endpoints(self.router)
 
+    @validator("endpoint")
+    def endpoint_should_begin_with_slash(cls, v: str) -> str:
+        if not v.startswith("/"):
+            return f"/{v}"
+        return v
+
     def register_endpoints(self, router: APIRouter) -> None:
-        @router.get("/endpoint")
+        @router.get(f"{self.endpoint}")
         def register_endpoint(request: Request) -> Response:
-            return Response(f"Hello World from {self.name}'s {self.base} route collection!")
+            # take view model from presenter and return a response instead
+            return Response(f"Hello World from {self.name}'s {self.group} route collection!")
+
+    # def _process_view_model(self, view_model: TBaseViewModel) -> Response:
+    #     if(view_model.status):
+    #         return Response(f"Hello World from {self.name}'s {self.group} route collection!")
+    #     return
+    #         HTTPException(
+    #             status_code=404,
+    #             detail=f"Item {item_id} not found",
+    #         )
 
 
 class BaseDataStructure(BaseModel):

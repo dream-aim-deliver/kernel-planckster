@@ -1,18 +1,25 @@
 from contextlib import asynccontextmanager
 from functools import lru_cache
-from typing import Any
-from fastapi import APIRouter, FastAPI, Request, Response
+from typing import Any, Generic
+from fastapi import APIRouter, FastAPI
 import subprocess
 
 from fastapi.responses import JSONResponse
 from lib.core.sdk.caps_fastapi import FastAPIFeature
+from lib.core.sdk.usecase_models import BaseErrorResponse, BaseResponse
+from lib.core.sdk.viewmodel import BaseViewModel
 
 from rest.config import Settings
 
-demoFeature = FastAPIFeature(
+
+class DemoFeature(FastAPIFeature[BaseResponse, BaseErrorResponse, BaseViewModel]):
+    pass
+
+
+demoFeature = DemoFeature(
     name="Demo",
     description="Demo Feature",
-    base="demo",
+    group="demo",
     verb="GET",
     endpoint="/endpoint",
 )
