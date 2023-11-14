@@ -1,7 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Generic
+from typing import Generic, TypeVar
 
-from lib.core.sdk.usecase_models import TBaseErrorResponse, TBaseRequest, TBaseResponse
+from lib.core.sdk.usecase_models import (
+    BaseErrorResponse,
+    BaseRequest,
+    BaseResponse,
+    TBaseErrorResponse,
+    TBaseRequest,
+    TBaseResponse,
+)
 
 
 class BaseUseCase(ABC, Generic[TBaseRequest, TBaseResponse, TBaseErrorResponse]):
@@ -24,3 +31,26 @@ class BaseUseCase(ABC, Generic[TBaseRequest, TBaseResponse, TBaseErrorResponse])
             NotImplementedError: _description_
         """
         raise NotImplementedError("You must implement the execute method in your use case")
+
+
+TBaseUseCase = TypeVar("TBaseUseCase", bound=BaseUseCase[BaseRequest, BaseResponse, BaseErrorResponse])
+
+
+class DummyRequest(BaseRequest):
+    number: int = 0
+
+
+class DummyResponse(BaseResponse):
+    result: int | None = None
+
+
+class DummyErrorResponse(BaseErrorResponse):
+    pass
+
+
+class DummyUseCase(BaseUseCase[DummyRequest, DummyResponse, DummyErrorResponse]):
+    def validate_request(self, request: DummyRequest) -> bool:
+        return True
+
+    def execute(self, request: DummyRequest) -> DummyResponse | DummyErrorResponse:
+        return DummyResponse(status=True, result=request.number * 2)

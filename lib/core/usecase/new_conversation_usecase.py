@@ -1,2 +1,0 @@
-class NewConversationUseCase(BaseUseCase):
-    pass

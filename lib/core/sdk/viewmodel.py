@@ -4,10 +4,10 @@ from pydantic import BaseModel
 
 class BaseViewModel(BaseModel):
     status: bool
-    errorCode: Optional[int]
-    errorMessage: Optional[str]
-    errorName: Optional[str]
-    errorType: Optional[str]
+    errorCode: int | None = None
+    errorMessage: str | None = None
+    errorName: str | None = None
+    errorType: str | None = None
 
 
 TBaseViewModel = TypeVar("TBaseViewModel", bound=BaseViewModel)
