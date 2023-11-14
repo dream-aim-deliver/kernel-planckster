@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Type, TypeVar, Union
+from typing import Any, Generic, Protocol, Type, TypeVar, Union
 
 from pydantic import BaseModel, ConfigDict
 from lib.core.sdk.usecase import DummyErrorResponse, DummyResponse
@@ -14,25 +14,26 @@ from lib.core.sdk.viewmodel import (
 )
 
 
-class BasePresenter(ABC, Generic[TBaseResponse, TBaseErrorResponse, TBaseSuccessViewModel, TBaseErrorViewModel]):
+class Presentable(Protocol):
     """
     A base class for presenters
     """
 
-    @abstractmethod
-    def present_success(self, response: TBaseResponse) -> TBaseSuccessViewModel:
+    def present_success(self, response: BaseResponse) -> BaseSuccessViewModel:
         raise NotImplementedError("You must implement the present_success method in your presenter")
 
-    @abstractmethod
-    def present_error(self, response: TBaseErrorResponse) -> TBaseErrorViewModel:
+    def present_error(self, response: BaseErrorResponse) -> BaseErrorViewModel:
         raise NotImplementedError("You must implement the present_error method in your presenter")
+
+
+# TPresentable = TypeVar("TPresentable", bound=Presentable)
 
 
 class DummyViewModel(BaseSuccessViewModel):
     id: int | None = None
 
 
-class DummyPresenter(BasePresenter[DummyResponse, DummyErrorResponse, DummyViewModel, BaseErrorViewModel]):
+class DummyPresenter:
     def present_success(self, response: DummyResponse) -> DummyViewModel:
         return DummyViewModel(status=True, id=response.result)
 
@@ -66,27 +67,29 @@ class DummyPresenter(BasePresenter[DummyResponse, DummyErrorResponse, DummyViewM
 #         print(view_model)
 
 
-class TestFeature(BaseModel, Generic[TBaseResponse, TBaseSuccessViewModel]):
-    presenter_class: Type[BasePresenter[TBaseResponse, BaseErrorResponse, TBaseSuccessViewModel, BaseErrorViewModel]]
+class TestFeatureGeneric(
+    BaseModel,
+    Generic[
+        TBaseResponse,
+        TBaseSuccessViewModel,
+    ],
+):
+    presenter_class: Type[Presentable]
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    class TestFeature(BaseModel, Generic[TBaseResponse, TBaseSuccessViewModel]):
-        presenter_class: Type[
-            BasePresenter[TBaseResponse, BaseErrorResponse, TBaseSuccessViewModel, BaseErrorViewModel]
-        ]
-        model_config = ConfigDict(arbitrary_types_allowed=True)
+    def __init__(self, **data: Any) -> None:
+        super().__init__(**data)
+        presenter_class = self.presenter_class
+        self.presenter = presenter_class()
+        self.register_endpoints()
 
-        def __init__(self, **data: Any) -> None:
-            super().__init__(**data)
-            presenter_class = self.presenter_class
-            if presenter_class is not None:
-                self.presenter: BasePresenter[
-                    TBaseResponse, BaseErrorResponse, TBaseSuccessViewModel, BaseErrorViewModel
-                ] = presenter_class()
-            self.register_endpoints()
+    def register_endpoints(self) -> None:
+        view_model: BaseSuccessViewModel = self.presenter.present_success(
+            response=BaseResponse(status=True, result="Hello World!")
+        )
+        print(view_model)
 
-        def register_endpoints(self) -> None:
-            view_model: TBaseSuccessViewModel = self.presenter.present_success(
-                response=BaseResponse(status=True, result="Hello World!")
-            )
-            print(view_model)
+
+feature = TestFeatureGeneric[BaseResponse, BaseSuccessViewModel](
+    presenter_class=DummyPresenter,
+)

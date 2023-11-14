@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar, cast
 
 from pydantic import BaseModel
-from lib.core.sdk.presenter import BasePresenter
+from lib.core.sdk.presenter import Presentable
 from lib.core.sdk.usecase import BaseUseCase, DummyRequest
 
 from lib.core.sdk.usecase_models import BaseRequest, TBaseErrorResponse, TBaseRequest, TBaseResponse
@@ -20,7 +20,7 @@ class BaseController(ABC, Generic[TBaseControllerParameters, TBaseRequest]):
     def __init__(
         self,
         usecase: BaseUseCase[TBaseRequest, TBaseResponse, TBaseErrorResponse],
-        presenter: BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
+        presenter: Presentable[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
     ) -> None:
         super().__init__()
         self.usecase = usecase
@@ -52,7 +52,7 @@ class DummyController(BaseController[DummyControllerParameters, DummyRequest]):
     def __init__(
         self,
         usecase: BaseUseCase[DummyRequest, TBaseResponse, TBaseErrorResponse],
-        presenter: BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
+        presenter: Presentable[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
     ) -> None:
         super().__init__(usecase, presenter)
 
