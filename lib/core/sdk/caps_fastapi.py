@@ -1,21 +1,23 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Literal, TypeVar
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, validator
 
 from lib.core.sdk.presenter import BasePresenter
-from lib.core.sdk.usecase_models import TBaseErrorResponse, TBaseResponse
-from lib.core.sdk.viewmodel import TBaseViewModel
+from lib.core.sdk.usecase_models import BaseResponse, TBaseErrorResponse, TBaseResponse
+from lib.core.sdk.viewmodel import BaseSuccessViewModel, TBaseErrorViewModel, TBaseSuccessViewModel, TBaseViewModel
 
 
-class FastAPIFeature(BaseModel, Generic[TBaseResponse, TBaseErrorResponse, TBaseViewModel]):
+class FastAPIFeature(BaseModel, Generic[TBaseResponse, TBaseErrorResponse, TBaseSuccessViewModel, TBaseErrorViewModel]):
     name: str
     description: str
     group: str
     verb: Literal["GET", "POST", "PUT", "DELETE"] = "GET"
     endpoint: str
     router: APIRouter | None = None
-    presenter_class: type[BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel]] | None = None
+    presenter_class: type[
+        BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseSuccessViewModel, TBaseErrorViewModel]
+    ] | None = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -25,7 +27,9 @@ class FastAPIFeature(BaseModel, Generic[TBaseResponse, TBaseErrorResponse, TBase
         name = data["name"]
         presenter_class = self.presenter_class
         if presenter_class is not None:
-            self.presenter: BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel] = presenter_class()
+            self.presenter: BasePresenter[
+                TBaseResponse, TBaseErrorResponse, TBaseSuccessViewModel, TBaseErrorViewModel
+            ] = presenter_class()
         self.router: APIRouter = APIRouter(
             prefix=f"/{group}", tags=[group], responses={404: {"description": f"Not found {name}"}}
         )
@@ -40,17 +44,18 @@ class FastAPIFeature(BaseModel, Generic[TBaseResponse, TBaseErrorResponse, TBase
     def register_endpoints(self, router: APIRouter) -> None:
         @router.get(f"{self.endpoint}")
         def register_endpoint(request: Request) -> Response:
-            # take view model from presenter and return a response instead
+            view_model: TBaseSuccessViewModel = self.presenter.present_success(
+                response=BaseResponse(status=True, result="Hello World!")
+            )
             return Response(f"Hello World from {self.name}'s {self.group} route collection!")
 
-    # def _process_view_model(self, view_model: TBaseViewModel) -> Response:
-    #     if(view_model.status):
-    #         return Response(f"Hello World from {self.name}'s {self.group} route collection!")
-    #     return
-    #         HTTPException(
-    #             status_code=404,
-    #             detail=f"Item {item_id} not found",
-    #         )
+    def _process_view_model(
+        self, view_model: TBaseSuccessViewModel | TBaseErrorViewModel
+    ) -> TBaseSuccessViewModel | None:
+        if isinstance(view_model, BaseSuccessViewModel):
+            return view_model
+        else:
+            raise HTTPException(status_code=view_model.errorCode, detail=view_model.errorMessage)
 
 
 class BaseDataStructure(BaseModel):

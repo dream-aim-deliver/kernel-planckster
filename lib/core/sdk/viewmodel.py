@@ -1,13 +1,22 @@
-from typing import Optional, TypeVar
+from typing import Union, TypeVar
 from pydantic import BaseModel
 
 
-class BaseViewModel(BaseModel):
-    status: bool
-    errorCode: int | None = None
-    errorMessage: str | None = None
-    errorName: str | None = None
-    errorType: str | None = None
+class BaseSuccessViewModel(BaseModel):
+    status: bool = True
 
 
-TBaseViewModel = TypeVar("TBaseViewModel", bound=BaseViewModel)
+TBaseSuccessViewModel = TypeVar("TBaseSuccessViewModel", bound=BaseSuccessViewModel)
+
+
+class BaseErrorViewModel(BaseModel):
+    status: bool = False
+    errorCode: int
+    errorMessage: str
+    errorName: str
+    errorType: str
+
+
+TBaseErrorViewModel = TypeVar("TBaseErrorViewModel", bound=BaseErrorViewModel)
+
+TBaseViewModel = Union[TBaseSuccessViewModel, TBaseErrorViewModel]
