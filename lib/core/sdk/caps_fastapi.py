@@ -3,7 +3,7 @@ from typing import Any, Generic, Literal, TypeVar
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, validator
 
-from lib.core.sdk.presenter import BasePresenter
+from lib.core.sdk.presenter import Presentable
 from lib.core.sdk.usecase_models import BaseResponse, TBaseErrorResponse, TBaseResponse
 from lib.core.sdk.viewmodel import BaseSuccessViewModel, TBaseErrorViewModel, TBaseSuccessViewModel, TBaseViewModel
 
@@ -16,7 +16,7 @@ class FastAPIFeature(BaseModel, Generic[TBaseResponse, TBaseErrorResponse, TBase
     endpoint: str
     router: APIRouter | None = None
     presenter_class: type[
-        BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseSuccessViewModel, TBaseErrorViewModel]
+        Presentable[TBaseResponse, TBaseErrorResponse, TBaseSuccessViewModel, TBaseErrorViewModel]
     ] | None = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -27,7 +27,7 @@ class FastAPIFeature(BaseModel, Generic[TBaseResponse, TBaseErrorResponse, TBase
         name = data["name"]
         presenter_class = self.presenter_class
         if presenter_class is not None:
-            self.presenter: BasePresenter[
+            self.presenter: Presentable[
                 TBaseResponse, TBaseErrorResponse, TBaseSuccessViewModel, TBaseErrorViewModel
             ] = presenter_class()
         self.router: APIRouter = APIRouter(

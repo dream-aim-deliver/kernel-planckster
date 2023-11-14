@@ -9,7 +9,7 @@ from lib.core.sdk.controller import (
     # TBaseController,
     TBaseControllerParameters,
 )
-from lib.core.sdk.presenter import BasePresenter, DummyPresenter, DummyViewModel, TBasePresenter
+from lib.core.sdk.presenter import Presentable, DummyPresenter, DummyViewModel, TBasePresenter
 from lib.core.sdk.usecase import (
     BaseUseCase,
     DummyErrorResponse,
@@ -39,7 +39,7 @@ class BaseFeature(
     endpoint: str
     controller: BaseController[TBaseControllerParameters, TBaseRequest]
     usecase: BaseUseCase[TBaseRequest, TBaseResponse, TBaseErrorResponse]
-    presenter: BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel]
+    presenter: Presentable[TBaseResponse, TBaseErrorResponse, TBaseViewModel]
     auth_required: bool = False
     enabled: bool = True
 
