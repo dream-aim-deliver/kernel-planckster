@@ -6,7 +6,7 @@ class BaseSuccessViewModel(BaseModel):
     status: bool = True
 
 
-TBaseSuccessViewModel = TypeVar("TBaseSuccessViewModel", bound=BaseSuccessViewModel)
+TBaseSuccessViewModel = TypeVar("TBaseSuccessViewModel", bound=BaseSuccessViewModel, covariant=True)
 
 
 class BaseErrorViewModel(BaseModel):

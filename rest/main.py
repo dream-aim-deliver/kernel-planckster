@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 from functools import lru_cache
-from typing import Any, Generic
+from typing import Any, Generic, TypeVar
 from fastapi import APIRouter, FastAPI
 import subprocess
 
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from lib.core.sdk.caps_fastapi import FastAPIFeature
 from lib.core.sdk.presenter import Presentable
 from lib.core.sdk.usecase_models import BaseErrorResponse, BaseResponse
@@ -14,7 +15,10 @@ from rest.config import Settings
 
 
 class DemoSuccessViewModel(BaseSuccessViewModel):
-    id: int | None = None
+    test: str | None = None
+
+
+TDemoSuccessViewModel = TypeVar("TDemoSuccessViewModel", bound=DemoSuccessViewModel, covariant=True)
 
 
 class DemoErrorViewModel(BaseErrorViewModel):
@@ -23,7 +27,7 @@ class DemoErrorViewModel(BaseErrorViewModel):
 
 class DemoPresenter:
     def present_success(self, response: BaseResponse) -> DemoSuccessViewModel:
-        return DemoSuccessViewModel(status=True, id=1)
+        return DemoSuccessViewModel(status=True, id=1, test="This is a test")
 
     def present_error(self, response: BaseErrorResponse) -> DemoErrorViewModel:
         return DemoErrorViewModel(
@@ -35,7 +39,7 @@ class DemoPresenter:
         )
 
 
-class DemoFeature(FastAPIFeature):
+class DemoFeature(FastAPIFeature[DemoSuccessViewModel]):
     presenter: Presentable[DemoSuccessViewModel] = DemoPresenter()
     # model_config = FastAPIFeature.model_config
 
@@ -49,7 +53,6 @@ demoFeature = DemoFeature(
     group="demo",
     verb="GET",
     endpoint="/endpoint",
-    presenter_class=DemoPresenter,
 )
 
 
@@ -69,9 +72,20 @@ def get_settings() -> Settings:
     return Settings()
 
 
+T = TypeVar("T", bound=BaseSuccessViewModel)
+
+
+class RealT(BaseSuccessViewModel):  # DemoSuccessViewModel
+    test: str | None = None
+
+
+class TestViewModel(BaseModel, Generic[T]):  # FastAPIViewModelWrapper
+    data: T | None = None
+
+
 @app.get("/")
-def read_root() -> JSONResponse:
-    response = JSONResponse(status_code=404, content="Not Found")
+def read_root() -> TestViewModel[RealT]:
+    response: TestViewModel[RealT] = TestViewModel(status=True, id=1, name="Hello World!", test="Hello World!")
     return response
 
 
