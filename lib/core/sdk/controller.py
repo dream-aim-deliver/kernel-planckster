@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Protocol, TypeVar, cast, runtime_checkable
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel
 from lib.core.sdk.presenter import Presentable
-from lib.core.sdk.usecase import BaseUseCase, DummyRequest
+from lib.core.sdk.usecase import BaseUseCase
 
-from lib.core.sdk.usecase_models import BaseErrorResponse, BaseRequest, TBaseErrorResponse, TBaseRequest, TBaseResponse
+from lib.core.sdk.usecase_models import BaseErrorResponse, TBaseErrorResponse, TBaseRequest, TBaseResponse
 from lib.core.sdk.viewmodel import TBaseViewModel
 
 
@@ -16,13 +16,24 @@ class BaseControllerParameters(BaseModel):
 TBaseControllerParameters = TypeVar("TBaseControllerParameters", bound=BaseControllerParameters)
 
 
-class BaseController(ABC, Generic[TBaseControllerParameters, TBaseRequest, TBaseViewModel]):
-    def __init__(self, presenter: Presentable[TBaseViewModel]) -> None:
+class BaseController(
+    ABC, Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel]
+):
+    def __init__(
+        self,
+        usecase: BaseUseCase[TBaseRequest, TBaseResponse, TBaseErrorResponse],
+        presenter: Presentable[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
+    ) -> None:
         super().__init__()
         self._presenter = presenter
+        self._usecase = usecase
 
     @property
-    def presenter(self) -> Presentable[TBaseViewModel]:
+    def usecase(self) -> BaseUseCase[TBaseRequest, TBaseResponse, TBaseErrorResponse]:
+        return self._usecase
+
+    @property
+    def presenter(self) -> Presentable[TBaseResponse, TBaseErrorResponse, TBaseViewModel]:
         return self._presenter
 
     @abstractmethod
@@ -30,11 +41,9 @@ class BaseController(ABC, Generic[TBaseControllerParameters, TBaseRequest, TBase
         raise NotImplementedError("You must implement the create_request method in your controller")
 
     def execute(self, parameters: TBaseControllerParameters | None) -> TBaseViewModel | None:
-        print("******************* ", parameters)
-        # data = self.presenter.present_success(response=BaseResponse(status=True, result="Hello World!"))
-        data = self.presenter.present_error(
-            BaseErrorResponse(
-                status=False, code=500, errorCode=500, errorMessage="Error", errorName="Error", errorType="Error"
-            )
-        )
-        return data
+        request_model = self.create_request(parameters)
+        response_model = self.usecase.execute(request_model)
+        if isinstance(response_model, BaseErrorResponse):
+            return self.presenter.present_error(response_model)  # type: ignore
+        else:
+            return self.presenter.present_success(response_model)

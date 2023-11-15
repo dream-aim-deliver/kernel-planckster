@@ -3,31 +3,18 @@ from typing import Annotated, Any, Dict, Literal, Type
 from fastapi import Depends, Request, Response
 
 from lib.core.sdk.caps_fastapi import FastAPIFeature
-from lib.core.sdk.controller import BaseController, BaseControllerParameters
+from lib.core.sdk.controller import BaseController
 from lib.core.sdk.presenter import Presentable
-from lib.core.sdk.usecase_models import BaseRequest
+from lib.core.sdk.usecase_models import BaseErrorResponse
+from lib.core.usecase_models.demo_usecase_models import DemoRequest, DemoResponse
 from lib.core.view_model.demo_view_model import DemoViewModel
+from lib.infrastructure.controller.demo_controller import DemoController, DemoControllerParameters
 from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
 
-class DemoControllerParameters(BaseControllerParameters):
-    num1: int
-    num2: int
-
-
-class DemoRequest(BaseRequest):
-    numbers: list[int]
-
-
-class DemoController(BaseController[DemoControllerParameters, DemoRequest, DemoViewModel]):
-    def __init__(self) -> None:
-        super().__init__(presenter=DemoPresenter())
-
-    def create_request(self, parameters: DemoControllerParameters) -> DemoRequest:
-        return DemoRequest(numbers=[parameters.num1, parameters.num2])
-
-
-class DemoFeature(FastAPIFeature[DemoControllerParameters, DemoRequest, DemoViewModel]):
+class DemoFeature(
+    FastAPIFeature[DemoControllerParameters, DemoRequest, DemoResponse, BaseErrorResponse, DemoViewModel]
+):
     name: str = "Demo Feature"
     version: str = "1.0.0"
     description: str = "Adds 2 numbers"
@@ -48,10 +35,12 @@ class DemoFeature(FastAPIFeature[DemoControllerParameters, DemoRequest, DemoView
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
 
-    def presenter_factory(self) -> Presentable[DemoViewModel]:
+    def presenter_factory(self) -> Presentable[DemoResponse, BaseErrorResponse, DemoViewModel]:
         return DemoPresenter()
 
-    def controller_factory(self) -> BaseController[DemoControllerParameters, DemoRequest, DemoViewModel]:
+    def controller_factory(
+        self,
+    ) -> BaseController[DemoControllerParameters, DemoRequest, DemoResponse, BaseErrorResponse, DemoViewModel]:
         return DemoController()
 
     def endpoint_fn(  # type: ignore

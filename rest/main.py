@@ -5,7 +5,7 @@ from fastapi import APIRouter, FastAPI
 import subprocess
 
 import uvicorn
-from lib.infrastructure.feature.demo_feature import DemoControllerParameters
+from lib.infrastructure.controller.demo_controller import DemoControllerParameters
 
 from rest.config import Settings, FEATURES
 
