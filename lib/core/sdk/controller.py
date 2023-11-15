@@ -26,7 +26,7 @@ class BaseController(ABC, Generic[TBaseControllerParameters, TBaseRequest, TBase
         return self._presenter
 
     @abstractmethod
-    def create_request(self, parameters: BaseControllerParameters) -> TBaseRequest:
+    def create_request(self, parameters: TBaseControllerParameters) -> TBaseRequest:
         raise NotImplementedError("You must implement the create_request method in your controller")
 
     def execute(self, parameters: BaseControllerParameters) -> TBaseViewModel | None:
