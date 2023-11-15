@@ -4,7 +4,7 @@ from fastapi import Depends, Request, Response
 
 from lib.core.sdk.caps_fastapi import FastAPIFeature
 from lib.core.sdk.controller import BaseController
-from lib.core.sdk.presenter import Presentable
+from lib.core.sdk.presenter import BasePresenter
 from lib.core.sdk.usecase_models import BaseErrorResponse
 from lib.core.usecase_models.demo_usecase_models import DemoRequest, DemoResponse
 from lib.core.view_model.demo_view_model import DemoViewModel
@@ -35,7 +35,7 @@ class DemoFeature(
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
 
-    def presenter_factory(self) -> Presentable[DemoResponse, BaseErrorResponse, DemoViewModel]:
+    def presenter_factory(self) -> BasePresenter[DemoResponse, BaseErrorResponse, DemoViewModel]:
         return DemoPresenter()
 
     def controller_factory(

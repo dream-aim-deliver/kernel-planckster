@@ -13,8 +13,7 @@ from lib.core.sdk.viewmodel import (
 )
 
 
-# @runtime_checkable
-class Presentable(Generic[TBaseResponse, TBaseErrorResponse, TBaseViewModel]):
+class BasePresenter(Generic[TBaseResponse, TBaseErrorResponse, TBaseViewModel]):
     """
     A base class for presenters
     """
