@@ -6,32 +6,30 @@ from lib.core.sdk.usecase import DummyErrorResponse, DummyResponse
 
 from lib.core.sdk.usecase_models import BaseErrorResponse, BaseResponse, TBaseErrorResponse, TBaseResponse
 from lib.core.sdk.viewmodel import (
-    BaseErrorViewModel,
-    TBaseErrorViewModel,
-    TBaseSuccessViewModel,
     TBaseViewModel,
-    BaseSuccessViewModel,
+    TBaseViewModel,
+    BaseViewModel,
 )
 
 
 @runtime_checkable
-class Presentable(Protocol[TBaseSuccessViewModel]):
+class Presentable(Protocol[TBaseViewModel]):
     """
     A base class for presenters
     """
 
-    def present_success(self, response: BaseResponse) -> TBaseSuccessViewModel:
+    def present_success(self, response: BaseResponse) -> TBaseViewModel:
         raise NotImplementedError("You must implement the present_success method in your presenter")
 
-    def present_error(self, response: BaseErrorResponse) -> BaseErrorViewModel:
+    def present_error(self, response: BaseErrorResponse) -> TBaseViewModel:
         raise NotImplementedError("You must implement the present_error method in your presenter")
 
 
-class BasePresenter(Generic[TBaseResponse, TBaseErrorResponse, TBaseSuccessViewModel, TBaseErrorViewModel]):
-    def present_success(self, response: TBaseResponse) -> TBaseSuccessViewModel:
+class BasePresenter(Generic[TBaseViewModel]):
+    def present_success(self, response: TBaseResponse) -> TBaseViewModel:
         raise NotImplementedError("You must implement the present_success method in your presenter")
 
-    def present_error(self, response: TBaseErrorResponse) -> TBaseErrorViewModel:
+    def present_error(self, response: TBaseErrorResponse) -> TBaseViewModel:
         raise NotImplementedError("You must implement the present_error method in your presenter")
 
 

@@ -5,34 +5,31 @@ from fastapi import APIRouter, FastAPI, HTTPException, Request
 import subprocess
 
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from lib.core.sdk.caps_fastapi import FastAPIFeature
 from lib.core.sdk.presenter import Presentable
 from lib.core.sdk.usecase_models import BaseErrorResponse, BaseResponse
-from lib.core.sdk.viewmodel import BaseErrorViewModel, BaseSuccessViewModel
+from lib.core.sdk.viewmodel import BaseViewModel
 
 from rest.config import Settings
 
 
-class DemoSuccessViewModel(BaseSuccessViewModel):
+class DemoViewModel(BaseViewModel):
     test: str | None = None
     carahlo: str | None = None
 
 
-TDemoSuccessViewModel = TypeVar("TDemoSuccessViewModel", bound=DemoSuccessViewModel, covariant=True)
-
-
-class DemoErrorViewModel(BaseErrorViewModel):
-    pass
+TDemoSuccessViewModel = TypeVar("TDemoSuccessViewModel", bound=DemoViewModel, covariant=True)
 
 
 class DemoPresenter:
-    def present_success(self, response: BaseResponse) -> DemoSuccessViewModel:
-        return DemoSuccessViewModel(status=True, id=1, test="This is a test")
+    def present_success(self, response: BaseResponse) -> DemoViewModel:
+        return DemoViewModel(status=True, code=200, id=1, test="This is a test")
 
-    def present_error(self, response: BaseErrorResponse) -> DemoErrorViewModel:
-        return DemoErrorViewModel(
+    def present_error(self, response: BaseErrorResponse) -> DemoViewModel:
+        return DemoViewModel(
             status=False,
+            code=response.errorCode,
             errorCode=response.errorCode,
             errorMessage=response.errorMessage,
             errorName=response.errorName,
@@ -40,22 +37,27 @@ class DemoPresenter:
         )
 
 
-class DemoFeature(FastAPIFeature[DemoSuccessViewModel]):
-    presenter: Presentable[DemoSuccessViewModel] = DemoPresenter()
+class DemoFeature(FastAPIFeature[DemoViewModel]):
+    presenter: Presentable[DemoViewModel] = DemoPresenter()
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
 
-    def endpoint_fn(self, request: Request) -> DemoSuccessViewModel:
+    def endpoint_fn(self, request: Request) -> DemoViewModel:
         presenter = self.presenter
         if presenter is None:
             raise HTTPException(status_code=500, detail="Presenter is not defined")
         else:
-            data = presenter.present_success(response=BaseResponse(status=True, result="Hello World!"))
+            # data = presenter.present_success(response=BaseResponse(status=True, result="Hello World!"))
+            data = presenter.present_error(
+                BaseErrorResponse(
+                    status=False, code=500, errorCode=500, errorMessage="Error", errorName="Error", errorType="Error"
+                )
+            )
             return data
 
 
-demoFeature: FastAPIFeature[DemoSuccessViewModel] = DemoFeature(
+demoFeature: FastAPIFeature[DemoViewModel] = DemoFeature(
     name="Demo",
     description="Demo Feature",
     group="demo",
@@ -80,10 +82,10 @@ def get_settings() -> Settings:
     return Settings()
 
 
-T = TypeVar("T", bound=BaseSuccessViewModel, covariant=True)
+T = TypeVar("T", bound=BaseViewModel, covariant=True)
 
 
-class RealViewModel(BaseSuccessViewModel):  # DemoSuccessViewModel
+class RealViewModel(BaseViewModel):  # DemoSuccessViewModel
     test: str | None = None
 
 
@@ -97,7 +99,13 @@ class FastAPIViewModelWrapper(BaseModel, Generic[T]):  # FastAPIViewModelWrapper
 @app.get("/")
 def read_root() -> FastAPIViewModelWrapper[TRealViewModel]:
     response: FastAPIViewModelWrapper[TRealViewModel] = FastAPIViewModelWrapper(
-        status=True, id=1, name="Hello World!", test="Hello World!", data=RealViewModel(), a=1
+        status=True,
+        code=200,
+        id=1,
+        name="Hello World!",
+        test="Hello World!",
+        data=RealViewModel(status=True, code=200),
+        a=1,
     )
     return response
 
