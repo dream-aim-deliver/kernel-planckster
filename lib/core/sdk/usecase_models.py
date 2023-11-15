@@ -14,7 +14,6 @@ class BaseResponse(BaseModel):
 
 
 TBaseResponse = TypeVar("TBaseResponse", bound=BaseResponse)
-TBaseResponseContravariant = TypeVar("TBaseResponseContravariant", bound=BaseResponse, contravariant=True)
 
 
 class BaseErrorResponse(BaseResponse):
@@ -26,6 +25,3 @@ class BaseErrorResponse(BaseResponse):
 
 
 TBaseErrorResponse = TypeVar("TBaseErrorResponse", bound=BaseErrorResponse)
-TBaseErrorResponseContravariant = TypeVar(
-    "TBaseErrorResponseContravariant", bound=BaseErrorResponse, contravariant=True
-)
