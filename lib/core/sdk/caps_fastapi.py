@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator, validator
 from lib.core.sdk.feature import BaseFeature
 
 from lib.core.sdk.presenter import Presentable
-from lib.core.sdk.usecase_models import BaseResponse, TBaseErrorResponse, TBaseResponse
+from lib.core.sdk.usecase_models import BaseErrorResponse, BaseResponse, TBaseErrorResponse, TBaseResponse
 from lib.core.sdk.viewmodel import (
     BaseViewModel,
     TBaseViewModel,
@@ -40,9 +40,20 @@ class FastAPIFeature(BaseFeature[TBaseViewModel], Generic[TBaseViewModel]):
         instance.router = APIRouter(prefix=f"/{group}", tags=[group])
         instance.register_endpoints(instance.router)
 
-    @abstractmethod
+    # TODO: Controller Parameters type injection  https://fastapi.tiangolo.com/tutorial/dependencies/classes-as-dependencies/#shortcut
     def endpoint_fn(self, request: Request, response: Response) -> TBaseViewModel:
-        raise NotImplementedError("You must implement the endpoint_fn method in your feature")
+        presenter = self.presenter_factory()
+        if presenter is None:
+            raise HTTPException(status_code=500, detail="Presenter is not defined")
+        else:
+            # data = presenter.present_success(response=BaseResponse(status=True, result="Hello World!"))
+            data = presenter.present_error(
+                BaseErrorResponse(
+                    status=False, code=500, errorCode=500, errorMessage="Error", errorName="Error", errorType="Error"
+                )
+            )
+            response.status_code = data.code
+            return data
 
     def register_endpoints(self, router: APIRouter) -> None:
         router.add_api_route(
