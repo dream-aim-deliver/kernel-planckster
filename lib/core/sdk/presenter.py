@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Generic, Protocol, runtime_checkable
+from lib.core.sdk.primary_ports import BaseOutputPort
 
 from lib.core.sdk.usecase_models import (
     TBaseErrorResponse,
-    TBaseErrorResponseContravariant,
     TBaseResponse,
-    TBaseResponseContravariant,
 )
 from lib.core.sdk.viewmodel import (
     TBaseViewModel,
@@ -13,13 +12,22 @@ from lib.core.sdk.viewmodel import (
 )
 
 
-class BasePresenter(Generic[TBaseResponse, TBaseErrorResponse, TBaseViewModel]):
-    """
-    A base class for presenters
-    """
-
+class BasePresenter(
+    BaseOutputPort[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
+    Generic[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
+):
     def present_success(self, response: TBaseResponse) -> TBaseViewModel:
-        raise NotImplementedError("You must implement the present_success method in your presenter")
+        return self.convert_response_to_view_model(response)
 
     def present_error(self, response: TBaseErrorResponse) -> TBaseViewModel:
-        raise NotImplementedError("You must implement the present_error method in your presenter")
+        return self.convert_error_response_to_view_model(response)
+
+    @abstractmethod
+    def convert_error_response_to_view_model(self, response: TBaseErrorResponse) -> TBaseViewModel:
+        raise NotImplementedError(
+            "You must implement the convert_error_response_to_view_model method in your presenter"
+        )
+
+    @abstractmethod
+    def convert_response_to_view_model(self, response: TBaseResponse) -> TBaseViewModel:
+        raise NotImplementedError("You must implement the convert_response_to_view_model method in your presenter")
