@@ -9,7 +9,7 @@ from lib.core.sdk.controller import (
     # TBaseController,
     TBaseControllerParameters,
 )
-from lib.core.sdk.presenter import Presentable, DummyPresenter, DummyViewModel, TBasePresenter
+from lib.core.sdk.presenter import Presentable
 from lib.core.sdk.usecase import (
     BaseUseCase,
     DummyErrorResponse,

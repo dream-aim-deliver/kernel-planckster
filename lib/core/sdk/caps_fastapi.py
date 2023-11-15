@@ -35,7 +35,6 @@ class FastAPIFeature(BaseModel, Generic[TBaseViewModel]):
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
         group = data["group"]
-        name = data["name"]
         self.router: APIRouter = APIRouter(
             prefix=f"/{group}", tags=[group], responses={404: {"description": f"Not found"}}
         )
@@ -48,18 +47,10 @@ class FastAPIFeature(BaseModel, Generic[TBaseViewModel]):
         return v
 
     @abstractmethod
-    def endpoint_fn(self, request: Request) -> TBaseViewModel:
+    def endpoint_fn(self, request: Request, response: Response) -> TBaseViewModel:
         raise NotImplementedError("You must implement the endpoint_fn method in your feature")
 
     def register_endpoints(self, router: APIRouter) -> None:
-        def register_endpoint(request: Request) -> FastAPIViewModelWrapper[TBaseViewModel]:
-            presenter = self.presenter
-            if presenter is None:
-                raise HTTPException(status_code=500, detail="Presenter is not defined")
-            else:
-                data = presenter.present_success(response=BaseResponse(status=True, result="Hello World!"))
-                return FastAPIViewModelWrapper(data=data)
-
         router.add_api_route(
             methods=[self.verb],
             tags=[self.group],
