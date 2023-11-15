@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Annotated, Any, Dict, Generic, Literal, Type, TypeVar
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator, validator
@@ -47,22 +48,23 @@ class FastAPIFeature(
         instance.router = APIRouter(prefix=f"/{group}", tags=[group])
         instance.register_endpoints(instance.router)
 
-    # TODO: Controller Parameters type injection  https://fastapi.tiangolo.com/tutorial/dependencies/classes-as-dependencies/#shortcut
+    @abstractmethod
     def endpoint_fn(
         self,
         request: Request,
         response: Response,
         request_query_parameters: TBaseControllerParameters | None = None,
-        request_body_parameters: TBaseControllerParameters | None = None,
-        *args: Any,
-        **kwargs: Any,
+        request_body_parameters: TBaseRequest | None = None,
+    ) -> TBaseViewModel:
+        raise NotImplementedError("You must implement the endpoint_fn method in your feature")
+
+    # TODO: Controller Parameters type injection  https://fastapi.tiangolo.com/tutorial/dependencies/classes-as-dependencies/#shortcut
+    def handle_request(
+        self,
+        controller_parameters: TBaseControllerParameters | None = None,
     ) -> TBaseViewModel:
         controller = self.controller_factory()
-
-        print("*********************")
-        # print("query", request_query_parameters)
-        print("body", request_body_parameters)
-
+        controller.execute(controller_parameters)
         # controller.execute(query)
         presenter = self.presenter_factory()
         if presenter is None:
