@@ -60,6 +60,7 @@ class DemoFeature(FastAPIFeature[DemoViewModel]):
                     status=False, code=500, errorCode=500, errorMessage="Error", errorName="Error", errorType="Error"
                 )
             )
+            response.status_code = data.code
             return data
 
 

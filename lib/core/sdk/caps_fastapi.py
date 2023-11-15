@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Generic, Literal, Type, TypeVar
 from fastapi import APIRouter, HTTPException, Request, Response
-from pydantic import BaseModel, ConfigDict, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, validator
 
 from lib.core.sdk.presenter import Presentable
 from lib.core.sdk.usecase_models import BaseResponse, TBaseErrorResponse, TBaseResponse
@@ -32,13 +32,11 @@ class FastAPIFeature(BaseModel, Generic[TBaseViewModel]):
         # ignored_types=(Presentable,),
     )
 
-    def __init__(self, **data: Any) -> None:
-        super().__init__(**data)
-        group = data["group"]
-        self.router: APIRouter = APIRouter(
-            prefix=f"/{group}", tags=[group], responses={404: {"description": f"Not found"}}
-        )
-        self.register_endpoints(self.router)
+    @model_validator(mode="after")  # type: ignore
+    def populate_arbitrary_fields(cls, values: "FastAPIFeature[BaseViewModel]") -> "FastAPIFeature[BaseViewModel]":
+        group = values.group
+        values.router = APIRouter(prefix=f"/{group}", tags=[group], responses={404: {"description": f"Not found"}})
+        values.register_endpoints(values.router)
 
     @validator("endpoint")
     def endpoint_should_begin_with_slash(cls, v: str) -> str:
