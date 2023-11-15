@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from functools import lru_cache
-from typing import Any, Generic, TypeVar
-from fastapi import APIRouter, FastAPI, HTTPException, Request
+from typing import Any, Generic, Literal, TypeVar
+from fastapi import APIRouter, FastAPI, HTTPException, Request, Response
 import subprocess
 
 from fastapi.responses import JSONResponse
@@ -38,13 +38,19 @@ class DemoPresenter:
 
 
 class DemoFeature(FastAPIFeature[DemoViewModel]):
+    name: str = "Demo"
+    description: str = "Demo Feature"
+    group: str = "demo"
+    verb: Literal["GET", "POST", "PUT", "DELETE"] = "GET"
+    endpoint: str = "/endpoint"
     presenter: Presentable[DemoViewModel] = DemoPresenter()
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
 
-    def endpoint_fn(self, request: Request) -> DemoViewModel:
+    def endpoint_fn(self, request: Request, response: Response) -> DemoViewModel:
         presenter = self.presenter
+        name = self.name
         if presenter is None:
             raise HTTPException(status_code=500, detail="Presenter is not defined")
         else:
@@ -57,13 +63,7 @@ class DemoFeature(FastAPIFeature[DemoViewModel]):
             return data
 
 
-demoFeature: FastAPIFeature[DemoViewModel] = DemoFeature(
-    name="Demo",
-    description="Demo Feature",
-    group="demo",
-    verb="GET",
-    endpoint="/endpoint",
-)
+demoFeature: FastAPIFeature[DemoViewModel] = DemoFeature()
 
 
 @asynccontextmanager
