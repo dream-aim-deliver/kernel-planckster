@@ -52,13 +52,18 @@ class FastAPIFeature(
         self,
         request: Request,
         response: Response,
-        parameters: TBaseControllerParameters,
+        request_query_parameters: TBaseControllerParameters | None = None,
+        request_body_parameters: TBaseControllerParameters | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> TBaseViewModel:
         controller = self.controller_factory()
 
-        controller.execute(parameters)
+        print("*********************")
+        # print("query", request_query_parameters)
+        print("body", request_body_parameters)
+
+        # controller.execute(query)
         presenter = self.presenter_factory()
         if presenter is None:
             raise HTTPException(status_code=500, detail="Presenter is not defined")
@@ -69,7 +74,7 @@ class FastAPIFeature(
                     status=False, code=500, errorCode=500, errorMessage="Error", errorName="Error", errorType="Error"
                 )
             )
-            response.status_code = data.code
+            # response.status_code = data.code
             return data
 
     def register_endpoints(self, router: APIRouter) -> None:

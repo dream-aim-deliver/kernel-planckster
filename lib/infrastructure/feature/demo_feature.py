@@ -58,6 +58,13 @@ class DemoFeature(FastAPIFeature[DemoControllerParameters, DemoRequest, DemoView
         self,
         request: Request,
         response: Response,
-        parameters: Annotated[DemoControllerParameters, Depends()],
+        request_query_parameters: Annotated[DemoControllerParameters, Depends()],
+        # request_body_parameters: DemoControllerParameters,
+        # parameters: DemoControllerParameters,
     ) -> DemoViewModel:
-        return super().endpoint_fn(request, response, parameters)
+        return super().endpoint_fn(
+            request=request,
+            response=response,
+            request_query_parameters=request_query_parameters,
+            # request_body_parameters=request_body_parameters,
+        )
