@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from functools import lru_cache
 from typing import Any, Generic, TypeVar
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 import subprocess
 
 from fastapi.responses import JSONResponse
@@ -42,12 +42,11 @@ class DemoPresenter:
 
 class DemoFeature(FastAPIFeature[DemoSuccessViewModel]):
     presenter: Presentable[DemoSuccessViewModel] = DemoPresenter()
-    # model_config = FastAPIFeature.model_config
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
 
-    def endpoint_fn(self, request: Any) -> DemoSuccessViewModel:
+    def endpoint_fn(self, request: Request) -> DemoSuccessViewModel:
         presenter = self.presenter
         if presenter is None:
             raise HTTPException(status_code=500, detail="Presenter is not defined")

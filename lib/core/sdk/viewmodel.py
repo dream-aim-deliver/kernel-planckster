@@ -17,6 +17,6 @@ class BaseErrorViewModel(BaseModel):
     errorType: str
 
 
-TBaseErrorViewModel = TypeVar("TBaseErrorViewModel", bound=BaseErrorViewModel)
+TBaseErrorViewModel = TypeVar("TBaseErrorViewModel", bound=BaseErrorViewModel, covariant=True)
 
 TBaseViewModel = Union[TBaseSuccessViewModel, TBaseErrorViewModel]
