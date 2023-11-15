@@ -2,25 +2,25 @@ from abc import ABC, abstractmethod
 from typing import Generic, Literal, Type
 
 from pydantic import BaseModel, ConfigDict, validator
+from lib.core.sdk.controller import BaseController, TBaseControllerParameters
 
 from lib.core.sdk.presenter import Presentable
+from lib.core.sdk.usecase_models import TBaseRequest
 from lib.core.sdk.viewmodel import TBaseViewModel
 
 
 class BaseFeature(
     ABC,
     BaseModel,
-    Generic[TBaseViewModel],
+    Generic[TBaseControllerParameters, TBaseRequest, TBaseViewModel],
 ):
     name: str
     description: str
     version: str
     verb: Literal["GET", "POST", "PUT", "DELETE"]
     endpoint: str
-    auth_required: bool = False
     enabled: bool = True
     presenter: Presentable[TBaseViewModel] | None = None
-
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         # ignored_types=(Presentable,),
@@ -36,6 +36,17 @@ class BaseFeature(
     def presenter_factory(self) -> Presentable[TBaseViewModel]:
         raise NotImplementedError("You must implement the presenter_factory method in your feature")
 
+    @abstractmethod
+    def controller_factory(self) -> BaseController[TBaseControllerParameters, TBaseRequest, TBaseViewModel]:
+        raise NotImplementedError("You must implement the controller_factory method in your feature")
+
     def register(self) -> None:
         if not self.enabled:
             raise Exception(f"Cannot load {self}. Feature {self} is disabled")
+
+    def execute(self, parameters: TBaseControllerParameters) -> TBaseViewModel | None:
+        controller = self.controller_factory()
+        if controller is None:
+            raise Exception(f"Cannot execute {self.name} at {self.verb} {self.endpoint}. Controller is not defined")
+        else:
+            return controller.execute(parameters)

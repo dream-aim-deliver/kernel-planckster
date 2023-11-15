@@ -1,5 +1,6 @@
-from typing import Any
+from typing import Any, List
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import Sequence
 from lib.core.sdk.caps_fastapi import FastAPIFeature
 
 from lib.infrastructure.feature.demo_feature import DemoFeature
@@ -11,4 +12,4 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file="../.env")
 
 
-FEATURES: list[FastAPIFeature[Any]] = [DemoFeature()]
+FEATURES: List[FastAPIFeature[Any, Any, Any]] = [DemoFeature()]

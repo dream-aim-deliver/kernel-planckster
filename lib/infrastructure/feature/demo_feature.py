@@ -1,8 +1,11 @@
-from typing import Any, Dict, Literal
+from typing import Annotated, Any, Dict, Literal, Type
+
+from fastapi import Depends, Request, Response
 
 from lib.core.sdk.caps_fastapi import FastAPIFeature
-from lib.core.sdk.controller import BaseControllerParameters
+from lib.core.sdk.controller import BaseController, BaseControllerParameters
 from lib.core.sdk.presenter import Presentable
+from lib.core.sdk.usecase_models import BaseRequest
 from lib.core.view_model.demo_view_model import DemoViewModel
 from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
@@ -12,7 +15,19 @@ class DemoControllerParameters(BaseControllerParameters):
     num2: int
 
 
-class DemoFeature(FastAPIFeature[DemoViewModel]):
+class DemoRequest(BaseRequest):
+    numbers: list[int]
+
+
+class DemoController(BaseController[DemoControllerParameters, DemoRequest, DemoViewModel]):
+    def __init__(self) -> None:
+        super().__init__(presenter=DemoPresenter())
+
+    def create_request(self, parameters: DemoControllerParameters) -> DemoRequest:
+        return DemoRequest(numbers=[parameters.num1, parameters.num2])
+
+
+class DemoFeature(FastAPIFeature[DemoControllerParameters, DemoRequest, DemoViewModel]):
     name: str = "Demo Feature"
     version: str = "1.0.0"
     description: str = "Adds 2 numbers"
@@ -29,10 +44,20 @@ class DemoFeature(FastAPIFeature[DemoViewModel]):
             "description": "Internal Server Error",
         },
     }
-    # presenter: Presentable[DemoViewModel] = DemoPresenter()
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
 
     def presenter_factory(self) -> Presentable[DemoViewModel]:
         return DemoPresenter()
+
+    def controller_factory(self) -> BaseController[DemoControllerParameters, DemoRequest, DemoViewModel]:
+        return DemoController()
+
+    def endpoint_fn(  # type: ignore
+        self,
+        request: Request,
+        response: Response,
+        parameters: Annotated[DemoControllerParameters, Depends()],
+    ) -> DemoViewModel:
+        return super().endpoint_fn(request, response, parameters)
