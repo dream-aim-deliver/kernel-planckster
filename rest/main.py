@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from functools import lru_cache
 from typing import Any, Generic, TypeVar
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException
 import subprocess
 
 from fastapi.responses import JSONResponse
@@ -16,6 +16,7 @@ from rest.config import Settings
 
 class DemoSuccessViewModel(BaseSuccessViewModel):
     test: str | None = None
+    carahlo: str | None = None
 
 
 TDemoSuccessViewModel = TypeVar("TDemoSuccessViewModel", bound=DemoSuccessViewModel, covariant=True)
@@ -46,8 +47,16 @@ class DemoFeature(FastAPIFeature[DemoSuccessViewModel]):
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
 
+    def endpoint_fn(self, request: Any) -> DemoSuccessViewModel:
+        presenter = self.presenter
+        if presenter is None:
+            raise HTTPException(status_code=500, detail="Presenter is not defined")
+        else:
+            data = presenter.present_success(response=BaseResponse(status=True, result="Hello World!"))
+            return data
 
-demoFeature = DemoFeature(
+
+demoFeature: FastAPIFeature[DemoSuccessViewModel] = DemoFeature(
     name="Demo",
     description="Demo Feature",
     group="demo",
@@ -72,20 +81,25 @@ def get_settings() -> Settings:
     return Settings()
 
 
-T = TypeVar("T", bound=BaseSuccessViewModel)
+T = TypeVar("T", bound=BaseSuccessViewModel, covariant=True)
 
 
-class RealT(BaseSuccessViewModel):  # DemoSuccessViewModel
+class RealViewModel(BaseSuccessViewModel):  # DemoSuccessViewModel
     test: str | None = None
 
 
-class TestViewModel(BaseModel, Generic[T]):  # FastAPIViewModelWrapper
+TRealViewModel = TypeVar("TRealViewModel", bound=RealViewModel, covariant=True)
+
+
+class FastAPIViewModelWrapper(BaseModel, Generic[T]):  # FastAPIViewModelWrapper
     data: T | None = None
 
 
 @app.get("/")
-def read_root() -> TestViewModel[RealT]:
-    response: TestViewModel[RealT] = TestViewModel(status=True, id=1, name="Hello World!", test="Hello World!")
+def read_root() -> FastAPIViewModelWrapper[TRealViewModel]:
+    response: FastAPIViewModelWrapper[TRealViewModel] = FastAPIViewModelWrapper(
+        status=True, id=1, name="Hello World!", test="Hello World!", data=RealViewModel(), a=1
+    )
     return response
 
 

@@ -39,7 +39,7 @@ class FastAPIFeature(BaseModel, Generic[TBaseSuccessViewModel]):
         group = data["group"]
         name = data["name"]
         self.router: APIRouter = APIRouter(
-            prefix=f"/{group}", tags=[group], responses={404: {"description": f"Not found {name}"}}
+            prefix=f"/{group}", tags=[group], responses={404: {"description": f"Not found"}}
         )
         self.register_endpoints(self.router)
 
@@ -49,8 +49,11 @@ class FastAPIFeature(BaseModel, Generic[TBaseSuccessViewModel]):
             return f"/{v}"
         return v
 
+    @abstractmethod
+    def endpoint_fn(self, request: Request) -> TBaseSuccessViewModel:
+        raise NotImplementedError("You must implement the endpoint_fn method in your feature")
+
     def register_endpoints(self, router: APIRouter) -> None:
-        # @router.get(f"{self.endpoint}")
         def register_endpoint(request: Request) -> FastAPIViewModelWrapper[TBaseSuccessViewModel]:
             presenter = self.presenter
             if presenter is None:
@@ -65,5 +68,5 @@ class FastAPIFeature(BaseModel, Generic[TBaseSuccessViewModel]):
             path=f"{self.endpoint}",
             name=self.name,
             description=self.description,
-            endpoint=register_endpoint,
+            endpoint=self.endpoint_fn,
         )
