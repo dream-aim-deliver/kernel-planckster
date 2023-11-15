@@ -5,7 +5,6 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator, validator
 from lib.core.sdk.controller import BaseControllerParameters, TBaseControllerParameters
 from lib.core.sdk.feature import BaseFeature
 
-from lib.core.sdk.presenter import Presentable
 from lib.core.sdk.usecase_models import (
     BaseErrorResponse,
     BaseRequest,
@@ -28,8 +27,8 @@ class FastAPIViewModelWrapper(BaseModel, Generic[T]):
 
 
 class FastAPIFeature(
-    BaseFeature[TBaseControllerParameters, TBaseRequest, TBaseViewModel],
-    Generic[TBaseControllerParameters, TBaseRequest, TBaseViewModel],
+    BaseFeature[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel],
+    Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel],
 ):
     group: str
     responses: Dict[int | str, dict[str, Any]] | None = None
@@ -42,8 +41,9 @@ class FastAPIFeature(
 
     @model_validator(mode="after")  # type: ignore
     def populate_arbitrary_fields(
-        cls, instance: "FastAPIFeature[BaseControllerParameters, BaseRequest, BaseViewModel]"
-    ) -> "FastAPIFeature[BaseControllerParameters, BaseRequest, BaseViewModel]":
+        cls,
+        instance: "FastAPIFeature[BaseControllerParameters, BaseRequest, BaseResponse, BaseErrorResponse, BaseViewModel]",
+    ) -> "FastAPIFeature[BaseControllerParameters, BaseRequest, BaseResponse, BaseErrorResponse, BaseViewModel]":
         group = instance.group
         instance.router = APIRouter(prefix=f"/{group}", tags=[group])
         instance.register_endpoints(instance.router)
@@ -58,26 +58,21 @@ class FastAPIFeature(
     ) -> TBaseViewModel:
         raise NotImplementedError("You must implement the endpoint_fn method in your feature")
 
-    # TODO: Controller Parameters type injection  https://fastapi.tiangolo.com/tutorial/dependencies/classes-as-dependencies/#shortcut
     def handle_request(
         self,
         controller_parameters: TBaseControllerParameters | None = None,
     ) -> TBaseViewModel:
         controller = self.controller_factory()
-        controller.execute(controller_parameters)
-        # controller.execute(query)
-        presenter = self.presenter_factory()
-        if presenter is None:
-            raise HTTPException(status_code=500, detail="Presenter is not defined")
-        else:
-            # data = presenter.present_success(response=BaseResponse(status=True, result="Hello World!"))
-            data = presenter.present_error(
-                BaseErrorResponse(
-                    status=False, code=500, errorCode=500, errorMessage="Error", errorName="Error", errorType="Error"
-                )
+        view_model = controller.execute(controller_parameters)
+        if view_model is None:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Something went wrong. Controller for {self.verb} {self.endpoint} of feature {self.name} did not produce a view model.",
             )
-            # response.status_code = data.code
-            return data
+        if not view_model.status:
+            raise HTTPException(status_code=500, detail=view_model)
+        else:
+            return view_model
 
     def register_endpoints(self, router: APIRouter) -> None:
         router.add_api_route(

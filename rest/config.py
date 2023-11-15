@@ -12,4 +12,4 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file="../.env")
 
 
-FEATURES: List[FastAPIFeature[Any, Any, Any]] = [DemoFeature()]
+FEATURES: List[FastAPIFeature[Any, Any, Any, Any, Any]] = [DemoFeature()]

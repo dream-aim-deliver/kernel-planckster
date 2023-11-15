@@ -1,6 +1,6 @@
+from pydantic import Field
 from lib.core.sdk.viewmodel import BaseViewModel
 
 
 class DemoViewModel(BaseViewModel):
-    test: str | None = None
-    carahlo: str | None = None
+    sum: int = Field(description="Sum of the numbers")

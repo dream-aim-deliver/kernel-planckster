@@ -5,14 +5,14 @@ from pydantic import BaseModel, ConfigDict, validator
 from lib.core.sdk.controller import BaseController, TBaseControllerParameters
 
 from lib.core.sdk.presenter import Presentable
-from lib.core.sdk.usecase_models import TBaseRequest
+from lib.core.sdk.usecase_models import TBaseErrorResponse, TBaseRequest, TBaseResponse
 from lib.core.sdk.viewmodel import TBaseViewModel
 
 
 class BaseFeature(
     ABC,
     BaseModel,
-    Generic[TBaseControllerParameters, TBaseRequest, TBaseViewModel],
+    Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel],
 ):
     name: str
     description: str
@@ -20,7 +20,7 @@ class BaseFeature(
     verb: Literal["GET", "POST", "PUT", "DELETE"]
     endpoint: str
     enabled: bool = True
-    presenter: Presentable[TBaseViewModel] | None = None
+    presenter: Presentable[TBaseResponse, TBaseErrorResponse, TBaseViewModel] | None = None
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         # ignored_types=(Presentable,),
@@ -33,11 +33,13 @@ class BaseFeature(
         return v
 
     @abstractmethod
-    def presenter_factory(self) -> Presentable[TBaseViewModel]:
+    def presenter_factory(self) -> Presentable[TBaseResponse, TBaseErrorResponse, TBaseViewModel]:
         raise NotImplementedError("You must implement the presenter_factory method in your feature")
 
     @abstractmethod
-    def controller_factory(self) -> BaseController[TBaseControllerParameters, TBaseRequest, TBaseViewModel]:
+    def controller_factory(
+        self,
+    ) -> BaseController[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel]:
         raise NotImplementedError("You must implement the controller_factory method in your feature")
 
     def register(self) -> None:
