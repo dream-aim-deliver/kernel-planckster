@@ -25,12 +25,12 @@ class Presentable(Protocol[TBaseViewModel]):
         raise NotImplementedError("You must implement the present_error method in your presenter")
 
 
-class BasePresenter(Generic[TBaseViewModel]):
-    def present_success(self, response: TBaseResponse) -> TBaseViewModel:
-        raise NotImplementedError("You must implement the present_success method in your presenter")
+# class BasePresenter(Generic[TBaseViewModel]):
+#     def present_success(self, response: TBaseResponse) -> TBaseViewModel:
+#         raise NotImplementedError("You must implement the present_success method in your presenter")
 
-    def present_error(self, response: TBaseErrorResponse) -> TBaseViewModel:
-        raise NotImplementedError("You must implement the present_error method in your presenter")
+#     def present_error(self, response: TBaseErrorResponse) -> TBaseViewModel:
+#         raise NotImplementedError("You must implement the present_error method in your presenter")
 
 
 # TPresentable = TypeVar("TPresentable", bound=Presentable)
