@@ -4,7 +4,7 @@ from typing import Generic, Literal, Type
 from pydantic import BaseModel, ConfigDict, validator
 from lib.core.sdk.controller import BaseController, TBaseControllerParameters
 
-from lib.core.sdk.presenter import Presentable
+from lib.core.sdk.presenter import BasePresenter
 from lib.core.sdk.usecase_models import TBaseErrorResponse, TBaseRequest, TBaseResponse
 from lib.core.sdk.viewmodel import TBaseViewModel
 
@@ -20,7 +20,7 @@ class BaseFeature(
     verb: Literal["GET", "POST", "PUT", "DELETE"]
     endpoint: str
     enabled: bool = True
-    presenter: Presentable[TBaseResponse, TBaseErrorResponse, TBaseViewModel] | None = None
+    presenter: BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel] | None = None
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         # ignored_types=(Presentable,),
@@ -33,7 +33,7 @@ class BaseFeature(
         return v
 
     @abstractmethod
-    def presenter_factory(self) -> Presentable[TBaseResponse, TBaseErrorResponse, TBaseViewModel]:
+    def presenter_factory(self) -> BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel]:
         raise NotImplementedError("You must implement the presenter_factory method in your feature")
 
     @abstractmethod
