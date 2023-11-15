@@ -13,6 +13,12 @@ from lib.core.sdk.viewmodel import (
     TBaseViewModel,
 )
 
+T = TypeVar("T", bound=BaseSuccessViewModel)
+
+
+class FastAPIViewModelWrapper(BaseModel, Generic[T]):
+    data: T | None = None
+
 
 class FastAPIFeature(BaseModel, Generic[TBaseSuccessViewModel]):
     name: str
@@ -25,7 +31,7 @@ class FastAPIFeature(BaseModel, Generic[TBaseSuccessViewModel]):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
-        ignored_types=(Presentable,),
+        # ignored_types=(Presentable,),
     )
 
     def __init__(self, **data: Any) -> None:
@@ -44,84 +50,20 @@ class FastAPIFeature(BaseModel, Generic[TBaseSuccessViewModel]):
         return v
 
     def register_endpoints(self, router: APIRouter) -> None:
-        @router.get(f"{self.endpoint}")
-        def register_endpoint(request: Request) -> TBaseSuccessViewModel | BaseErrorViewModel:
+        # @router.get(f"{self.endpoint}")
+        def register_endpoint(request: Request) -> FastAPIViewModelWrapper[TBaseSuccessViewModel]:
             presenter = self.presenter
             if presenter is None:
                 raise HTTPException(status_code=500, detail="Presenter is not defined")
             else:
-                view_model: TBaseSuccessViewModel = presenter.present_success(
-                    response=BaseResponse(status=True, result="Hello World!")
-                )
-                return view_model
+                data = presenter.present_success(response=BaseResponse(status=True, result="Hello World!"))
+                return FastAPIViewModelWrapper(data=data)
 
-    # def _process_view_model(
-    #     self, view_model: TBaseSuccessViewModel | BaseErrorViewModel
-    # ) -> TBaseSuccessViewModel | BaseErrorViewModel:
-    #     if view_model.status:
-    #         return view_model
-    #     else:
-    #         raise HTTPException(status_code=view_model.errorCode, detail=view_model)
-
-
-class BaseDataStructure(BaseModel):
-    pass
-
-
-TBaseDataStructure = TypeVar("TBaseDataStructure", bound=BaseDataStructure)
-
-
-class TestDataStructure(BaseDataStructure):
-    id: int
-    name: str
-
-
-class TestBaseController(ABC, Generic[TBaseDataStructure]):
-    def __init__(self, data: TBaseDataStructure) -> None:
-        super().__init__()
-        self._data = data
-
-    @property
-    def data(self) -> TBaseDataStructure:
-        return self._data
-
-
-class TestController(TestBaseController[TestDataStructure]):
-    def __init__(self, data: TestDataStructure) -> None:
-        super().__init__(data)
-        self._id = data.id
-        self._name = data.name
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-
-class SuperController(TestController):
-    def __init__(self, description: str, data: TestDataStructure) -> None:
-        super().__init__(data)
-        self._description = description
-
-    @property
-    def description(self) -> str:
-        return self._description
-
-
-class TestBaseFeature(Generic[TBaseDataStructure]):
-    def __init__(self, controller: TestBaseController[TBaseDataStructure]) -> None:
-        self._controller = controller
-
-
-TestBaseFeature(SuperController(data=TestDataStructure(id=1, name="test"), description="test"))
-
-
-class TestSuperFeature(TestBaseFeature[TestDataStructure]):
-    def __init__(self, controller: SuperController) -> None:
-        super().__init__(controller)
-
-
-TestSuperFeature(SuperController(data=TestDataStructure(id=1, name="test"), description="test"))
+        router.add_api_route(
+            methods=[self.verb],
+            tags=[self.group],
+            path=f"{self.endpoint}",
+            name=self.name,
+            description=self.description,
+            endpoint=register_endpoint,
+        )
