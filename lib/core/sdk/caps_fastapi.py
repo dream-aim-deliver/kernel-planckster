@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, Literal, Type, TypeVar
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator, validator
+from lib.core.sdk.feature import BaseFeature
 
 from lib.core.sdk.presenter import Presentable
 from lib.core.sdk.usecase_models import BaseResponse, TBaseErrorResponse, TBaseResponse
@@ -18,7 +19,7 @@ class FastAPIViewModelWrapper(BaseModel, Generic[T]):
     data: T | None = None
 
 
-class FastAPIFeature(BaseModel, Generic[TBaseViewModel]):
+class FastAPIFeature(BaseFeature[TBaseViewModel], Generic[TBaseViewModel]):
     name: str
     description: str
     group: str
@@ -26,7 +27,7 @@ class FastAPIFeature(BaseModel, Generic[TBaseViewModel]):
     endpoint: str
     responses: Dict[int | str, dict[str, Any]] | None = None
     router: APIRouter | None = None
-    presenter: Presentable[TBaseViewModel] | None
+    # presenter: Presentable[TBaseViewModel] | None
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -34,16 +35,10 @@ class FastAPIFeature(BaseModel, Generic[TBaseViewModel]):
     )
 
     @model_validator(mode="after")  # type: ignore
-    def populate_arbitrary_fields(cls, values: "FastAPIFeature[BaseViewModel]") -> "FastAPIFeature[BaseViewModel]":
-        group = values.group
-        values.router = APIRouter(prefix=f"/{group}", tags=[group])
-        values.register_endpoints(values.router)
-
-    @validator("endpoint")
-    def endpoint_should_begin_with_slash(cls, v: str) -> str:
-        if not v.startswith("/"):
-            return f"/{v}"
-        return v
+    def populate_arbitrary_fields(cls, instance: "FastAPIFeature[BaseViewModel]") -> "FastAPIFeature[BaseViewModel]":
+        group = instance.group
+        instance.router = APIRouter(prefix=f"/{group}", tags=[group])
+        instance.register_endpoints(instance.router)
 
     @abstractmethod
     def endpoint_fn(self, request: Request, response: Response) -> TBaseViewModel:

@@ -6,7 +6,7 @@ class BaseRequest(BaseModel):
     pass
 
 
-TBaseRequest = TypeVar("TBaseRequest", bound=BaseRequest)
+TBaseRequest = TypeVar("TBaseRequest", bound=BaseRequest, covariant=True)
 
 
 class BaseResponse(BaseModel):

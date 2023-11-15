@@ -2,15 +2,22 @@ from typing import Any, Dict, Literal
 
 from fastapi import HTTPException, Request, Response
 from lib.core.sdk.caps_fastapi import FastAPIFeature
+from lib.core.sdk.controller import BaseControllerParameters
 from lib.core.sdk.presenter import Presentable
-from lib.core.sdk.usecase_models import BaseErrorResponse
+from lib.core.sdk.usecase_models import BaseErrorResponse, BaseRequest
 from lib.core.view_model.demo_view_model import DemoViewModel
 from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
 
+class DemoControllerParameters(BaseControllerParameters):
+    num1: int
+    num2: int
+
+
 class DemoFeature(FastAPIFeature[DemoViewModel]):
-    name: str = "Demo"
-    description: str = "Demo Feature"
+    name: str = "Demo Feature"
+    version: str = "1.0.0"
+    description: str = "Adds 2 numbers"
     group: str = "demo"
     verb: Literal["GET", "POST", "PUT", "DELETE"] = "GET"
     endpoint: str = "/endpoint"
@@ -28,6 +35,9 @@ class DemoFeature(FastAPIFeature[DemoViewModel]):
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
+
+    def presenter_factory(self) -> Presentable[DemoViewModel]:
+        return DemoPresenter()
 
     def endpoint_fn(
         self,
