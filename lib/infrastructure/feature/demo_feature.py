@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any, Dict, Literal
 
 from fastapi import HTTPException, Request, Response
 from lib.core.sdk.caps_fastapi import FastAPIFeature
@@ -14,12 +14,26 @@ class DemoFeature(FastAPIFeature[DemoViewModel]):
     group: str = "demo"
     verb: Literal["GET", "POST", "PUT", "DELETE"] = "GET"
     endpoint: str = "/endpoint"
+    responses: Dict[int | str, dict[str, Any]] = {
+        200: {
+            "model": DemoViewModel,
+            "description": "Success",
+        },
+        500: {
+            "model": DemoViewModel,
+            "description": "Internal Server Error",
+        },
+    }
     presenter: Presentable[DemoViewModel] = DemoPresenter()
 
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
 
-    def endpoint_fn(self, request: Request, response: Response) -> DemoViewModel:
+    def endpoint_fn(
+        self,
+        request: Request,
+        response: Response,
+    ) -> DemoViewModel:
         presenter = self.presenter
         name = self.name
         if presenter is None:

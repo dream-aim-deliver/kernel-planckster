@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Literal, Type, TypeVar
+from typing import Any, Dict, Generic, Literal, Type, TypeVar
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator, validator
 
@@ -24,6 +24,7 @@ class FastAPIFeature(BaseModel, Generic[TBaseViewModel]):
     group: str
     verb: Literal["GET", "POST", "PUT", "DELETE"] = "GET"
     endpoint: str
+    responses: Dict[int | str, dict[str, Any]] | None = None
     router: APIRouter | None = None
     presenter: Presentable[TBaseViewModel] | None
 
@@ -35,7 +36,7 @@ class FastAPIFeature(BaseModel, Generic[TBaseViewModel]):
     @model_validator(mode="after")  # type: ignore
     def populate_arbitrary_fields(cls, values: "FastAPIFeature[BaseViewModel]") -> "FastAPIFeature[BaseViewModel]":
         group = values.group
-        values.router = APIRouter(prefix=f"/{group}", tags=[group], responses={404: {"description": f"Not found"}})
+        values.router = APIRouter(prefix=f"/{group}", tags=[group])
         values.register_endpoints(values.router)
 
     @validator("endpoint")
@@ -56,4 +57,5 @@ class FastAPIFeature(BaseModel, Generic[TBaseViewModel]):
             name=self.name,
             description=self.description,
             endpoint=self.endpoint_fn,
+            responses=self.responses,
         )
