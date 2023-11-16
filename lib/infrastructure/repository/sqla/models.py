@@ -470,6 +470,9 @@ class SQLAMessageResponse(SQLAMessageBase):
 
     id: Mapped[int] = mapped_column(ForeignKey("message_base.id"), primary_key=True)
     citations: Mapped[List["SQLACitation"]] = relationship("SQLACitation", backref="message_response")
+    source_data: Mapped[List["SQLASourceData"]] = relationship(
+        "SQLASourceData", secondary=SQLACitation.__tablename__, backref="message_response"
+    )
 
     __mapper_args__ = {
         "polymorphic_identity": "message_response",

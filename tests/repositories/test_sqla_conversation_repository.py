@@ -525,6 +525,9 @@ def test_error_list_conversation_sources_research_context_no_source_data(
             raise Exception("Conversation not found")
 
         conv_id = conv_sqla_query.id
+        messages = conv_sqla_query.messages
+        message_responses = [message for message in messages if message.type == "message_response"]
+        message_responses_ids = [message.id for message in message_responses]
 
         list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(
             conversation_id=conv_id
@@ -532,6 +535,6 @@ def test_error_list_conversation_sources_research_context_no_source_data(
 
     assert list_conv_srcs_DTO.status == False
     assert list_conv_srcs_DTO.errorCode == -1
-    assert list_conv_srcs_DTO.errorMessage == f"Conversation with ID {conv_id} has no source data."
-    assert list_conv_srcs_DTO.errorName == "Conversation has no source data"
-    assert list_conv_srcs_DTO.errorType == "ConversationHasNoSourceData"
+    assert list_conv_srcs_DTO.errorMessage == f"Message Responses with ID {message_responses_ids} have no source data."
+    assert list_conv_srcs_DTO.errorName == "Message Responses have no source data"
+    assert list_conv_srcs_DTO.errorType == "MessageResponsesHaveNoSourceData"
