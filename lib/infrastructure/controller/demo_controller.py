@@ -14,8 +14,8 @@ class DemoControllerParameters(BaseControllerParameters):
 class DemoController(
     BaseController[DemoControllerParameters, DemoRequest, DemoResponse, BaseErrorResponse, DemoViewModel]
 ):
-    def __init__(self) -> None:
-        super().__init__(usecase=DemoUseCase(), presenter=DemoPresenter())
+    def __init__(self, usecase: DemoUseCase, presenter: DemoPresenter) -> None:
+        super().__init__(usecase=usecase, presenter=presenter)
 
     def create_request(self, parameters: DemoControllerParameters | None) -> DemoRequest:
         if parameters is None:
