@@ -7,6 +7,7 @@ from lib.core.dto.conversation_repository_dto import (
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
+    ListConversationsDTO,
 )
 from lib.core.entity.models import TMessageBase
 
@@ -15,7 +16,7 @@ class ConversationRepository(ABC):
     """
     Abstract base class for the conversation repository.
 
-    @cvar logger: The logger for this class.
+    @cvar logger: The logger for this class
     @type logger: logging.Logger
     """
 
@@ -76,11 +77,21 @@ class ConversationRepository(ABC):
     @abstractmethod
     def list_conversation_sources(self, conversation_id: int) -> ListConversationSourcesDTO:
         """
-        Lists all data sources of the research context of a conversation.
+        Lists all data sources of the citations of a conversation.
 
         @param conversation_id: The ID of the conversation to list data sources for.
         @type conversation_id: int
         @return: A DTO containing the result of the operation.
         @rtype: ListConversationSourcesDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_conversations(self) -> ListConversationsDTO:
+        """
+        Lists all conversations in the database.
+
+        @return: A DTO containing the result of the operation.
+        @rtype: ListConversationsDTO
         """
         raise NotImplementedError

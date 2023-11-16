@@ -6,6 +6,7 @@ from lib.core.dto.conversation_repository_dto import (
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
+    ListConversationsDTO,
 )
 from lib.core.entity.models import MessageBase
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -16,7 +17,6 @@ from lib.infrastructure.repository.sqla.models import (
     SQLACitation,
     SQLAConversation,
     SQLAKnowledgeSource,
-    SQLAResearchContext,
     SQLAUser,
 )
 from tests.conftest import conversation, source_data
@@ -501,7 +501,6 @@ def test_error_list_conversation_sources_research_context_no_source_data(
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
-    fake_knowledge_source_with_source_data: SQLAKnowledgeSource,
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -540,3 +539,49 @@ def test_error_list_conversation_sources_research_context_no_source_data(
     assert list_conv_srcs_DTO.errorMessage == f"Message Responses with ID {message_responses_ids} have no source data."
     assert list_conv_srcs_DTO.errorName == "Message Responses have no source data"
     assert list_conv_srcs_DTO.errorType == "MessageResponsesHaveNoSourceData"
+
+
+############
+# List (All) Conversations Feature
+############
+
+
+def test_list_conversations(
+    app_container: ApplicationContainer,
+    db_session: TDatabaseFactory,
+    fake: Faker,
+    fake_user_with_conversation: SQLAUser,
+) -> None:
+    conversation_repository = app_container.sqla_conversation_repository()
+
+    user_with_conv = fake_user_with_conversation
+    llm = SQLALLM(
+        llm_name=fake.name(),
+        research_contexts=user_with_conv.research_contexts,
+    )
+
+    conversations = []
+    for rc in user_with_conv.research_contexts:
+        for conv in rc.conversations:
+            conversations.append(conv)
+
+    conversation_titles = [conversation.title for conversation in conversations]
+
+    with db_session() as session:
+        user_with_conv.save(session=session, flush=True)
+        session.commit()
+
+    with db_session() as session:
+        list_convs_DTO: ListConversationsDTO = conversation_repository.list_conversations()
+
+    if list_convs_DTO.data is None:
+        raise Exception("Test: conversations not found")
+
+    sql_convs_titles = [conversation.title for conversation in list_convs_DTO.data]
+
+    assert list_convs_DTO.status == True
+    assert list_convs_DTO.errorCode == None
+    assert isinstance(list_convs_DTO.data, list)
+
+    for title in conversation_titles:
+        assert title in sql_convs_titles

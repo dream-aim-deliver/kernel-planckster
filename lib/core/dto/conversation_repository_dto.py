@@ -44,8 +44,16 @@ class ListConversationSourcesDTO(BaseDTO[SourceData]):
     """
     A DTO for listing the data sources of the citations of a conversation
 
-    @param source_data: The source data of the research context of the conversation
-    @type source_data: List[SourceData] | None
+    @param data: The source data of the citations of all of the message responses of the conversation
+    @type data: List[SourceData] | None
     """
 
     data: List[SourceData] | None = None
+
+
+class ListConversationsDTO(BaseDTO[Conversation]):
+    """
+    A DTO for listing all conversations in the database
+    """
+
+    data: List[Conversation] | None = None
