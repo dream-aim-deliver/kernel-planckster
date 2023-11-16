@@ -3,7 +3,7 @@ from typing import Annotated, Any, Dict, Generic, Literal, Type, TypeVar
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator, validator
 from lib.core.sdk.controller import BaseControllerParameters, TBaseControllerParameters
-from lib.core.sdk.feature import BaseFeature
+from lib.core.sdk.feature import BaseFeatureDescriptor
 
 from lib.core.sdk.usecase_models import (
     BaseErrorResponse,
@@ -27,7 +27,7 @@ class FastAPIViewModelWrapper(BaseModel, Generic[T]):
 
 
 class FastAPIFeature(
-    BaseFeature[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel],
+    BaseFeatureDescriptor[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel],
     Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel],
 ):
     group: str

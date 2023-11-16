@@ -34,3 +34,15 @@ def test_demo_controller(app_container: Container) -> None:
     assert view_model is not None
     assert view_model.status is True
     assert view_model.sum == 3
+
+
+def test_demo_feature_descriptor(app_container: Container) -> None:
+    demo_descriptor = app_container.demo.feature_descriptor()
+    print(app_container.config)
+    assert demo_descriptor is not None
+    assert demo_descriptor.name == "Sum Feature"
+    assert demo_descriptor.description == "Adds 2 numbers"
+    assert demo_descriptor.version == "1.0.0"
+    assert demo_descriptor.verb == "GET"
+    assert demo_descriptor.endpoint == "/sum"
+    assert demo_descriptor.enabled is True
