@@ -5,7 +5,7 @@ from fastapi import APIRouter, FastAPI
 import subprocess
 
 import uvicorn
-from lib.infrastructure.config.containers import Container
+from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.config.demo_feature import DemoFastAPIFeature
 from lib.infrastructure.controller.demo_controller import DemoControllerParameters
 from rest.config import Settings
@@ -33,7 +33,7 @@ settings = get_settings()
 
 
 def create_app() -> FastAPI:
-    container = Container()
+    container = ApplicationContainer()
     app = FastAPI()
     # TODO: might be optional actually, remove this line below and test
     app.container = container  # type: ignore

@@ -8,7 +8,7 @@ from lib.core.dto.conversation_repository_dto import (
     ListConversationSourcesDTO,
 )
 from lib.core.entity.models import MessageBase
-from lib.infrastructure.config.containers import Container
+from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
 from lib.infrastructure.repository.sqla.models import (
@@ -28,7 +28,7 @@ from tests.conftest import conversation, source_data
 
 
 def test_create_new_conversation(
-    app_container: Container,
+    app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_conversation: SQLAConversation,
@@ -60,7 +60,7 @@ def test_create_new_conversation(
 
 
 def test_error_new_conversation_none_research_context_id(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -73,7 +73,9 @@ def test_error_new_conversation_none_research_context_id(
     assert conv_DTO.errorType == "ResearchContextIdNotProvided"
 
 
-def test_error_new_conversation_none_conversation_title(app_container: Container, db_session: TDatabaseFactory) -> None:
+def test_error_new_conversation_none_conversation_title(
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
+) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
     conv_DTO: ConversationDTO = conversation_repository.new_conversation(research_context_id=1, conversation_title=None)  # type: ignore
@@ -86,7 +88,7 @@ def test_error_new_conversation_none_conversation_title(app_container: Container
 
 
 def test_error_new_conversation_none_sqla_research_context(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -103,7 +105,7 @@ def test_error_new_conversation_none_sqla_research_context(
 
 
 def test_error_sqla_new_conversation_(
-    app_container: Container,
+    app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_conversation: SQLAConversation,
@@ -121,7 +123,7 @@ def test_error_sqla_new_conversation_(
 
 
 def test_get_research_context_from_conversation(
-    app_container: Container,
+    app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
@@ -163,7 +165,7 @@ def test_get_research_context_from_conversation(
 
 
 def test_error_get_research_context_none_conversation_id(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -177,7 +179,7 @@ def test_error_get_research_context_none_conversation_id(
 
 
 def test_error_get_research_context_none_sqla_conversation(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -194,7 +196,7 @@ def test_error_get_research_context_none_sqla_conversation(
 
 
 def test_error_sqla_get_research_context_(
-    app_container: Container,
+    app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_conversation: SQLAConversation,
@@ -212,7 +214,7 @@ def test_error_sqla_get_research_context_(
 
 
 def test_list_conversation_messages(
-    app_container: Container,
+    app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
@@ -262,7 +264,7 @@ def test_list_conversation_messages(
 
 
 def test_error_list_conversation_messages_none_conversation_id(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -276,7 +278,7 @@ def test_error_list_conversation_messages_none_conversation_id(
 
 
 def test_error_list_conversation_messages_conversation_id_not_found(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -296,7 +298,7 @@ def test_error_list_conversation_messages_conversation_id_not_found(
 
 
 def test_update_conversation(
-    app_container: Container,
+    app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
@@ -343,7 +345,7 @@ def test_update_conversation(
 
 
 def test_error_update_conversation_none_research_context_id(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -357,7 +359,7 @@ def test_error_update_conversation_none_research_context_id(
 
 
 def test_error_update_conversation_none_conversation_title(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -371,7 +373,7 @@ def test_error_update_conversation_none_conversation_title(
 
 
 def test_error_update_conversation_conversation_id_not_found(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -391,7 +393,7 @@ def test_error_update_conversation_conversation_id_not_found(
 
 
 def test_list_conversation_sources(
-    app_container: Container,
+    app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
@@ -464,7 +466,7 @@ def test_list_conversation_sources(
 
 
 def test_error_list_conversation_sources_none_conversation_id(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -478,7 +480,7 @@ def test_error_list_conversation_sources_none_conversation_id(
 
 
 def test_error_list_conversation_sources_none_sqla_conversation(
-    app_container: Container, db_session: TDatabaseFactory
+    app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -495,7 +497,7 @@ def test_error_list_conversation_sources_none_sqla_conversation(
 
 
 def test_error_list_conversation_sources_research_context_no_source_data(
-    app_container: Container,
+    app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,

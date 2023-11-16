@@ -9,7 +9,7 @@ from faker.proxy import UniqueProxy
 import pytest
 import lib
 from lib.core.entity.models import ProtocolEnum
-from lib.infrastructure.config.containers import Container
+from lib.infrastructure.config.containers import ApplicationContainer
 from alembic.config import Config
 from alembic import command
 from sqlalchemy.orm import Session
@@ -28,14 +28,14 @@ from lib.infrastructure.repository.sqla.models import (
 )
 
 
-container = Container()
+container = ApplicationContainer()
 print(container.config())
 container.wire(modules=[lib])
 
 
 # set autouse=True to automatically inject the container into all tests
 @pytest.fixture(scope="session")
-def app_container() -> Container:
+def app_container() -> ApplicationContainer:
     return container
 
 
@@ -47,7 +47,7 @@ def docker_compose_file(pytestconfig: Annotated[pytest.Config, pytest.fixture]) 
 # set autouse=True to automatically inject the postgres into all tests
 @pytest.fixture(scope="session")
 def with_rdbms(
-    app_container: Container,
+    app_container: ApplicationContainer,
     docker_services: pytest.fixture,  # type: ignore
 ) -> Database:
     """Ensure that a postgres container is running before running tests"""

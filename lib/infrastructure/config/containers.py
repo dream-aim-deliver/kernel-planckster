@@ -1,7 +1,7 @@
 import sys
 import logging.config
 from dependency_injector import containers, providers
-from lib.infrastructure.config.demo_feature_container import DemoFeature
+from lib.infrastructure.config.demo_feature_container import DemoFeatureContainer
 
 
 from lib.infrastructure.repository.sqla.database import Database
@@ -10,13 +10,12 @@ from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLA
 
 class FeatureContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
-    demo = providers.Container(DemoFeature, config=config.demo)
+    demo = providers.Container(DemoFeatureContainer, config=config.demo)
 
 
-class Container(containers.DeclarativeContainer):
+class ApplicationContainer(containers.DeclarativeContainer):
     config = providers.Configuration(yaml_files=["./config.yaml"])
-    wiring_config = containers.WiringConfiguration(modules=[".demo_feature"])
-    features = providers.Container(FeatureContainer, config=config.features)
+
     logging = providers.Resource(
         logging.basicConfig,
         stream=sys.stdout,
@@ -32,6 +31,10 @@ class Container(containers.DeclarativeContainer):
         db_password=config.rdbms.password,
         db_name=config.rdbms.database,
     )
+
+    # Features and Feature Modules:
+    features = providers.Container(FeatureContainer, config=config.features)
+    wiring_config = containers.WiringConfiguration(modules=[".demo_feature"])
 
     # Repositories:
     sqla_conversation_repository: providers.Factory[SQLAConversationRepository] = providers.Factory(
