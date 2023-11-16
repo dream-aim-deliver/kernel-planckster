@@ -17,7 +17,7 @@ from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLA
 
 
 class DemoFeature(containers.DeclarativeContainer):
-    config = providers.Configuration(yaml_files=["./config.yaml"])
+    config = providers.Configuration()
 
     presenter = providers.Factory[DemoOutputPort](
         DemoPresenter,
@@ -35,12 +35,12 @@ class DemoFeature(containers.DeclarativeContainer):
 
     feature_descriptor = providers.Factory(
         BaseFeatureDescriptor,
-        name=config.feature_demo.name,
-        description=config.feature_demo.description,
-        version=config.feature_demo.version,
-        verb=config.feature_demo.verb,
-        endpoint=config.feature_demo.endpoint,
-        enabled=config.feature_demo.enabled,
+        name=config.name,
+        description=config.description,
+        version=config.version,
+        verb=config.verb,
+        endpoint=config.endpoint,
+        enabled=config.enabled,
     )
 
 
