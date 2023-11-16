@@ -1,48 +1,22 @@
 import sys
 import logging.config
 from dependency_injector import containers, providers
-from lib.core.ports.primary.demo_ports import DemoInputPort, DemoOutputPort
-from lib.core.sdk.feature import BaseFeatureDescriptor
-from lib.core.usecase.demo_usecase import DemoUseCase
-from lib.infrastructure.controller.demo_controller import DemoController
-from lib.infrastructure.presenter.demo_presenter import DemoPresenter
+from lib.infrastructure.config.demo_feature_container import DemoFeature
 
 
 from lib.infrastructure.repository.sqla.database import Database
 from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLAConversationRepository
 
 
-class DemoFeature(containers.DeclarativeContainer):
+class FeatureContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
-
-    presenter = providers.Factory[DemoOutputPort](
-        DemoPresenter,
-    )
-
-    usecase = providers.Factory[DemoInputPort](
-        DemoUseCase,
-    )
-
-    controller = providers.Factory(
-        DemoController,
-        usecase=usecase,
-        presenter=presenter,
-    )
-
-    feature_descriptor = providers.Factory(
-        BaseFeatureDescriptor,
-        name=config.name,
-        description=config.description,
-        version=config.version,
-        verb=config.verb,
-        endpoint=config.endpoint,
-        enabled=config.enabled,
-    )
+    demo = providers.Container(DemoFeature, config=config.demo)
 
 
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration(yaml_files=["./config.yaml"])
-    demo = providers.Container(DemoFeature, config=config.feature_demo)
+    wiring_config = containers.WiringConfiguration(modules=[".demo_feature"])
+    features = providers.Container(FeatureContainer, config=config.features)
     logging = providers.Resource(
         logging.basicConfig,
         stream=sys.stdout,

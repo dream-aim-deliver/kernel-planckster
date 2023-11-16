@@ -19,7 +19,7 @@ class BaseFeatureDescriptor(
     verb: Literal["GET", "POST", "PUT", "DELETE"]
     endpoint: str
     enabled: bool = True
-
+    auth: bool = False
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
     )
