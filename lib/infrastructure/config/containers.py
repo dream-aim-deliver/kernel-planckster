@@ -13,8 +13,6 @@ from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 from lib.infrastructure.repository.sqla.database import Database
 from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLAConversationRepository
 
-# from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLAConversationRepository
-
 
 class DemoContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
