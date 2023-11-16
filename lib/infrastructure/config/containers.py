@@ -1,13 +1,9 @@
 import sys
-from pathlib import Path
 import logging.config
 from dependency_injector import containers, providers
 from lib.core.ports.primary.demo_ports import DemoInputPort, DemoOutputPort
 from lib.core.sdk.feature import BaseFeatureDescriptor
-from lib.core.sdk.usecase_models import BaseErrorResponse
 from lib.core.usecase.demo_usecase import DemoUseCase
-from lib.core.usecase_models.demo_usecase_models import DemoRequest, DemoResponse
-from lib.core.view_model.demo_view_model import DemoViewModel
 from lib.infrastructure.controller.demo_controller import DemoController
 from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
