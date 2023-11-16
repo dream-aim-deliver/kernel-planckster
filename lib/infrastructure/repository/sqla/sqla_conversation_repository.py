@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 from lib.core.dto.conversation_repository_dto import (
     ConversationDTO,
@@ -348,33 +348,37 @@ class SQLAConversationRepository(ConversationRepository):
             return errorDTO
 
         sqlamessages: List[SQLAMessageBase] = sqla_conversation.messages
-        sqlasourcedata_ids: List[int] = []
+        sqlasourcedata_set: Set[SQLASourceData] = set()
+        error_message_response_ids: List[int] = []
 
         for sqlamessage in sqlamessages:
             if isinstance(sqlamessage, SQLAMessageResponse):
-                for sqlacitation in sqlamessage.citations:
-                    sqlasourcedata_ids.append(sqlacitation.source_data_id)
-
-        sqlasourcedata: List[SQLASourceData] = []
-
-        for sqlasourcedata_id in sqlasourcedata_ids:
-            sqlasourcedatum: SQLASourceData | None = (
-                self.session.query(SQLASourceData).filter_by(id=sqlasourcedata_id).first()
-            )
-
-            if sqlasourcedatum is None:
-                self.logger.error(f"Source Data with ID {sqlasourcedata_id} not found in the database.")
-                errorDTO = ListConversationSourcesDTO(
-                    status=False,
-                    errorCode=-1,
-                    errorMessage=f"Source Data with ID {sqlasourcedata_id} not found in the database.",
-                    errorName="Source Data not found",
-                    errorType="SourceDataNotFound",
+                queried_sqla_source_data_list = (
+                    self.session.query(SQLASourceData)
+                    .join(SQLASourceData.message_response)
+                    .filter_by(id=sqlamessage.id)
+                    .all()
                 )
-                self.logger.error(f"{errorDTO}")
-                return errorDTO
 
-            sqlasourcedata.append(sqlasourcedatum)
+                if queried_sqla_source_data_list == []:
+                    error_message_response_ids.append(sqlamessage.id)
+
+                queried_sqla_source_data_set = set(queried_sqla_source_data_list)
+                sqlasourcedata_set.update(queried_sqla_source_data_set)
+
+        sqlasourcedata = list(sqlasourcedata_set)
+
+        if error_message_response_ids != []:
+            self.logger.error(f"Message Responses with IDs {error_message_response_ids} have no source data.")
+            errorDTO = ListConversationSourcesDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Message Responses with ID {error_message_response_ids} have no source data.",
+                errorName="Message Responses have no source data",
+                errorType="MessageResponsesHaveNoSourceData",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
 
         core_source_data: List[SourceData] = []
 
