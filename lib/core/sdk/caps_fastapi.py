@@ -25,7 +25,7 @@ class FastAPIFeatureSetRouter:
             tags=tags,  # type: ignore
         )
 
-        self._responses
+        # self._responses
 
     @property
     def feature_descriptor(self) -> BaseFeatureDescriptor:
