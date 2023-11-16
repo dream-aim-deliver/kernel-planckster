@@ -26,10 +26,7 @@ class FastAPIViewModelWrapper(BaseModel, Generic[T]):
     data: T | None = None
 
 
-class FastAPIFeature(
-    BaseFeatureDescriptor[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel],
-    Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel],
-):
+class FastAPIFeature:
     group: str
     responses: Dict[int | str, dict[str, Any]] | None = None
     auth_required: bool = False
@@ -39,14 +36,14 @@ class FastAPIFeature(
         arbitrary_types_allowed=True,
     )
 
-    @model_validator(mode="after")  # type: ignore
-    def populate_arbitrary_fields(
-        cls,
-        instance: "FastAPIFeature[BaseControllerParameters, BaseRequest, BaseResponse, BaseErrorResponse, BaseViewModel]",
-    ) -> "FastAPIFeature[BaseControllerParameters, BaseRequest, BaseResponse, BaseErrorResponse, BaseViewModel]":
-        group = instance.group
-        instance.router = APIRouter(prefix=f"/{group}", tags=[group])
-        instance.register_endpoints(instance.router)
+    # @model_validator(mode="after")  # type: ignore
+    # def populate_arbitrary_fields(
+    #     cls,
+    #     instance: "FastAPIFeature[BaseControllerParameters, BaseRequest, BaseResponse, BaseErrorResponse, BaseViewModel]",
+    # ) -> "FastAPIFeature[BaseControllerParameters, BaseRequest, BaseResponse, BaseErrorResponse, BaseViewModel]":
+    #     group = instance.group
+    #     instance.router = APIRouter(prefix=f"/{group}", tags=[group])
+    #     instance.register_endpoints(instance.router)
 
     @abstractmethod
     def endpoint_fn(
