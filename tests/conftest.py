@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from lib.infrastructure.repository.sqla.database import Database
 from lib.infrastructure.repository.sqla.models import (
+    SQLACitation,
     SQLAConversation,
     SQLAKnowledgeSource,
     SQLAMessageBase,
@@ -292,3 +293,23 @@ def knowledge_source_with_source_data(number_of_source_data: int = 3) -> SQLAKno
 @pytest.fixture(scope="function")
 def fake_knowledge_source_with_source_data() -> SQLAKnowledgeSource:
     return knowledge_source_with_source_data()
+
+
+def citation() -> SQLACitation:
+    fake = Faker().unique
+
+    fake_metadata = fake.text(max_nb_chars=70)
+
+    return SQLACitation(
+        citation_metadata=fake_metadata,
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_citation() -> SQLACitation:
+    return citation()
+
+
+@pytest.fixture(scope="function")
+def fake_citations() -> List[SQLACitation]:
+    return [citation() for _ in range(20)]
