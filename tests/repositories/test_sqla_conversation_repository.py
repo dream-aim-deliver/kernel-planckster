@@ -1,3 +1,5 @@
+import random
+from typing import List
 from faker import Faker
 from lib.core.dto.conversation_repository_dto import (
     ConversationDTO,
@@ -11,6 +13,7 @@ from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
+    SQLACitation,
     SQLAConversation,
     SQLAKnowledgeSource,
     SQLAResearchContext,
@@ -393,6 +396,7 @@ def test_list_conversation_sources(
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
     fake_knowledge_source_with_source_data: SQLAKnowledgeSource,
+    fake_citations: List[SQLACitation],
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
@@ -405,13 +409,25 @@ def test_list_conversation_sources(
 
     ks_with_sd = fake_knowledge_source_with_source_data
     source_data = ks_with_sd.source_data
-    source_data_names = tuple(source.name for source in source_data)
-    source_data_lfns = tuple(source.lfn for source in source_data)
 
     researchContext.source_data = source_data
 
     conversation = researchContext.conversations[0]
     conversation_title = conversation.title
+
+    citations = fake_citations
+
+    source_data_names_used = []
+    source_data_lfns_used = []
+    for message in conversation.messages:
+        if message.type == "message_response":
+            citation = random.choice(citations)
+            random_source_datum = random.choice(source_data)
+            random_source_datum.citations.append(citation)
+            source_data_names_used.append(random_source_datum.name)
+            source_data_lfns_used.append(random_source_datum.lfn)
+            message.citations.append(citation)
+            citations.remove(citation)
 
     with db_session() as session:
         researchContext.save(session=session, flush=True)
@@ -440,10 +456,10 @@ def test_list_conversation_sources(
     assert list_conv_srcs_DTO.errorCode == None
     assert isinstance(list_conv_srcs_DTO.data, list)
 
-    for name in source_data_names:
+    for name in source_data_names_used:
         assert name in sql_srcs_names
 
-    for lfn in source_data_lfns:
+    for lfn in source_data_lfns_used:
         assert lfn in sql_srcs_lfns
 
 
@@ -493,7 +509,6 @@ def test_error_list_conversation_sources_research_context_no_source_data(
         research_contexts=user_with_conv.research_contexts,
     )
     researchContext = user_with_conv.research_contexts[0]
-    researchContext_title = researchContext.title
 
     conversation = researchContext.conversations[0]
     conversation_title = conversation.title
@@ -503,7 +518,6 @@ def test_error_list_conversation_sources_research_context_no_source_data(
         session.commit()
 
     conv_id = None
-    rc_id = None
     with db_session() as session:
         conv_sqla_query = session.query(SQLAConversation).filter_by(title=conversation_title).first()
 
@@ -512,19 +526,12 @@ def test_error_list_conversation_sources_research_context_no_source_data(
 
         conv_id = conv_sqla_query.id
 
-        rc_sqla_query = session.query(SQLAResearchContext).filter_by(title=researchContext_title).first()
-
-        if rc_sqla_query is None:
-            raise Exception("Research Context not found")
-
-        rc_id = rc_sqla_query.id
-
         list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(
             conversation_id=conv_id
         )
 
     assert list_conv_srcs_DTO.status == False
     assert list_conv_srcs_DTO.errorCode == -1
-    assert list_conv_srcs_DTO.errorMessage == f"Research Context with ID {rc_id} has no source data."
-    assert list_conv_srcs_DTO.errorName == "Research Context has no source data"
-    assert list_conv_srcs_DTO.errorType == "ResearchContextHasNoSourceData"
+    assert list_conv_srcs_DTO.errorMessage == f"Conversation with ID {conv_id} has no source data."
+    assert list_conv_srcs_DTO.errorName == "Conversation has no source data"
+    assert list_conv_srcs_DTO.errorType == "ConversationHasNoSourceData"

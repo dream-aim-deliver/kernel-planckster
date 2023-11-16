@@ -42,7 +42,7 @@ class ListConversationMessagesDTO(BaseDTO[TMessageBase]):
 
 class ListConversationSourcesDTO(BaseDTO[SourceData]):
     """
-    A DTO for listing the data sources of the research context of a conversation
+    A DTO for listing the data sources of the citations of a conversation
 
     @param source_data: The source data of the research context of the conversation
     @type source_data: List[SourceData] | None

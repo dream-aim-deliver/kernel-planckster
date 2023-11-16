@@ -18,10 +18,13 @@ from lib.core.entity.models import (
 from lib.core.ports.secondary.conversation_repository import ConversationRepository
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
+    SQLACitation,
     SQLAConversation,
+    SQLAMessageBase,
     SQLAMessageQuery,
     SQLAMessageResponse,
     SQLAResearchContext,
+    SQLASourceData,
 )
 
 
@@ -310,7 +313,7 @@ class SQLAConversationRepository(ConversationRepository):
 
     def list_conversation_sources(self, conversation_id: int) -> ListConversationSourcesDTO:
         """
-        Lists all data sources of the research context of a conversation.
+        Lists all data sources of the citations of a conversation.
 
         @param conversation_id: The ID of the conversation to list data sources for.
         @type conversation_id: int
@@ -344,49 +347,59 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_research_context: SQLAResearchContext | None = (
-            self.session.query(SQLAResearchContext).filter_by(id=sqla_conversation.research_context_id).first()
-        )
+        sqlamessages: List[SQLAMessageBase] = sqla_conversation.messages
+        sqlasourcedata_ids: List[int] = []
 
-        if sqla_research_context is None:
-            self.logger.error(
-                f"Research Context with ID {sqla_conversation.research_context_id} not found in the database."
+        for sqlamessage in sqlamessages:
+            if isinstance(sqlamessage, SQLAMessageResponse):
+                for sqlacitation in sqlamessage.citations:
+                    sqlasourcedata_ids.append(sqlacitation.source_data_id)
+
+        sqlasourcedata: List[SQLASourceData] = []
+
+        for sqlasourcedata_id in sqlasourcedata_ids:
+            sqlasourcedatum: SQLASourceData | None = (
+                self.session.query(SQLASourceData).filter_by(id=sqlasourcedata_id).first()
             )
-            errorDTO = ListConversationSourcesDTO(
-                status=False,
-                errorCode=-1,
-                errorMessage=f"Research Context with ID {sqla_conversation.research_context_id} not found in the database.",
-                errorName="Research Context not found",
-                errorType="ResearchContextNotFound",
-            )
-            self.logger.error(f"{errorDTO}")
-            return errorDTO
+
+            if sqlasourcedatum is None:
+                self.logger.error(f"Source Data with ID {sqlasourcedata_id} not found in the database.")
+                errorDTO = ListConversationSourcesDTO(
+                    status=False,
+                    errorCode=-1,
+                    errorMessage=f"Source Data with ID {sqlasourcedata_id} not found in the database.",
+                    errorName="Source Data not found",
+                    errorType="SourceDataNotFound",
+                )
+                self.logger.error(f"{errorDTO}")
+                return errorDTO
+
+            sqlasourcedata.append(sqlasourcedatum)
 
         core_source_data: List[SourceData] = []
 
-        for sqla_source_data in sqla_research_context.source_data:
-            core_source_data.append(
-                SourceData(
-                    created_at=sqla_source_data.created_at,
-                    updated_at=sqla_source_data.updated_at,
-                    deleted=sqla_source_data.deleted,
-                    deleted_at=sqla_source_data.deleted_at,
-                    id=sqla_source_data.id,
-                    name=sqla_source_data.name,
-                    type=sqla_source_data.type,
-                    lfn=sqla_source_data.lfn,
-                    protocol=sqla_source_data.protocol,
-                )
+        for sqlasourcedatum in sqlasourcedata:
+            coresourcedatum = SourceData(
+                created_at=sqlasourcedatum.created_at,
+                updated_at=sqlasourcedatum.updated_at,
+                deleted=sqlasourcedatum.deleted,
+                deleted_at=sqlasourcedatum.deleted_at,
+                id=sqlasourcedatum.id,
+                name=sqlasourcedatum.name,
+                type=sqlasourcedatum.type,
+                lfn=sqlasourcedatum.lfn,
+                protocol=sqlasourcedatum.protocol,
             )
+            core_source_data.append(coresourcedatum)
 
         if core_source_data == []:
-            self.logger.error(f"Research Context with ID {sqla_conversation.research_context_id} has no source data.")
+            self.logger.error(f"Conversation with ID {conversation_id} has no source data.")
             errorDTO = ListConversationSourcesDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage=f"Research Context with ID {sqla_conversation.research_context_id} has no source data.",
-                errorName="Research Context has no source data",
-                errorType="ResearchContextHasNoSourceData",
+                errorMessage=f"Conversation with ID {conversation_id} has no source data.",
+                errorName="Conversation has no source data",
+                errorType="ConversationHasNoSourceData",
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
