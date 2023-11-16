@@ -12,3 +12,6 @@ rdbms:
   database: ${KP_RDBMS_DBNAME:kp-db}
   username: ${KP_RDBMS_USERNAME:postgres}
   password: ${KP_RDBMS_PASSWORD:postgres}
+
+demo:
+  enabled: true
