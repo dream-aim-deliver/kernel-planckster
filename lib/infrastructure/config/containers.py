@@ -33,20 +33,61 @@ class DemoFeature(containers.DeclarativeContainer):
 
     feature_descriptor = providers.Factory(
         BaseFeatureDescriptor,
-        name=config.name,
-        description=config.description,
-        collection=config.collection,
+        name=config.features.sum.name,
+        description=config.features.sum.description,
+        collection=config.tag,
         version=config.version,
-        verb=config.verb,
-        endpoint=config.endpoint,
+        verb=config.features.sum.verb,
+        endpoint=config.features.sum.endpoint,
+        enabled=config.enabled and config.features.sum.enabled,
+        auth=config.auth,
+    )
+
+
+class BaseFeature(containers.DeclarativeContainer):
+    config = providers.Configuration()
+
+    feature_descriptor = providers.Factory(
+        BaseFeatureDescriptor,
+        name=config.features.sum.name,
+        description=config.features.sum.description,
+        collection=config.name,
+        version=config.version,
+        verb=config.features.sum.verb,
+        endpoint=config.features.sum.endpoint,
         enabled=config.enabled,
         auth=config.auth,
     )
 
 
+class DemoFeatureSet(containers.DeclarativeContainer):
+    config = providers.Configuration()
+
+    demo_feature = providers.Container(
+        DemoFeature,
+        config=config.feature_sets.demo,
+        controller=providers.Factory(
+            DemoController,
+            usecase=providers.Factory[DemoInputPort](DemoUseCase),
+            presenter=providers.Factory[DemoOutputPort](DemoPresenter),
+        ),
+        feature_descriptor=providers.Factory(
+            BaseFeatureDescriptor,
+            name=config.features.sum.name,
+            description=config.features.sum.description,
+            collection=config.name,
+            version=config.version,
+            verb=config.verb,
+            endpoint=config.endpoint,
+            enabled=config.enabled,
+            auth=config.auth,
+        ),
+    )
+
+
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration(yaml_files=["./config.yaml"])
-    demo = providers.Container(DemoFeature, config=config.feature_demo)
+    demo = providers.Container(DemoFeature, config=config.feature_sets.demo)
     logging = providers.Resource(
         logging.basicConfig,
         stream=sys.stdout,

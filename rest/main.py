@@ -34,7 +34,13 @@ def create_app() -> FastAPI:
     app = FastAPI()
     app_container = Container()
     app.container = app_container  # type: ignore
-
+    feature_sets = app_container.config.feature_sets()
+    for feature_set_name, feature_set in feature_sets.items():
+        for feature_name, feature in feature_set["features"].items():
+            print(feature)
+            # router: APIRouter | None = feature.router
+            # if router is not None:
+            # app.router.include_router(router)
     demo_router: APIRouter = router  # type: ignore
     app.router.include_router(demo_router)
     return app

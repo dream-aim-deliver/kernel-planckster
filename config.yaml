@@ -16,12 +16,15 @@ rdbms:
 feature_sets:
   demo:
     name: "Demo Feature Set"
+    tag: "demo"
     description: "A demo feature set"
     version: "1.0.0"
+    auth: true
+    enabled: true
     features:
-      - name: "Sum Feature"
-        description: "Adds 2 numbers"
-        verb: "GET"
-        endpoint: "/sum"
-        enabled: true
-        auth: true
+        sum:
+          name: "Sum Feature"
+          description: "Adds 2 numbers"
+          verb: "GET"
+          endpoint: "/sum"
+          enabled: true
