@@ -1,22 +1,27 @@
 from abc import abstractmethod
-from typing import Generic, Protocol
 from lib.core.sdk.presenter import BasePresenter
-from lib.core.sdk.primary_ports import BaseOutputPort
+from lib.core.sdk.usecase import BaseUseCase
 
-from lib.core.sdk.usecase_models import TBaseErrorResponse, TBaseRequest, TBaseResponse
-from lib.core.sdk.viewmodel import TBaseViewModel
+from lib.core.sdk.usecase_models import BaseErrorResponse
+from lib.core.usecase_models.demo_usecase_models import DemoRequest, DemoResponse
+from lib.core.view_model.demo_view_model import DemoViewModel
+
+
+class DemoInputPort(BaseUseCase[DemoRequest, DemoResponse, BaseErrorResponse]):
+    @abstractmethod
+    def execute(self, request: DemoRequest) -> DemoResponse | BaseErrorResponse:
+        raise NotImplementedError("This method must be implemented by the usecase.")
 
 
 class DemoOutputPort(
-    BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
-    Generic[TBaseResponse, TBaseErrorResponse, TBaseViewModel],
+    BasePresenter[DemoResponse, BaseErrorResponse, DemoViewModel],
 ):
     @abstractmethod
-    def convert_error_response_to_view_model(self, response: TBaseErrorResponse) -> TBaseViewModel:
+    def convert_error_response_to_view_model(self, response: BaseErrorResponse) -> DemoViewModel:
         raise NotImplementedError(
             "You must implement the convert_error_response_to_view_model method in your presenter"
         )
 
     @abstractmethod
-    def convert_response_to_view_model(self, response: TBaseResponse) -> TBaseViewModel:
+    def convert_response_to_view_model(self, response: DemoResponse) -> DemoViewModel:
         raise NotImplementedError("You must implement the convert_response_to_view_model method in your presenter")

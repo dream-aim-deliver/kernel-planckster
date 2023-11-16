@@ -4,7 +4,7 @@ from lib.core.usecase_models.demo_usecase_models import DemoResponse
 from lib.core.view_model.demo_view_model import DemoViewModel
 
 
-class DemoPresenter(DemoOutputPort[DemoResponse, BaseErrorResponse, DemoViewModel]):
+class DemoPresenter(DemoOutputPort):
     def convert_response_to_view_model(self, response: DemoResponse) -> DemoViewModel:
         return DemoViewModel(status=True, code=200, sum=response.sum)
 

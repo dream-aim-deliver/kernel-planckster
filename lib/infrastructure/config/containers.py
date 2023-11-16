@@ -2,9 +2,10 @@ import sys
 from pathlib import Path
 import logging.config
 from dependency_injector import containers, providers
-from lib.core.ports.primary.demo_ports import DemoOutputPort
+from lib.core.ports.primary.demo_ports import DemoInputPort, DemoOutputPort
 from lib.core.sdk.usecase_models import BaseErrorResponse
-from lib.core.usecase_models.demo_usecase_models import DemoResponse
+from lib.core.usecase.demo_usecase import DemoUseCase
+from lib.core.usecase_models.demo_usecase_models import DemoRequest, DemoResponse
 from lib.core.view_model.demo_view_model import DemoViewModel
 from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
@@ -18,8 +19,12 @@ from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLA
 class DemoContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
 
-    presenter = providers.Factory[DemoOutputPort[DemoResponse, BaseErrorResponse, DemoViewModel]](
+    presenter = providers.Factory[DemoOutputPort](
         DemoPresenter,
+    )
+
+    usecase = providers.Factory[DemoInputPort](
+        DemoUseCase,
     )
 
 
