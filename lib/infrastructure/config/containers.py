@@ -10,9 +10,11 @@ from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
 from lib.infrastructure.repository.sqla.database import Database
 from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLAConversationRepository
+import lib.infrastructure.routers.demo_router as demo_router
 
 
 class DemoFeature(containers.DeclarativeContainer):
+    wiring_config = containers.WiringConfiguration(modules=[demo_router])
     config = providers.Configuration()
 
     presenter = providers.Factory[DemoOutputPort](
@@ -33,10 +35,12 @@ class DemoFeature(containers.DeclarativeContainer):
         BaseFeatureDescriptor,
         name=config.name,
         description=config.description,
+        collection=config.collection,
         version=config.version,
         verb=config.verb,
         endpoint=config.endpoint,
         enabled=config.enabled,
+        auth=config.auth,
     )
 
 

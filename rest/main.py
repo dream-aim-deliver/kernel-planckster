@@ -5,9 +5,9 @@ from fastapi import APIRouter, FastAPI
 import subprocess
 
 import uvicorn
-from lib.infrastructure.controller.demo_controller import DemoControllerParameters
-
-from rest.config import Settings, FEATURES
+from lib.infrastructure.config.containers import Container
+from rest.config import Settings
+from lib.infrastructure.routers.demo_router import router
 
 
 @lru_cache()
@@ -18,21 +18,29 @@ def get_settings() -> Settings:
 settings = get_settings()
 
 
-@asynccontextmanager
-async def load_features(app: FastAPI) -> Any:
-    for feature in FEATURES:
-        router: APIRouter | None = feature.router
-        if router is not None:
-            app.router.include_router(router)
-    yield None
+# @asynccontextmanager
+# async def load_features(app: FastAPI) -> Any:
+#     for feature in FEATURES:
+#         router: APIRouter | None = feature.router
+#         if router is not None:
+#             app.router.include_router(router)
+#     yield None
 
 
-app = FastAPI(lifespan=load_features)
+# app = FastAPI(lifespan=load_features)
 
 
-@app.post("/")
-def test(item: DemoControllerParameters) -> DemoControllerParameters:
-    return item
+def create_app() -> FastAPI:
+    app = FastAPI()
+    app_container = Container()
+    app.container = app_container  # type: ignore
+
+    demo_router: APIRouter = router  # type: ignore
+    app.router.include_router(demo_router)
+    return app
+
+
+app = create_app()
 
 
 def server() -> None:

@@ -2,7 +2,7 @@ from typing import Annotated, Any, Dict, Literal, Type
 
 from fastapi import Depends, Request, Response
 
-from lib.core.sdk.caps_fastapi import FastAPIFeature
+from lib.core.sdk.caps_fastapi import FastAPIFeatureRouter
 from lib.core.sdk.controller import BaseController
 from lib.core.sdk.presenter import BasePresenter
 from lib.core.sdk.usecase_models import BaseErrorResponse
@@ -13,7 +13,7 @@ from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
 
 class DemoFeature(
-    FastAPIFeature[DemoControllerParameters, DemoRequest, DemoResponse, BaseErrorResponse, DemoViewModel]
+    FastAPIFeatureRouter[DemoControllerParameters, DemoRequest, DemoResponse, BaseErrorResponse, DemoViewModel]
 ):
     name: str = "Demo Feature"
     version: str = "1.0.0"
