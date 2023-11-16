@@ -6,33 +6,28 @@ from fastapi import APIRouter, Depends, Request, Response
 from lib.core.sdk.feature import BaseFeatureDescriptor
 from lib.core.view_model.demo_view_model import DemoViewModel
 from lib.infrastructure.controller.demo_controller import DemoController, DemoControllerParameters
-from lib.infrastructure.config.containers import Container
+from lib.infrastructure.config.containers import ApplicationContainer
 
 from dependency_injector.wiring import inject, Provide
-from dependency_injector import containers
 
 
 class DemoFastAPIFeature:
-    def __init__(self) -> None:
-        self.intialize()
-        # self._descriptor: BaseFeatureDescriptor | None = None
-        # self._responses: Dict[int | str, dict[str, Any]] | None = None
-        # self._router: APIRouter | None = None
-        # self._controller: DemoController | None = None
-
     @inject
-    def intialize(self, config_provider: Any = Provide[Container.features.demo.config.provider]) -> None:
-        config = config_provider()
-        self._descriptor: BaseFeatureDescriptor = config.features.demo.feature_descriptor()
+    def __init__(
+        self,
+        descriptor_provider: Any = Provide[ApplicationContainer.features.demo.feature_descriptor.provider],  # type: ignore
+        controller_provider: Any = Provide[ApplicationContainer.features.demo.controller.provider],  # type: ignore
+    ) -> None:
+        self._descriptor: BaseFeatureDescriptor = descriptor_provider()
         tags: list[str | Enum] = [self._descriptor.name]
         if self._descriptor.auth:
             tags.append("auth_required")
         # TODO - if auth is required, then add a dependency to token validator fn in the router description below. See https://fastapi.tiangolo.com/tutorial/dependencies/global-dependencies/?
         self._router: APIRouter = APIRouter(
-            prefix="demo",
+            prefix="/demo",
             tags=tags,
         )
-        self._controller: DemoController = container.controller()
+        self._controller: DemoController = controller_provider()
         self._responses: Dict[int | str, dict[str, Any]] = {
             200: {
                 "model": DemoViewModel,

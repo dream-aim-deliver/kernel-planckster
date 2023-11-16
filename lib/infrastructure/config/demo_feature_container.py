@@ -7,7 +7,7 @@ from lib.infrastructure.controller.demo_controller import DemoController
 from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
 
-class DemoFeature(containers.DeclarativeContainer):
+class DemoFeatureContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
 
     presenter = providers.Factory[DemoOutputPort](

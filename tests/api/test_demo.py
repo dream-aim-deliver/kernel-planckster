@@ -1,11 +1,11 @@
 from lib.core.usecase_models.demo_usecase_models import DemoRequest, DemoResponse
 from lib.core.view_model.demo_view_model import DemoViewModel
-from lib.infrastructure.config.containers import Container
+from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.controller.demo_controller import DemoControllerParameters
 
 
-def test_demo_presenter(app_container: Container) -> None:
-    presenter = app_container.demo.presenter()
+def test_demo_presenter(app_container: ApplicationContainer) -> None:
+    presenter = app_container.features.demo.presenter()  # type: ignore
     assert presenter is not None
     view_model: DemoViewModel = presenter.present_success(DemoResponse(sum=10))
     assert view_model is not None
@@ -13,16 +13,16 @@ def test_demo_presenter(app_container: Container) -> None:
     assert view_model.sum == 10
 
 
-def test_demo_usecase(app_container: Container) -> None:
-    usecase = app_container.demo.usecase()
+def test_demo_usecase(app_container: ApplicationContainer) -> None:
+    usecase = app_container.features.demo.usecase()  # type: ignore
     assert usecase is not None
     response = usecase.execute(request=DemoRequest(numbers=[1, 2, 3]))
     assert response is not None
     assert response.sum == 6
 
 
-def test_demo_controller(app_container: Container) -> None:
-    controller = app_container.demo.controller()
+def test_demo_controller(app_container: ApplicationContainer) -> None:
+    controller = app_container.features.demo.controller()  # type: ignore
     assert controller is not None
     view_model = controller.execute(parameters=None)
     assert view_model is not None
@@ -36,8 +36,8 @@ def test_demo_controller(app_container: Container) -> None:
     assert view_model.sum == 3
 
 
-def test_demo_feature_descriptor(app_container: Container) -> None:
-    demo_descriptor = app_container.demo.feature_descriptor()
+def test_demo_feature_descriptor(app_container: ApplicationContainer) -> None:
+    demo_descriptor = app_container.features.demo.feature_descriptor()  # type: ignore
     print(app_container.config)
     assert demo_descriptor is not None
     assert demo_descriptor.name == "Sum Feature"

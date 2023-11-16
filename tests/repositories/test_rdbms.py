@@ -1,6 +1,6 @@
 import docker
 
-from lib.infrastructure.config.containers import Container
+from lib.infrastructure.config.containers import ApplicationContainer
 import pytest
 
 
@@ -14,7 +14,7 @@ def test_pg_container_is_available() -> None:
 
 
 @pytest.mark.usefixtures("with_rdbms_migrations")
-def test_migrations_are_applied(app_container: Container) -> None:
+def test_migrations_are_applied(app_container: ApplicationContainer) -> None:
     db = app_container.db()
     assert db is not None
     assert db.ping() is True
