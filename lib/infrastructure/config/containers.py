@@ -7,6 +7,7 @@ from lib.core.sdk.usecase_models import BaseErrorResponse
 from lib.core.usecase.demo_usecase import DemoUseCase
 from lib.core.usecase_models.demo_usecase_models import DemoRequest, DemoResponse
 from lib.core.view_model.demo_view_model import DemoViewModel
+from lib.infrastructure.controller.demo_controller import DemoController
 from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
 
@@ -23,6 +24,12 @@ class DemoContainer(containers.DeclarativeContainer):
 
     usecase = providers.Factory[DemoInputPort](
         DemoUseCase,
+    )
+
+    controller = providers.Factory(
+        DemoController,
+        usecase=usecase,
+        presenter=presenter,
     )
 
 
