@@ -13,5 +13,10 @@ rdbms:
   username: ${KP_RDBMS_USERNAME:postgres}
   password: ${KP_RDBMS_PASSWORD:postgres}
 
-demo:
+feature_demo:
+  name: "Sum Feature"
+  description: "Adds 2 numbers"
+  version: "1.0.0"
+  verb: "GET"
+  endpoint: "/sum"
   enabled: true

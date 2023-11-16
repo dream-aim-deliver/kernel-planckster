@@ -35,14 +35,6 @@ class DemoFeature(
     def __init__(self, **data: Any) -> None:
         super().__init__(**data)
 
-    def presenter_factory(self) -> BasePresenter[DemoResponse, BaseErrorResponse, DemoViewModel]:
-        return DemoPresenter()
-
-    def controller_factory(
-        self,
-    ) -> BaseController[DemoControllerParameters, DemoRequest, DemoResponse, BaseErrorResponse, DemoViewModel]:
-        return DemoController()
-
     def endpoint_fn(  # type: ignore
         self,
         request: Request,

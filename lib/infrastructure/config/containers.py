@@ -3,6 +3,7 @@ from pathlib import Path
 import logging.config
 from dependency_injector import containers, providers
 from lib.core.ports.primary.demo_ports import DemoInputPort, DemoOutputPort
+from lib.core.sdk.feature import BaseFeatureDescriptor
 from lib.core.sdk.usecase_models import BaseErrorResponse
 from lib.core.usecase.demo_usecase import DemoUseCase
 from lib.core.usecase_models.demo_usecase_models import DemoRequest, DemoResponse
@@ -15,8 +16,8 @@ from lib.infrastructure.repository.sqla.database import Database
 from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLAConversationRepository
 
 
-class DemoContainer(containers.DeclarativeContainer):
-    config = providers.Configuration()
+class DemoFeature(containers.DeclarativeContainer):
+    config = providers.Configuration(yaml_files=["./config.yaml"])
 
     presenter = providers.Factory[DemoOutputPort](
         DemoPresenter,
@@ -32,10 +33,20 @@ class DemoContainer(containers.DeclarativeContainer):
         presenter=presenter,
     )
 
+    feature_descriptor = providers.Factory(
+        BaseFeatureDescriptor,
+        name=config.feature_demo.name,
+        description=config.feature_demo.description,
+        version=config.feature_demo.version,
+        verb=config.feature_demo.verb,
+        endpoint=config.feature_demo.endpoint,
+        enabled=config.feature_demo.enabled,
+    )
+
 
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration(yaml_files=["./config.yaml"])
-    demo = providers.Container(DemoContainer, config=config.demo)
+    demo = providers.Container(DemoFeature, config=config.feature_demo)
     logging = providers.Resource(
         logging.basicConfig,
         stream=sys.stdout,

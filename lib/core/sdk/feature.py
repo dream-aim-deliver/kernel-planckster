@@ -9,10 +9,9 @@ from lib.core.sdk.usecase_models import TBaseErrorResponse, TBaseRequest, TBaseR
 from lib.core.sdk.viewmodel import TBaseViewModel
 
 
-class BaseFeature(
+class BaseFeatureDescriptor(
     ABC,
     BaseModel,
-    Generic[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel],
 ):
     name: str
     description: str
@@ -20,10 +19,9 @@ class BaseFeature(
     verb: Literal["GET", "POST", "PUT", "DELETE"]
     endpoint: str
     enabled: bool = True
-    presenter: BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel] | None = None
+
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
-        # ignored_types=(Presentable,),
     )
 
     @validator("endpoint")
@@ -32,23 +30,13 @@ class BaseFeature(
             return f"/{v}"
         return v
 
-    @abstractmethod
-    def presenter_factory(self) -> BasePresenter[TBaseResponse, TBaseErrorResponse, TBaseViewModel]:
-        raise NotImplementedError("You must implement the presenter_factory method in your feature")
+    # def register(self) -> None:
+    #     if not self.enabled:
+    #         raise Exception(f"Cannot load {self}. Feature {self} is disabled")
 
-    @abstractmethod
-    def controller_factory(
-        self,
-    ) -> BaseController[TBaseControllerParameters, TBaseRequest, TBaseResponse, TBaseErrorResponse, TBaseViewModel]:
-        raise NotImplementedError("You must implement the controller_factory method in your feature")
-
-    def register(self) -> None:
-        if not self.enabled:
-            raise Exception(f"Cannot load {self}. Feature {self} is disabled")
-
-    def execute(self, parameters: TBaseControllerParameters) -> TBaseViewModel | None:
-        controller = self.controller_factory()
-        if controller is None:
-            raise Exception(f"Cannot execute {self.name} at {self.verb} {self.endpoint}. Controller is not defined")
-        else:
-            return controller.execute(parameters)
+    # def execute(self, parameters: TBaseControllerParameters) -> TBaseViewModel | None:
+    #     controller = self.controller_factory()
+    #     if controller is None:
+    #         raise Exception(f"Cannot execute {self.name} at {self.verb} {self.endpoint}. Controller is not defined")
+    #     else:
+    #         return controller.execute(parameters)
