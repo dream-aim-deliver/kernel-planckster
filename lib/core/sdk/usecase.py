@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
+from lib.core.sdk.primary_ports import BaseInputPort
 
 from lib.core.sdk.usecase_models import (
     BaseErrorResponse,
@@ -11,7 +12,10 @@ from lib.core.sdk.usecase_models import (
 )
 
 
-class BaseUseCase(ABC, Generic[TBaseRequest, TBaseResponse, TBaseErrorResponse]):
+class BaseUseCase(
+    BaseInputPort[TBaseRequest, TBaseResponse, TBaseErrorResponse],
+    Generic[TBaseRequest, TBaseResponse, TBaseErrorResponse],
+):
     @abstractmethod
     def execute(self, request: TBaseRequest) -> TBaseResponse | TBaseErrorResponse:
         """
