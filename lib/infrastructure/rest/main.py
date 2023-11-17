@@ -13,7 +13,7 @@ app_container = ApplicationContainer()
 def create_app() -> tuple[FastAPI, ApplicationContainer]:
     app = FastAPI()
     app_container = ApplicationContainer()
-    app_container.config.from_yaml("../config.yaml")
+    app_container.config.from_yaml("../../../config.yaml")
     app.container = app_container  # type: ignore
     demo_feature = DemoFastAPIFeature()
     router: APIRouter | None = demo_feature.load()
