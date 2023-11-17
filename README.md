@@ -87,6 +87,7 @@ Database: kp-db
 You can start the FastAPI development server with:
 
 ```bash
+ cd lib/infrastructure/rest
  poetry run dev
 ```
 
