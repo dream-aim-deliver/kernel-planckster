@@ -25,7 +25,6 @@ class ConversationRepository(ABC):
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
-
     @abstractmethod
     def new_conversation(self, research_context_id: int, conversation_title: str) -> NewConversationDTO:
         """
@@ -40,7 +39,6 @@ class ConversationRepository(ABC):
         """
         raise NotImplementedError
 
-
     @abstractmethod
     def get_conversation(self, conversation_id: int) -> GetConversationDTO:
         """
@@ -52,7 +50,6 @@ class ConversationRepository(ABC):
         @rtype: ConversationDTO
         """
         raise NotImplementedError
-
 
     @abstractmethod
     def get_conversation_research_context(self, conversation_id: int) -> GetConversationResearchContextDTO:
