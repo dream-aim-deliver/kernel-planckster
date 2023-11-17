@@ -5,7 +5,7 @@ from lib.infrastructure.controller.demo_controller import DemoControllerParamete
 
 
 def test_demo_presenter(app_container: ApplicationContainer) -> None:
-    presenter = app_container.demo_feature.presenter()  # type: ignore
+    presenter = app_container.demo_feature.presenter()
     assert presenter is not None
     view_model: DemoViewModel = presenter.present_success(DemoResponse(sum=10))
     assert view_model is not None
@@ -14,7 +14,7 @@ def test_demo_presenter(app_container: ApplicationContainer) -> None:
 
 
 def test_demo_usecase(app_container: ApplicationContainer) -> None:
-    usecase = app_container.demo_feature.usecase()  # type: ignore
+    usecase = app_container.demo_feature.usecase()
     assert usecase is not None
     response = usecase.execute(request=DemoRequest(numbers=[1, 2, 3]))
     assert response is not None
@@ -22,7 +22,7 @@ def test_demo_usecase(app_container: ApplicationContainer) -> None:
 
 
 def test_demo_controller(app_container: ApplicationContainer) -> None:
-    controller = app_container.demo_feature.controller()  # type: ignore
+    controller = app_container.demo_feature.controller()
     assert controller is not None
     view_model = controller.execute(parameters=None)
     assert view_model is not None
@@ -37,7 +37,7 @@ def test_demo_controller(app_container: ApplicationContainer) -> None:
 
 
 def test_demo_feature_descriptor(app_container: ApplicationContainer) -> None:
-    demo_descriptor = app_container.demo_feature.feature_descriptor()  # type: ignore
+    demo_descriptor = app_container.demo_feature.feature_descriptor()
     print(app_container.config)
     assert demo_descriptor is not None
     assert demo_descriptor.name == "Sum Feature"
