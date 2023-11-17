@@ -1,9 +1,19 @@
 from typing import List
-from lib.core.entity.models import Conversation
+from lib.core.entity.models import Conversation, ResearchContext
 from lib.core.sdk.dto import BaseDTO
 
 
-class ListResearchContextConversations(BaseDTO[Conversation]):
+class GetResearchContextDTO(BaseDTO[ResearchContext]):
+    """
+    A DTO for getting a research context
+
+    @param data: The research context
+    """
+
+    data: ResearchContext | None = None
+
+
+class ListResearchContextConversationsDTO(BaseDTO[Conversation]):
     """
     A DTO for listing all conversations in a research context
 

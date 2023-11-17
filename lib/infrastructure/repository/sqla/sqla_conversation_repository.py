@@ -19,7 +19,6 @@ from lib.core.entity.models import (
 from lib.core.ports.secondary.conversation_repository import ConversationRepository
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
-    SQLACitation,
     SQLAConversation,
     SQLAMessageBase,
     SQLAMessageQuery,

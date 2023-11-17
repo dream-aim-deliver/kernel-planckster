@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 import logging
 
-from lib.core.dto.research_context_repository_dto import ListResearchContextConversations
+from lib.core.dto.research_context_repository_dto import GetResearchContextDTO, ListResearchContextConversationsDTO
+from lib.core.entity.models import ResearchContext
 
 
 class ResearchContextRepositoryOutputPort(ABC):
@@ -20,7 +21,19 @@ class ResearchContextRepositoryOutputPort(ABC):
         return self._logger
 
     @abstractmethod
-    def list_conversations(self, research_context_id: int) -> ListResearchContextConversations:
+    def get_research_context(self, research_context_id: int) -> GetResearchContextDTO:
+        """
+        Gets a research context by ID.
+
+        @param research_context_id: The ID of the research context to get.
+        @type research_context_id: int
+        @return: A DTO containing the result of the operation.
+        @rtype: GetResearchContextDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_conversations(self, research_context_id: int) -> ListResearchContextConversationsDTO:
         """
         Lists all conversations in a research context.
 
