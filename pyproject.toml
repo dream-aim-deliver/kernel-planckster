@@ -40,6 +40,7 @@ env = [
     "KP_RDBMS_DBNAME=kp-db",
     "KP_RDBMS_USERNAME=postgres",
     "KP_RDBMS_PASSWORD=postgres",
+    "KP_FASTAPI_PORT:8005",
 ]
 pythonpath = [
   "."
