@@ -1,7 +1,7 @@
 from typing import Annotated, Any
 
 from fastapi import Depends, Request, Response
-from lib.core.sdk.caps_fastapi import FastAPIFeature
+from lib.core.sdk.fastapi import FastAPIFeature
 
 from lib.core.sdk.feature import BaseFeatureDescriptor
 from lib.core.view_model.demo_view_model import DemoViewModel

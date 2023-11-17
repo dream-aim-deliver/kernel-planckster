@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Annotated, Any, Dict, Generic, TypeVar
+from typing import Any, Dict, Generic, TypeVar
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel
 from lib.core.sdk.controller import BaseController, TBaseControllerParameters
