@@ -4,6 +4,7 @@ from typing import List
 from dependency_injector import containers, providers
 from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.features.demo_feature_container import DemoFeatureContainer
+from lib.infrastructure.config.features.list_conversations_feature_container import ListConversationsFeatureContainer
 from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
 import lib.infrastructure.rest.endpoints as endpoints
 
@@ -52,3 +53,6 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     # Features:
     demo_feature = providers.Container(DemoFeatureContainer, config=config.features.demo)
+    list_conversations_feature = providers.Container(
+        ListConversationsFeatureContainer, config=config.features.list_conversations
+    )

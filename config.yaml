@@ -29,3 +29,14 @@ features:
     endpoint: "/sum"
     enabled: true
     auth: true
+  
+  list_conversations:
+    name: "List Conversations"
+    description: "List all conversations in a research context"
+    version: "1.0.0"
+    verb: "GET"
+    tags: ["client: websat"]
+    endpoint: "/conversations"
+    enabled: true
+    auth: true
+  
