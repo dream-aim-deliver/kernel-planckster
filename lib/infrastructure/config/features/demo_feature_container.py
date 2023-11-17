@@ -9,8 +9,6 @@ from lib.infrastructure.presenter.demo_presenter import DemoPresenter
 
 
 class DemoFeatureContainer(BaseFeatureContainer):
-    config = providers.Configuration()
-
     presenter = providers.Factory[DemoOutputPort](
         DemoPresenter,
     )
@@ -23,15 +21,4 @@ class DemoFeatureContainer(BaseFeatureContainer):
         DemoController,
         usecase=usecase,
         presenter=presenter,
-    )
-
-    feature_descriptor = providers.Factory(
-        BaseFeatureDescriptor,
-        name=config.name,
-        description=config.description,
-        version=config.version,
-        verb=config.verb,
-        endpoint=config.endpoint,
-        enabled=config.enabled,
-        auth=config.auth,
     )
