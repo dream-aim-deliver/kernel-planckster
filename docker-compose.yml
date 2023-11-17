@@ -6,13 +6,12 @@ services:
     image: postgres
     restart: always
     container_name: kp-test
-    # IMPORTANT: ensure pytest's environment config matches in pyproject.toml with the environment config here 
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: kp-db
     ports:
-      - 5435:5432
+      - 5432:5432
 
   adminer:
     image: adminer
