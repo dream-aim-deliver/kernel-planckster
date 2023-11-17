@@ -1,4 +1,4 @@
-from contextlib import _GeneratorContextManager, contextmanager, AbstractContextManager
+from contextlib import _GeneratorContextManager, contextmanager
 from typing import Any, Callable, Generator
 
 from sqlalchemy import create_engine, orm, Engine

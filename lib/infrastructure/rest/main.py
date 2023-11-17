@@ -1,5 +1,7 @@
+from contextlib import contextmanager
 import importlib
 from pathlib import Path
+import time
 from typing import Any
 from fastapi import APIRouter, FastAPI
 import subprocess
@@ -44,14 +46,9 @@ def create_app(app_container: ApplicationContainer | None = None) -> tuple[FastA
 app, app_container = create_app()
 
 
-def server() -> None:
-    host = app_container.config.fastapi.host()
-    port = app_container.config.fastapi.port()
-    cmd = ["uvicorn", "main:app", "--reload", "--host", f"{host}", "--port", f"{port}"]
-    subprocess.run(cmd)
-
-
 if __name__ == "__main__":
+    # if(app_container.config.mode == "development"):
+
     host = app_container.config.fastapi.host()
     port = app_container.config.fastapi.port()
     uvicorn.run(app, host=host, port=port)

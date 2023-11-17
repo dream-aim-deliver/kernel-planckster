@@ -1,3 +1,5 @@
+mode: ${KP_MODE:development}
+
 log:
   level: "DEBUG"
   format: "[%(asctime)s] [%(levelname)s] [%(name)s]: %(message)s"
