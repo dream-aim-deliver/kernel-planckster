@@ -1,8 +1,7 @@
 from abc import abstractmethod
 from lib.core.ports.secondary.research_context_repository import ResearchContextRepositoryOutputPort
-from lib.core.sdk.primary_ports import BaseOutputPort
+from lib.core.sdk.presenter import BasePresenter
 from lib.core.sdk.usecase import BaseUseCase
-from lib.core.sdk.usecase_models import BaseErrorResponse
 from lib.core.usecase_models.list_conversations_usecase_models import (
     ListConversationsError,
     ListConversationsRequest,
@@ -27,7 +26,7 @@ class ListConversationsInputPort(
 
 
 class ListConversationsOutputPort(
-    BaseOutputPort[ListConversationsResponse, ListConversationsError, ListConversationsViewModel]
+    BasePresenter[ListConversationsResponse, ListConversationsError, ListConversationsViewModel]
 ):
     @abstractmethod
     def convert_error_response_to_view_model(self, response: ListConversationsError) -> ListConversationsViewModel:
