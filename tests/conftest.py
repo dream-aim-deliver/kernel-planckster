@@ -16,7 +16,7 @@ from alembic.config import Config
 from alembic import command
 from sqlalchemy.orm import Session
 from lib.infrastructure.rest.main import create_app
-from lib.infrastructure.repository.sqla.database import Database
+from lib.infrastructure.repository.sqla.database import Database, TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
     SQLACitation,
     SQLAConversation,
@@ -28,6 +28,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLASourceData,
     SQLAUser,
 )
+from tests.fixtures.factory.sqla_model_factory import SQLATemporaryModelFactory
 
 
 container = ApplicationContainer()
@@ -108,6 +109,17 @@ def db_session(with_rdbms_migrations: None) -> Generator[Callable[[], _Generator
 @pytest.fixture(scope="function")
 def fake() -> UniqueProxy:
     return Faker().unique
+
+
+@pytest.fixture
+def sqla_temp_model_factory(
+    db_session: TDatabaseFactory,
+) -> Generator[SQLATemporaryModelFactory, None, None]:
+    session: Session
+    with db_session() as s:
+        session = s
+    with SQLATemporaryModelFactory(session) as factory:
+        yield factory
 
 
 @pytest.fixture(scope="function")

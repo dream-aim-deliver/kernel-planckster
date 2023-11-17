@@ -2,6 +2,7 @@ import sys
 import logging.config
 from typing import List
 from dependency_injector import containers, providers
+from lib.core.ports.secondary.research_context_repository import ResearchContextRepositoryOutputPort
 from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.features.demo_feature_container import DemoFeatureContainer
 import lib.infrastructure.rest.endpoints as endpoints
@@ -33,6 +34,11 @@ class ApplicationContainer(containers.DeclarativeContainer):
     # Repositories:
     sqla_conversation_repository: providers.Factory[SQLAConversationRepository] = providers.Factory(
         SQLAConversationRepository,
+        session_factory=db.provided.session,
+    )
+
+    sqla_research_context_repository: providers.Factory[ResearchContextRepositoryOutputPort] = providers.Factory(
+        ResearchContextRepositoryOutputPort,
         session_factory=db.provided.session,
     )
 
