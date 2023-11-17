@@ -13,6 +13,12 @@ rdbms:
   username: ${KP_RDBMS_USERNAME:postgres}
   password: ${KP_RDBMS_PASSWORD:postgres}
 
+fastapi:
+  host: ${KP_FASTAPI_HOST:localhost}
+  port: ${KP_FASTAPI_PORT:8000}
+  debug: ${KP_FASTAPI_DEBUG:false}
+  reload: ${KP_FASTAPI_RELOAD:false}
+
 features:
   demo:
     name: "Sum Feature"
