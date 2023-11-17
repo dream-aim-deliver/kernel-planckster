@@ -3,7 +3,7 @@ from typing import Annotated, Any
 from fastapi import Depends, Request, Response
 from lib.core.sdk.fastapi import FastAPIFeature
 
-from lib.core.sdk.feature import BaseFeatureDescriptor
+from lib.core.sdk.feature_descriptor import BaseFeatureDescriptor
 from lib.core.view_model.demo_view_model import DemoViewModel
 from lib.infrastructure.controller.demo_controller import DemoController, DemoControllerParameters
 from lib.infrastructure.config.containers import ApplicationContainer
