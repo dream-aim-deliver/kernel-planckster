@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 import logging
 
 from lib.core.dto.research_context_repository_dto import GetResearchContextDTO, ListResearchContextConversationsDTO
-from lib.core.entity.models import ResearchContext
 
 
 class ResearchContextRepositoryOutputPort(ABC):
