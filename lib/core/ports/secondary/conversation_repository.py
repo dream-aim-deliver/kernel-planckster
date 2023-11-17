@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
 import logging
-from typing import List
 
 from lib.core.dto.conversation_repository_dto import (
-    ConversationDTO,
+    GetConversationDTO,
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
     ListConversationsDTO,
+    NewConversationDTO,
     SendMessageToConversationDTO,
+    UpdateConversationDTO,
 )
 from lib.core.entity.models import TMessageBase
 
@@ -24,8 +25,9 @@ class ConversationRepository(ABC):
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
+
     @abstractmethod
-    def new_conversation(self, research_context_id: int, conversation_title: str) -> ConversationDTO:
+    def new_conversation(self, research_context_id: int, conversation_title: str) -> NewConversationDTO:
         """
         Creates a new conversation in the research context.
 
@@ -37,6 +39,20 @@ class ConversationRepository(ABC):
         @rtype: ConversationDTO
         """
         raise NotImplementedError
+
+
+    @abstractmethod
+    def get_conversation(self, conversation_id: int) -> GetConversationDTO:
+        """
+        Gets a conversation by ID.
+
+        @param conversation_id: The ID of the conversation to get.
+        @type conversation_id: int
+        @return: A DTO containing the result of the operation.
+        @rtype: ConversationDTO
+        """
+        raise NotImplementedError
+
 
     @abstractmethod
     def get_conversation_research_context(self, conversation_id: int) -> GetConversationResearchContextDTO:
@@ -62,7 +78,7 @@ class ConversationRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def update_conversation(self, conversation_id: int, conversation_title: str) -> ConversationDTO:
+    def update_conversation(self, conversation_id: int, conversation_title: str) -> UpdateConversationDTO:
         """
         Updates a conversation in the research context.
 

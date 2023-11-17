@@ -2,12 +2,14 @@ from datetime import datetime
 from typing import List, Set
 
 from lib.core.dto.conversation_repository_dto import (
-    ConversationDTO,
+    GetConversationDTO,
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
     ListConversationsDTO,
+    NewConversationDTO,
     SendMessageToConversationDTO,
+    UpdateConversationDTO,
 )
 from lib.core.entity.models import (
     Conversation,
@@ -37,7 +39,7 @@ class SQLAConversationRepository(ConversationRepository):
         with session_factory() as session:
             self.session = session
 
-    def new_conversation(self, research_context_id: int, conversation_title: str) -> ConversationDTO:
+    def new_conversation(self, research_context_id: int, conversation_title: str) -> NewConversationDTO:
         """
         Creates a new conversation in the research context.
 
@@ -49,7 +51,7 @@ class SQLAConversationRepository(ConversationRepository):
         @rtype: ConversationDTO
         """
         if research_context_id is None:
-            errorDTO = ConversationDTO(
+            errorDTO = NewConversationDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="Research Context ID cannot be None",
@@ -60,7 +62,7 @@ class SQLAConversationRepository(ConversationRepository):
             return errorDTO
 
         if conversation_title is None:
-            errorDTO = ConversationDTO(
+            errorDTO = NewConversationDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="Conversation title cannot be None",
@@ -76,7 +78,7 @@ class SQLAConversationRepository(ConversationRepository):
 
         if sqla_research_context is None:
             self.logger.error(f"Research Context with ID {research_context_id} not found in the database.")
-            errorDTO = ConversationDTO(
+            errorDTO = NewConversationDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage=f"Research Context with ID {research_context_id} not found in the database.",
@@ -97,11 +99,11 @@ class SQLAConversationRepository(ConversationRepository):
             new_conversation = self.session.query(SQLAConversation).filter_by(id=sqla_new_conversation.id)[0]
             self.session.commit()
 
-            return ConversationDTO(status=True, conversation_id=new_conversation.id)
+            return NewConversationDTO(status=True, conversation_id=new_conversation.id)
 
         except Exception as e:
             self.logger.error(f"Error while creating new conversation: {e}")
-            errorDTO = ConversationDTO(
+            errorDTO = NewConversationDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage=f"Error while creating new conversation: {e}",
@@ -110,6 +112,19 @@ class SQLAConversationRepository(ConversationRepository):
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
+
+
+    def get_conversation(self, conversation_id: int) -> GetConversationDTO:
+        """
+        Gets a conversation by ID.
+
+        @param conversation_id: The ID of the conversation to get.
+        @type conversation_id: int
+        @return: A DTO containing the result of the operation.
+        @rtype: ConversationDTO
+        """
+        pass
+
 
     def get_conversation_research_context(self, conversation_id: int) -> GetConversationResearchContextDTO:
         """
@@ -246,7 +261,7 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_messages,
         )
 
-    def update_conversation(self, conversation_id: int, conversation_title: str) -> ConversationDTO:
+    def update_conversation(self, conversation_id: int, conversation_title: str) -> UpdateConversationDTO:
         """
         Updates a conversation in the research context.
 
@@ -258,7 +273,7 @@ class SQLAConversationRepository(ConversationRepository):
         @rtype: ConversationDTO
         """
         if conversation_id is None:
-            errorDTO = ConversationDTO(
+            errorDTO = UpdateConversationDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="Conversation ID cannot be None",
@@ -269,7 +284,7 @@ class SQLAConversationRepository(ConversationRepository):
             return errorDTO
 
         if conversation_title is None:
-            errorDTO = ConversationDTO(
+            errorDTO = UpdateConversationDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="Conversation title cannot be None",
@@ -285,7 +300,7 @@ class SQLAConversationRepository(ConversationRepository):
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
-            errorDTO = ConversationDTO(
+            errorDTO = UpdateConversationDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage=f"Conversation with ID {conversation_id} not found in the database.",
@@ -299,11 +314,11 @@ class SQLAConversationRepository(ConversationRepository):
             sqla_conversation.update({"title": conversation_title}, session=self.session)
             self.session.commit()
 
-            return ConversationDTO(status=True, conversation_id=sqla_conversation.id)
+            return UpdateConversationDTO(status=True, conversation_id=sqla_conversation.id)
 
         except Exception as e:
             self.logger.error(f"Error while updating the conversation: {e}")
-            errorDTO = ConversationDTO(
+            errorDTO = UpdateConversationDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage=f"Error while updating the conversation: {e}",
@@ -312,6 +327,7 @@ class SQLAConversationRepository(ConversationRepository):
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
+
 
     def list_conversation_sources(self, conversation_id: int) -> ListConversationSourcesDTO:
         """
