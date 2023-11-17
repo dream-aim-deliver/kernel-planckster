@@ -3,9 +3,9 @@ from fastapi import APIRouter, FastAPI
 import subprocess
 
 import uvicorn
+from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.rest.endpoints.demo_feature_fastapi_endpoints import DemoFastAPIFeature
-
 
 app_container = ApplicationContainer()
 
@@ -15,6 +15,8 @@ def create_app() -> tuple[FastAPI, ApplicationContainer]:
     app_container = ApplicationContainer()
     app_container.config.from_yaml("../../../config.yaml")
     app.container = app_container  # type: ignore
+
+    # all_features = get_all_modules()
     demo_feature = DemoFastAPIFeature()
     router: APIRouter | None = demo_feature.load()
     if router is not None:
