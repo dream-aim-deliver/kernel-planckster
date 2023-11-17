@@ -8,6 +8,7 @@ from lib.core.dto.conversation_repository_dto import (
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
     ListConversationsDTO,
+    SendMessageToConversationDTO,
 )
 from lib.core.entity.models import TMessageBase
 
@@ -93,5 +94,19 @@ class ConversationRepository(ABC):
 
         @return: A DTO containing the result of the operation.
         @rtype: ListConversationsDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def send_message_to_conversation(self, conversation_id: int, message_content: str) -> SendMessageToConversationDTO:
+        """
+        Sends a message to a conversation.
+
+        @param conversation_id: The ID of the conversation to send the message to.
+        @type conversation_id: int
+        @param message_content: The content of the message.
+        @type message_content: str
+        @return: A DTO containing the result of the operation.
+        @rtype: SendMessageToConversationDTO
         """
         raise NotImplementedError
