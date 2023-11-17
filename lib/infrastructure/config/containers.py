@@ -2,9 +2,9 @@ import sys
 import logging.config
 from typing import List
 from dependency_injector import containers, providers
-from lib.core.ports.secondary.research_context_repository import ResearchContextRepositoryOutputPort
 from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.features.demo_feature_container import DemoFeatureContainer
+from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
 import lib.infrastructure.rest.endpoints as endpoints
 
 from lib.infrastructure.repository.sqla.database import Database
@@ -37,8 +37,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
         session_factory=db.provided.session,
     )
 
-    sqla_research_context_repository: providers.Factory[ResearchContextRepositoryOutputPort] = providers.Factory(
-        ResearchContextRepositoryOutputPort,
+    sqla_research_context_repository: providers.Factory[SQLAReseachContextRepository] = providers.Factory(
+        SQLAReseachContextRepository,
         session_factory=db.provided.session,
     )
 
