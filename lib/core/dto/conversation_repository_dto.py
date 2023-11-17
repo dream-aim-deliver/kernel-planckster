@@ -62,6 +62,7 @@ class UpdateConversationDTO(BaseDTO[Conversation]):
 
     conversation_id: int | None = None
 
+
 class ListConversationSourcesDTO(BaseDTO[SourceData]):
     """
     A DTO for listing the data sources of the citations of a conversation

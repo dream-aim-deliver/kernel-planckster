@@ -30,6 +30,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAResearchContext,
     SQLASourceData,
 )
+from lib.infrastructure.repository.sqla.utils import convert_sqla_conversation_to_core_conversation
 
 
 class SQLAConversationRepository(ConversationRepository):
@@ -113,7 +114,6 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-
     def get_conversation(self, conversation_id: int) -> GetConversationDTO:
         """
         Gets a conversation by ID.
@@ -123,8 +123,40 @@ class SQLAConversationRepository(ConversationRepository):
         @return: A DTO containing the result of the operation.
         @rtype: ConversationDTO
         """
-        pass
 
+        if conversation_id is None:
+            errorDTO = GetConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Conversation ID cannot be None",
+                errorName="Conversation ID not provided",
+                errorType="ConversationIdNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_conversation: SQLAConversation | None = (
+            self.session.query(SQLAConversation).filter_by(id=conversation_id).first()
+        )
+
+        if sqla_conversation is None:
+            self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
+            errorDTO = GetConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Conversation with ID {conversation_id} not found in the database.",
+                errorName="Conversation not found",
+                errorType="ConversationNotFound",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        core_conversation = convert_sqla_conversation_to_core_conversation(sqla_conversation)
+
+        return GetConversationDTO(
+            status=True,
+            data=core_conversation,
+        )
 
     def get_conversation_research_context(self, conversation_id: int) -> GetConversationResearchContextDTO:
         """
@@ -327,7 +359,6 @@ class SQLAConversationRepository(ConversationRepository):
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
-
 
     def list_conversation_sources(self, conversation_id: int) -> ListConversationSourcesDTO:
         """
