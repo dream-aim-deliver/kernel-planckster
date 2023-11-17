@@ -1,3 +1,4 @@
+from typing import Any
 from lib.core.ports.primary.list_conversations_primary_ports import (
     ListConversationsInputPort,
     ListConversationsOutputPort,
@@ -11,10 +12,11 @@ from dependency_injector import providers
 
 
 class ListConversationsFeatureContainer(BaseFeatureContainer):
+    research_context_repository: Any = providers.Dependency()
     presenter = providers.Factory[ListConversationsOutputPort](ListConversationsPresenter)
 
     usecase = providers.Factory[ListConversationsInputPort](
-        ListConversationsUseCase,
+        ListConversationsUseCase, research_context_repository=research_context_repository
     )
 
     controller = providers.Factory(
