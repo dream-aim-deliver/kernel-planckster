@@ -1,10 +1,8 @@
-import importlib
-import os
 import sys
 import logging.config
-from types import ModuleType
 from typing import List
 from dependency_injector import containers, providers
+from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.demo_feature_container import DemoFeatureContainer
 import lib.infrastructure.rest.endpoints as endpoints
 
@@ -18,23 +16,13 @@ class FeatureContainer(containers.DeclarativeContainer):
     demo = providers.Container(DemoFeatureContainer, config=config.demo)
 
 
-def get_all_modules(package: ModuleType) -> List[str]:
-    package_dir = str(Path(__file__).parent.parent / "rest" / "endpoints")
-    modules = []
-    for filename in os.listdir(package_dir):
-        if filename.endswith(".py") and not filename.startswith("__"):
-            module_name = filename[:-3]  # Remove the '.py' extension
-            full_module_name = f"{package.__name__}.{module_name}"
-            # importlib.import_module(full_module_name)
-            modules.append(full_module_name)
-    return modules
-
-
 class ApplicationContainer(containers.DeclarativeContainer):
     config = providers.Configuration(yaml_files=["./config.yaml"])
 
     # Dynamic wiring of fastapi endpoints:
-    modules = get_all_modules(endpoints)
+    modules = get_all_modules(
+        package=endpoints, relative_package_dir=Path(__file__).parent.parent / "rest" / "endpoints"
+    )
     wiring_config = containers.WiringConfiguration(
         modules=modules,
     )
