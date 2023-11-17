@@ -18,7 +18,7 @@ features:
     name: "Sum Feature"
     description: "Adds 2 numbers"
     version: "1.0.0"
-    verb: "GET"
+    verb: "POST"
     endpoint: "/sum"
     enabled: true
     auth: true

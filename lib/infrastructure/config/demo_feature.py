@@ -1,7 +1,6 @@
-from enum import Enum
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import Depends, Request, Response
 from lib.core.sdk.caps_fastapi import FastAPIFeature
 
 from lib.core.sdk.feature import BaseFeatureDescriptor

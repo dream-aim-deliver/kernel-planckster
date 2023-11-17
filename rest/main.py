@@ -33,10 +33,7 @@ settings = get_settings()
 
 
 def create_app() -> FastAPI:
-    container = ApplicationContainer()
     app = FastAPI()
-    # TODO: might be optional actually, remove this line below and test
-    app.container = container  # type: ignore
     demo_feature = DemoFastAPIFeature()
     router: APIRouter | None = demo_feature.load()
     if router is not None:
