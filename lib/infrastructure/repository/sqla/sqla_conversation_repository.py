@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Set
 
 from lib.core.dto.conversation_repository_dto import (
@@ -6,6 +7,7 @@ from lib.core.dto.conversation_repository_dto import (
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
     ListConversationsDTO,
+    SendMessageToConversationDTO,
 )
 from lib.core.entity.models import (
     Conversation,
@@ -453,3 +455,87 @@ class SQLAConversationRepository(ConversationRepository):
             status=True,
             data=core_conversations,
         )
+
+    def send_message_to_conversation(self, conversation_id: int, message_content: str) -> SendMessageToConversationDTO:
+        """
+        Sends a message to a conversation.
+
+        @param conversation_id: The ID of the conversation to send the message to.
+        @type conversation_id: int
+        @param message_content: The content of the message.
+        @type message_content: str
+        @return: A DTO containing the result of the operation.
+        @rtype: SendMessageToConversationDTO
+        """
+
+        if conversation_id is None:
+            errorDTO = ListConversationSourcesDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Conversation ID cannot be None",
+                errorName="Conversation ID not provided",
+                errorType="ConversationIdNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        if message_content is None:
+            errorDTO = ListConversationSourcesDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Message content cannot be None",
+                errorName="Message content not provided",
+                errorType="MessageContentNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_conversation: SQLAConversation | None = (
+            self.session.query(SQLAConversation).filter_by(id=conversation_id).first()
+        )
+
+        if sqla_conversation is None:
+            self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
+            errorDTO = SendMessageToConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Conversation with ID {conversation_id} not found in the database.",
+                errorName="Conversation not found",
+                errorType="ConversationNotFound",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_message_query: SQLAMessageQuery = SQLAMessageQuery(
+            content=message_content,
+            timestamp=datetime.now(),
+            conversation_id=conversation_id,
+        )
+
+        try:
+            sqla_message_query.save(session=self.session)
+            self.session.commit()
+
+            core_message_query = MessageQuery(
+                created_at=sqla_message_query.created_at,
+                updated_at=sqla_message_query.updated_at,
+                deleted=sqla_message_query.deleted,
+                deleted_at=sqla_message_query.deleted_at,
+                id=sqla_message_query.id,
+                content=sqla_message_query.content,
+                timestamp=sqla_message_query.timestamp,
+            )
+
+            return SendMessageToConversationDTO(status=True, data=core_message_query)
+
+        except Exception as e:
+            self.logger.error(f"Error while sending message to conversation: {e}")
+            errorDTO = SendMessageToConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Error while sending message to conversation: {e}",
+                errorName="Error while sending message to conversation",
+                errorType="ErrorWhileSendingMessageToConversation",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO

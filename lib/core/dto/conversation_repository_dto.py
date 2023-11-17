@@ -1,7 +1,7 @@
 from typing import List
 
 from lib.core.sdk.dto import BaseDTO
-from lib.core.entity.models import Conversation, ResearchContext, SourceData, TMessageBase
+from lib.core.entity.models import Conversation, MessageQuery, ResearchContext, SourceData, TMessageBase
 
 
 class ConversationDTO(BaseDTO[Conversation]):
@@ -57,3 +57,14 @@ class ListConversationsDTO(BaseDTO[Conversation]):
     """
 
     data: List[Conversation] | None = None
+
+
+class SendMessageToConversationDTO(BaseDTO[MessageQuery]):
+    """
+    A DTO for sending a message to a conversation
+
+    @param data: The message sent to the conversation
+    @type data: TMessageBase | None
+    """
+
+    data: MessageQuery | None = None
