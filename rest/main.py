@@ -1,5 +1,3 @@
-from contextlib import asynccontextmanager
-from functools import lru_cache
 from typing import Any
 from fastapi import APIRouter, FastAPI
 import subprocess
@@ -7,52 +5,34 @@ import subprocess
 import uvicorn
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.config.demo_feature import DemoFastAPIFeature
-from lib.infrastructure.controller.demo_controller import DemoControllerParameters
-from rest.config import Settings
 
 
-# TODO: move settings to config.yaml
-@lru_cache()
-def get_settings() -> Settings:
-    return Settings()
+app_container = ApplicationContainer()
 
 
-settings = get_settings()
-
-
-# @asynccontextmanager
-# async def load_features(app: FastAPI) -> Any:
-#     for feature in FEATURES:
-#         router: APIRouter | None = feature.router
-#         if router is not None:
-#             app.router.include_router(router)
-#     yield None
-
-
-# app = FastAPI(lifespan=load_features)
-
-
-def create_app() -> FastAPI:
+def create_app() -> tuple[FastAPI, ApplicationContainer]:
     app = FastAPI()
+    app_container = ApplicationContainer()
+    app_container.config.from_yaml("../config.yaml")
+    app.container = app_container  # type: ignore
     demo_feature = DemoFastAPIFeature()
     router: APIRouter | None = demo_feature.load()
     if router is not None:
         app.include_router(demo_feature.router)
-    return app
+    return app, app_container
 
 
-app = create_app()
-
-
-@app.post("/")
-def test(item: DemoControllerParameters) -> DemoControllerParameters:
-    return item
+app, app_container = create_app()
 
 
 def server() -> None:
-    cmd = ["uvicorn", "main:app", "--reload", "--host", f"{settings.host}", "--port", f"{settings.port}"]
+    host = app_container.config.fastapi.host()
+    port = app_container.config.fastapi.port()
+    cmd = ["uvicorn", "main:app", "--reload", "--host", f"{host}", "--port", f"{port}"]
     subprocess.run(cmd)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    host = app_container.config.fastapi.host()
+    port = app_container.config.fastapi.port()
+    uvicorn.run(app, host=host, port=port)
