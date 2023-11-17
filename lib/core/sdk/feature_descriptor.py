@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class BaseFeatureDescriptor(
@@ -19,7 +19,7 @@ class BaseFeatureDescriptor(
         arbitrary_types_allowed=True,
     )
 
-    @validator("endpoint")
+    @field_validator("endpoint")
     def endpoint_should_begin_with_slash(cls, v: str) -> str:
         if not v.startswith("/"):
             return f"/{v}"
