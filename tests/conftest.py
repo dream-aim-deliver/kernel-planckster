@@ -6,6 +6,8 @@ import random
 from typing import Annotated, Callable, Generator, List, Protocol, Tuple
 from faker import Faker
 from faker.proxy import UniqueProxy
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 import pytest
 import lib
 from lib.core.entity.models import ProtocolEnum
@@ -13,7 +15,7 @@ from lib.infrastructure.config.containers import ApplicationContainer
 from alembic.config import Config
 from alembic import command
 from sqlalchemy.orm import Session
-
+from lib.infrastructure.rest.main import create_app
 from lib.infrastructure.repository.sqla.database import Database
 from lib.infrastructure.repository.sqla.models import (
     SQLACitation,
@@ -31,6 +33,18 @@ from lib.infrastructure.repository.sqla.models import (
 container = ApplicationContainer()
 print(container.config())
 container.wire(modules=[lib])
+
+
+@pytest.fixture(scope="session")
+def server() -> FastAPI:
+    app, _ = create_app()
+    return app
+
+
+@pytest.fixture(scope="function")
+def client(server: FastAPI) -> TestClient:
+    test_client = TestClient(server)
+    return test_client
 
 
 # set autouse=True to automatically inject the container into all tests
