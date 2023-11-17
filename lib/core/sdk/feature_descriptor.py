@@ -12,6 +12,7 @@ class BaseFeatureDescriptor(
     description: str
     version: str
     verb: Literal["GET", "POST", "PUT", "DELETE"]
+    tags: list[str] = []
     endpoint: str
     enabled: bool = True
     auth: bool = False
