@@ -1,7 +1,6 @@
-from dependency_injector import containers, providers
+from dependency_injector import providers
 
 from lib.core.ports.primary.demo_ports import DemoInputPort, DemoOutputPort
-from lib.core.sdk.feature_descriptor import BaseFeatureDescriptor
 from lib.core.sdk.ioc_feature_container import BaseFeatureContainer
 from lib.core.usecase.demo_usecase import DemoUseCase
 from lib.infrastructure.controller.demo_controller import DemoController

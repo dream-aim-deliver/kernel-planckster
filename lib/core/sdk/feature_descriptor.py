@@ -1,12 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Literal, Type
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, validator
-from lib.core.sdk.controller import BaseController, TBaseControllerParameters
-
-from lib.core.sdk.presenter import BasePresenter
-from lib.core.sdk.usecase_models import TBaseErrorResponse, TBaseRequest, TBaseResponse
-from lib.core.sdk.viewmodel import TBaseViewModel
 
 
 class BaseFeatureDescriptor(
