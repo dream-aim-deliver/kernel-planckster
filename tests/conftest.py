@@ -8,14 +8,16 @@ from faker import Faker
 from faker.proxy import UniqueProxy
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+import psycopg2
 import pytest
+import yaml  # type: ignore
 import lib
 from lib.core.entity.models import ProtocolEnum
 from lib.infrastructure.config.containers import ApplicationContainer
 from alembic.config import Config
 from alembic import command
 from sqlalchemy.orm import Session
-from lib.infrastructure.rest.main import create_app
+
 from lib.infrastructure.repository.sqla.database import Database, TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
     SQLACitation,
@@ -31,29 +33,6 @@ from lib.infrastructure.repository.sqla.models import (
 from tests.fixtures.factory.sqla_model_factory import SQLATemporaryModelFactory
 
 
-container = ApplicationContainer()
-print(container.config())
-container.wire(modules=[lib])
-
-
-@pytest.fixture(scope="session")
-def server() -> FastAPI:
-    app, _ = create_app()
-    return app
-
-
-@pytest.fixture(scope="function")
-def client(server: FastAPI) -> TestClient:
-    test_client = TestClient(server)
-    return test_client
-
-
-# set autouse=True to automatically inject the container into all tests
-@pytest.fixture(scope="session")
-def app_container() -> ApplicationContainer:
-    return container
-
-
 @pytest.fixture(scope="session")
 def docker_compose_file(pytestconfig: Annotated[pytest.Config, pytest.fixture]) -> str:
     return os.path.join(str(pytestconfig.rootdir), "tests", "docker-compose.yml")  # type: ignore
@@ -61,29 +40,59 @@ def docker_compose_file(pytestconfig: Annotated[pytest.Config, pytest.fixture]) 
 
 # set autouse=True to automatically inject the postgres into all tests
 @pytest.fixture(scope="session")
-def with_rdbms(
-    app_container: ApplicationContainer,
+def start_docker_services(
+    request: pytest.FixtureRequest,
     docker_services: pytest.fixture,  # type: ignore
-) -> Database:
+) -> None:
     """Ensure that a postgres container is running before running tests"""
 
-    def is_responsive() -> bool:
+    def is_responsive(rdbms: dict[str, str]) -> bool:
         try:
-            db = app_container.db()
-            return db.ping()
+            conn = psycopg2.connect(
+                host=rdbms["host"],
+                database=rdbms["database"],
+                port=rdbms["port"],
+                user=rdbms["username"],
+                password=rdbms["password"],
+            )
+            return True
         except Exception as e:
             return False
 
     try:
-        docker_services.wait_until_responsive(timeout=60.0, pause=0.1, check=lambda: is_responsive())  # type: ignore
+        config_yaml = os.path.join(str(request.config.rootdir), "config.yaml")  # type: ignore
+        with open(config_yaml, "r") as f:
+            config = yaml.safe_load(f)
+
+        rdbms_config = config["rdbms"]
+        rdbms = {
+            "host": os.getenv("KP_RDBMS_HOST", rdbms_config["host"].split(":"[-1][-1])),
+            "port": os.getenv("KP_RDBMS_PORT", rdbms_config["port"].split(":"[-1][-1])),
+            "database": os.getenv("KP_RDBMS_DBNAME", rdbms_config["database"].split(":"[-1][-1])),
+            "username": os.getenv("KP_RDBMS_USERNAME", rdbms_config["username"].split(":"[-1][-1])),
+            "password": os.getenv("KP_RDBMS_PASSWORD", rdbms_config["password"].split(":"[-1][-1])),
+        }
+        docker_services.wait_until_responsive(timeout=60.0, pause=0.1, check=lambda: is_responsive(rdbms))  # type: ignore
     except Exception as e:
         pytest.fail(f"Failed to start postgres container, error: {e}")
 
-    return app_container.db()
+
+# set autouse=True to automatically inject the container into all tests
+@pytest.fixture(scope="session")
+def app_initialization_container(start_docker_services: None) -> ApplicationContainer:
+    container = ApplicationContainer()
+    print(container.config())
+    container.wire(modules=[lib])
+    return container
 
 
 @pytest.fixture(scope="session")
-def with_rdbms_migrations(request: pytest.FixtureRequest, with_rdbms: Database) -> None:
+def app_raw_db(app_initialization_container: ApplicationContainer) -> Database:
+    return app_initialization_container.db()
+
+
+@pytest.fixture(scope="session")
+def run_rdbms_migrations(request: pytest.FixtureRequest, app_raw_db: Database) -> None:
     """Run alembic migrations before running tests and tear them down after"""
     alembic_ini_path = os.path.join(str(request.config.rootdir), "alembic.ini")  # type: ignore
     alembic_cfg = Config(alembic_ini_path)
@@ -91,7 +100,7 @@ def with_rdbms_migrations(request: pytest.FixtureRequest, with_rdbms: Database) 
     alembic_scripts_path = os.path.join(str(request.config.rootdir), "alembic")  # type: ignore
     alembic_cfg.set_main_option("script_location", alembic_scripts_path)
 
-    alembic_cfg.set_main_option("sqlalchemy.url", container.db().url)
+    alembic_cfg.set_main_option("sqlalchemy.url", app_raw_db.url)
 
     try:
         command.upgrade(alembic_cfg, "head")
@@ -100,10 +109,37 @@ def with_rdbms_migrations(request: pytest.FixtureRequest, with_rdbms: Database) 
     # request.addfinalizer(lambda: command.downgrade(alembic_cfg, "base"))
 
 
-@pytest.fixture(scope="function")
-def db_session(with_rdbms_migrations: None) -> Generator[Callable[[], _GeneratorContextManager[Session]], None, None]:
+@pytest.fixture(scope="session")
+def app_migrated_db(run_rdbms_migrations: None, app_raw_db: Database) -> Database:
     """Create a new database session for each test"""
-    yield container.db().session
+    return app_raw_db
+
+
+@pytest.fixture(scope="function")
+def db_session(app_migrated_db: Database) -> Generator[Callable[[], _GeneratorContextManager[Session]], None, None]:
+    """Create a new database session for each test"""
+    yield app_migrated_db.session
+
+
+@pytest.fixture(scope="function")
+def app_container(app_migrated_db: Database) -> ApplicationContainer:
+    container = ApplicationContainer()
+    container.wire(modules=[lib])
+    return container
+
+
+@pytest.fixture(scope="function")
+def server(app_container: None) -> FastAPI:
+    from lib.infrastructure.rest.main import create_app
+
+    app, _ = create_app(app_container)
+    return app
+
+
+@pytest.fixture(scope="function")
+def client(server: FastAPI) -> TestClient:
+    test_client = TestClient(server)
+    return test_client
 
 
 @pytest.fixture(scope="function")

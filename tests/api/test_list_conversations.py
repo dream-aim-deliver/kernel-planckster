@@ -5,9 +5,9 @@ from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
 
 def test_list_conversations_feature_is_successful(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    controller = app_container.list_conversations_feature.controller()
+    controller = app_initialization_container.list_conversations_feature.controller()
     assert controller is not None
     controller_parameters = ListConversationsControllerParameters(
         research_context_id=1,

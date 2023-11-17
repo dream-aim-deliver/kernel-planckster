@@ -6,12 +6,12 @@ from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAResearchConte
 
 
 def test_list_conversations_in_research_context(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
 ) -> None:
-    sqla_research_context_repository = app_container.sqla_research_context_repository()
+    sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
 
     user_with_conv = fake_user_with_conversation
     llm = SQLALLM(

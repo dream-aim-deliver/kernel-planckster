@@ -3,9 +3,10 @@ import docker
 from lib.infrastructure.config.containers import ApplicationContainer
 import pytest
 
+from lib.infrastructure.repository.sqla.database import Database
 
-@pytest.mark.usefixtures("with_rdbms")
-def test_pg_container_is_available() -> None:
+
+def test_pg_container_is_available(app_raw_db: Database) -> None:
     client = docker.from_env()
     containers = client.containers.list()
     assert len(containers) != 0
@@ -13,7 +14,6 @@ def test_pg_container_is_available() -> None:
     assert "postgres:latest" in image_names
 
 
-@pytest.mark.usefixtures("with_rdbms_migrations")
 def test_migrations_are_applied(app_container: ApplicationContainer) -> None:
     db = app_container.db()
     assert db is not None
