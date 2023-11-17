@@ -28,13 +28,13 @@ from tests.conftest import conversation, source_data
 
 
 def test_create_new_conversation(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_conversation: SQLAConversation,
     fake_user_with_conversation: SQLAUser,
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     user_with_conv = fake_user_with_conversation
     llm = SQLALLM(
@@ -60,9 +60,9 @@ def test_create_new_conversation(
 
 
 def test_error_new_conversation_none_research_context_id(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     conv_DTO: ConversationDTO = conversation_repository.new_conversation(research_context_id=None, conversation_title="test")  # type: ignore
 
@@ -74,9 +74,9 @@ def test_error_new_conversation_none_research_context_id(
 
 
 def test_error_new_conversation_none_conversation_title(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     conv_DTO: ConversationDTO = conversation_repository.new_conversation(research_context_id=1, conversation_title=None)  # type: ignore
 
@@ -88,9 +88,9 @@ def test_error_new_conversation_none_conversation_title(
 
 
 def test_error_new_conversation_none_sqla_research_context(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     irrealistic_ID = 99999999
     conv_DTO: ConversationDTO = conversation_repository.new_conversation(
@@ -105,7 +105,7 @@ def test_error_new_conversation_none_sqla_research_context(
 
 
 def test_error_sqla_new_conversation_(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_conversation: SQLAConversation,
@@ -123,12 +123,12 @@ def test_error_sqla_new_conversation_(
 
 
 def test_get_research_context_from_conversation(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     user_with_conv = fake_user_with_conversation
     llm = SQLALLM(
@@ -165,9 +165,9 @@ def test_get_research_context_from_conversation(
 
 
 def test_error_get_research_context_none_conversation_id(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     get_conv_rc_DTO: GetConversationResearchContextDTO = conversation_repository.get_conversation_research_context(conversation_id=None)  # type: ignore
 
@@ -179,9 +179,9 @@ def test_error_get_research_context_none_conversation_id(
 
 
 def test_error_get_research_context_none_sqla_conversation(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     irrealistic_ID = 99999999
     get_conv_rc_DTO: GetConversationResearchContextDTO = conversation_repository.get_conversation_research_context(
@@ -196,7 +196,7 @@ def test_error_get_research_context_none_sqla_conversation(
 
 
 def test_error_sqla_get_research_context_(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_conversation: SQLAConversation,
@@ -214,12 +214,12 @@ def test_error_sqla_get_research_context_(
 
 
 def test_list_conversation_messages(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     user_with_conv = fake_user_with_conversation
     llm = SQLALLM(
@@ -264,9 +264,9 @@ def test_list_conversation_messages(
 
 
 def test_error_list_conversation_messages_none_conversation_id(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     list_conv_msgs_DTO: ListConversationMessagesDTO = conversation_repository.list_conversation_messages(conversation_id=None)  # type: ignore
 
@@ -278,9 +278,9 @@ def test_error_list_conversation_messages_none_conversation_id(
 
 
 def test_error_list_conversation_messages_conversation_id_not_found(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     irrealistic_ID = 99999999
     list_conv_msgs_DTO: ListConversationMessagesDTO = conversation_repository.list_conversation_messages(conversation_id=irrealistic_ID)  # type: ignore
@@ -298,13 +298,13 @@ def test_error_list_conversation_messages_conversation_id_not_found(
 
 
 def test_update_conversation(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
     fake_conversation: SQLAConversation,
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     user_with_conv = fake_user_with_conversation
     llm = SQLALLM(
@@ -345,9 +345,9 @@ def test_update_conversation(
 
 
 def test_error_update_conversation_none_research_context_id(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     conv_DTO: ConversationDTO = conversation_repository.update_conversation(conversation_id=None, conversation_title="test")  # type: ignore
 
@@ -359,9 +359,9 @@ def test_error_update_conversation_none_research_context_id(
 
 
 def test_error_update_conversation_none_conversation_title(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     conv_DTO: ConversationDTO = conversation_repository.update_conversation(conversation_id=1, conversation_title=None)  # type: ignore
 
@@ -373,9 +373,9 @@ def test_error_update_conversation_none_conversation_title(
 
 
 def test_error_update_conversation_conversation_id_not_found(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     irrealistic_ID = 99999999
     conv_DTO: ListConversationMessagesDTO = conversation_repository.update_conversation(conversation_id=irrealistic_ID, conversation_title="test")  # type: ignore
@@ -393,14 +393,14 @@ def test_error_update_conversation_conversation_id_not_found(
 
 
 def test_list_conversation_sources(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
     fake_knowledge_source_with_source_data: SQLAKnowledgeSource,
     fake_citations: List[SQLACitation],
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     user_with_conv = fake_user_with_conversation
     llm = SQLALLM(
@@ -466,9 +466,9 @@ def test_list_conversation_sources(
 
 
 def test_error_list_conversation_sources_none_conversation_id(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(conversation_id=None)  # type: ignore
 
@@ -480,9 +480,9 @@ def test_error_list_conversation_sources_none_conversation_id(
 
 
 def test_error_list_conversation_sources_none_sqla_conversation(
-    app_container: ApplicationContainer, db_session: TDatabaseFactory
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     irrealistic_ID = 99999999
     list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(
@@ -497,12 +497,12 @@ def test_error_list_conversation_sources_none_sqla_conversation(
 
 
 def test_error_list_conversation_sources_research_context_no_source_data(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     user_with_conv = fake_user_with_conversation
     llm = SQLALLM(
@@ -547,12 +547,12 @@ def test_error_list_conversation_sources_research_context_no_source_data(
 
 
 def test_list_conversations(
-    app_container: ApplicationContainer,
+    app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_user_with_conversation: SQLAUser,
 ) -> None:
-    conversation_repository = app_container.sqla_conversation_repository()
+    conversation_repository = app_initialization_container.sqla_conversation_repository()
 
     user_with_conv = fake_user_with_conversation
     llm = SQLALLM(

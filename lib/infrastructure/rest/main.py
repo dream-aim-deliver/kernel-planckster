@@ -11,12 +11,10 @@ from lib.infrastructure.config.containers import ApplicationContainer
 import lib.infrastructure.rest.endpoints as endpoints
 
 
-app_container = ApplicationContainer()
-
-
-def create_app() -> tuple[FastAPI, ApplicationContainer]:
+def create_app(app_container: ApplicationContainer | None = None) -> tuple[FastAPI, ApplicationContainer]:
     app = FastAPI()
-    app_container = ApplicationContainer()
+    if app_container is None:
+        app_container = ApplicationContainer()
     app_container.config.from_yaml("../../../config.yaml")
     app.container = app_container  # type: ignore
 
