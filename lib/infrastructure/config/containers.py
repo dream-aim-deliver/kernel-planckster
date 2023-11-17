@@ -54,5 +54,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
     # Features:
     demo_feature = providers.Container(DemoFeatureContainer, config=config.features.demo)
     list_conversations_feature = providers.Container(
-        ListConversationsFeatureContainer, config=config.features.list_conversations
+        ListConversationsFeatureContainer,
+        config=config.features.list_conversations,
+        research_context_repository=sqla_research_context_repository,
     )
