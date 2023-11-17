@@ -4,7 +4,7 @@ import subprocess
 
 import uvicorn
 from lib.infrastructure.config.containers import ApplicationContainer
-from lib.infrastructure.config.demo_feature import DemoFastAPIFeature
+from lib.infrastructure.rest.endpoints.demo_feature_fastapi_endpoints import DemoFastAPIFeature
 
 
 app_container = ApplicationContainer()
