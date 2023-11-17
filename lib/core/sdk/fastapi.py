@@ -4,7 +4,7 @@ from typing import Any, Dict, Generic, TypeVar
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel
 from lib.core.sdk.controller import BaseController, TBaseControllerParameters
-from lib.core.sdk.feature import BaseFeatureDescriptor
+from lib.core.sdk.feature_descriptor import BaseFeatureDescriptor
 
 from lib.core.sdk.viewmodel import (
     TBaseViewModel,
