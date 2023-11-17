@@ -19,8 +19,8 @@ class DemoFastAPIFeature(FastAPIFeature[DemoFastAPIQueryParameters, Any, DemoCon
     @inject
     def __init__(
         self,
-        descriptor_provider: Any = Provide[ApplicationContainer.features.demo.feature_descriptor.provider],  # type: ignore
-        controller_provider: Any = Provide[ApplicationContainer.features.demo.controller.provider],  # type: ignore
+        descriptor_provider: Any = Provide[ApplicationContainer.demo_feature.feature_descriptor.provider],  # type: ignore
+        controller_provider: Any = Provide[ApplicationContainer.demo_feature.controller.provider],  # type: ignore
     ) -> None:
         descriptor: BaseFeatureDescriptor = descriptor_provider()
         controller: DemoController = controller_provider()

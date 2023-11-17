@@ -11,21 +11,8 @@ from lib.infrastructure.repository.sqla.sqla_conversation_repository import SQLA
 from pathlib import Path
 
 
-class FeatureContainer(containers.DeclarativeContainer):
-    config = providers.Configuration()
-    demo = providers.Container(DemoFeatureContainer, config=config.demo)
-
-
 class ApplicationContainer(containers.DeclarativeContainer):
     config = providers.Configuration(yaml_files=["./config.yaml"])
-
-    # Dynamic wiring of fastapi endpoints:
-    modules = get_all_modules(
-        package=endpoints, relative_package_dir=Path(__file__).parent.parent / "rest" / "endpoints"
-    )
-    wiring_config = containers.WiringConfiguration(
-        modules=modules,
-    )
 
     logging = providers.Resource(
         logging.basicConfig,
@@ -43,11 +30,19 @@ class ApplicationContainer(containers.DeclarativeContainer):
         db_name=config.rdbms.database,
     )
 
-    # Features:
-    features = providers.Container(FeatureContainer, config=config.features)
-
     # Repositories:
     sqla_conversation_repository: providers.Factory[SQLAConversationRepository] = providers.Factory(
         SQLAConversationRepository,
         session_factory=db.provided.session,
     )
+
+    # Dynamic wiring of fastapi endpoints:
+    modules = get_all_modules(
+        package=endpoints, relative_package_dir=Path(__file__).parent.parent / "rest" / "endpoints"
+    )
+    wiring_config = containers.WiringConfiguration(
+        modules=modules,
+    )
+
+    # Features:
+    demo_feature = providers.Container(DemoFeatureContainer, config=config.features.demo)
