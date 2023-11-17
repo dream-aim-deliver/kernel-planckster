@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from lib.core.ports.secondary.research_context_repository import ResearchContextRepositoryOutputPort
 from lib.core.sdk.primary_ports import BaseOutputPort
 from lib.core.sdk.usecase import BaseUseCase
 from lib.core.sdk.usecase_models import BaseErrorResponse
@@ -13,6 +14,13 @@ from lib.core.view_model.list_conversations_view_model import ListConversationsV
 class ListConversationsInputPort(
     BaseUseCase[ListConversationsRequest, ListConversationsResponse, ListConversationsError]
 ):
+    def __init__(self, research_context_repository: ResearchContextRepositoryOutputPort) -> None:
+        self._research_context_repository = research_context_repository
+
+    @property
+    def research_context_repository(self) -> ResearchContextRepositoryOutputPort:
+        return self._research_context_repository
+
     @abstractmethod
     def execute(self, request: ListConversationsRequest) -> ListConversationsResponse | ListConversationsError:
         raise NotImplementedError("This method must be implemented by the usecase.")
