@@ -28,6 +28,7 @@ class FastAPIFeature(ABC, Generic[TQueryParameters, TBodyParameters, TBaseContro
         self._responses: Dict[int | str, dict[str, Any]] = responses
 
         tags: list[str | Enum] = [name]
+        tags.extend(descriptor.tags)
         if self._descriptor.auth:
             tags.append("Protectected Endpoints")
         else:

@@ -25,6 +25,7 @@ features:
     description: "Adds 2 numbers"
     version: "1.0.0"
     verb: "GET"
+    tags: ["client: websat"]
     endpoint: "/sum"
     enabled: true
     auth: true

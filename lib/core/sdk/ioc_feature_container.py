@@ -11,6 +11,7 @@ class BaseFeatureContainer(containers.DeclarativeContainer):
         description=config.description,
         version=config.version,
         verb=config.verb,
+        tags=config.tags,
         endpoint=config.endpoint,
         enabled=config.enabled,
         auth=config.auth,
