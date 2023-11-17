@@ -1,5 +1,4 @@
 from lib.core.ports.primary.list_conversations_primary_ports import ListConversationsOutputPort
-from lib.core.sdk.usecase_models import BaseErrorResponse
 from lib.core.usecase_models.list_conversations_usecase_models import ListConversationsError, ListConversationsResponse
 from lib.core.view_model.list_conversations_view_model import ListConversationsViewModel
 
