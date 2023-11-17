@@ -3,7 +3,7 @@ import logging.config
 from typing import List
 from dependency_injector import containers, providers
 from lib.core.sdk.utils import get_all_modules
-from lib.infrastructure.config.demo_feature_container import DemoFeatureContainer
+from lib.infrastructure.config.features.demo_feature_container import DemoFeatureContainer
 import lib.infrastructure.rest.endpoints as endpoints
 
 from lib.infrastructure.repository.sqla.database import Database
@@ -51,7 +51,3 @@ class ApplicationContainer(containers.DeclarativeContainer):
         SQLAConversationRepository,
         session_factory=db.provided.session,
     )
-
-    # Gateways:
-
-    # Domain Services:
