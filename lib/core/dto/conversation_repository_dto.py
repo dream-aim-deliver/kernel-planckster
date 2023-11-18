@@ -74,14 +74,6 @@ class ListConversationSourcesDTO(BaseDTO[SourceData]):
     data: List[SourceData] | None = None
 
 
-class ListConversationsDTO(BaseDTO[Conversation]):
-    """
-    A DTO for listing all conversations in the database
-    """
-
-    data: List[Conversation] | None = None
-
-
 class SendMessageToConversationDTO(BaseDTO[MessageQuery]):
     """
     A DTO for sending a message to a conversation

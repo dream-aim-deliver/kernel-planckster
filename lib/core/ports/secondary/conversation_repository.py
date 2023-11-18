@@ -6,7 +6,6 @@ from lib.core.dto.conversation_repository_dto import (
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
-    ListConversationsDTO,
     NewConversationDTO,
     SendMessageToConversationDTO,
     UpdateConversationDTO,
@@ -97,16 +96,6 @@ class ConversationRepository(ABC):
         @type conversation_id: int
         @return: A DTO containing the result of the operation.
         @rtype: ListConversationSourcesDTO
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def list_conversations(self) -> ListConversationsDTO:
-        """
-        Lists all conversations in the database.
-
-        @return: A DTO containing the result of the operation.
-        @rtype: ListConversationsDTO
         """
         raise NotImplementedError
 
