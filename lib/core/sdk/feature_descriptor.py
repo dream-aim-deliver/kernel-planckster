@@ -5,23 +5,14 @@ from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class BaseFeatureDescriptor(
-    ABC,
     BaseModel,
 ):
     name: str
     description: str
     version: str
-    verb: Literal["GET", "POST", "PUT", "DELETE"]
     tags: list[str] = []
-    endpoint: str
     enabled: bool = True
     auth: bool = False
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
     )
-
-    @field_validator("endpoint")
-    def endpoint_should_begin_with_slash(cls, v: str) -> str:
-        if not v.startswith("/"):
-            return f"/{v}"
-        return v
