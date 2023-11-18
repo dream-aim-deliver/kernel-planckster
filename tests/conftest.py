@@ -292,6 +292,21 @@ def fake_research_context() -> SQLAResearchContext:
     return research_context()
 
 
+def user() -> SQLAUser:
+    fake = Faker().unique
+
+    fake_sid = fake.name()
+
+    return SQLAUser(
+        sid=fake_sid,
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_user() -> SQLAUser:
+    return user()
+
+
 def user_with_conversation(number_of_research_contexts: int = 2) -> SQLAUser:
     fake = Faker().unique
 
