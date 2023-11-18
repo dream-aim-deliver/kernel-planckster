@@ -12,7 +12,7 @@ import psycopg2
 import pytest
 import yaml
 import lib
-from lib.core.entity.models import ProtocolEnum
+from lib.core.entity.models import KnowledgeSourceEnum, ProtocolEnum
 from lib.infrastructure.config.containers import ApplicationContainer
 from alembic.config import Config
 from alembic import command
@@ -353,7 +353,14 @@ def fake_source_data() -> SQLASourceData:
 def knowledge_source_with_source_data(number_of_source_data: int = 3) -> SQLAKnowledgeSource:
     fake = Faker().unique
 
-    fake_source = fake.name()
+    ks_enums = [
+        attr_name.__str__().lower()
+        for attr_name in vars(KnowledgeSourceEnum)
+        if not attr_name.__str__().startswith("_")
+    ]
+
+    ks_source_choice: str = random.choice(ks_enums)
+    ks_source = KnowledgeSourceEnum(ks_source_choice)
 
     fake_metadata = fake.text(max_nb_chars=70)
 
@@ -361,7 +368,7 @@ def knowledge_source_with_source_data(number_of_source_data: int = 3) -> SQLAKno
     fake_source_data = list(fake_source_data_init)
 
     return SQLAKnowledgeSource(
-        source=fake_source,
+        source=ks_source,
         content_metadata=fake_metadata,
         source_data=fake_source_data,
     )

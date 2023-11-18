@@ -37,4 +37,13 @@ features:
     tags: ["client: websat"]
     enabled: true
     auth: false
+
+  create_default_data:
+    name: "Create Default Data"
+    description: "Create default data for testing: a knowledge source per KnowledgeSourceEnum type (with metadata = 'default'); one user with sid 'default'; one llm with a hardcoded name. This is meant to be executed first to setup the necessary components to (1) register new source data, (2) create a new research context selecting from the available source data"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: false
+
   
