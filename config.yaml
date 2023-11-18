@@ -28,7 +28,7 @@ features:
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true
-    auth: true
+    auth: false
   
   list_conversations:
     name: "List Conversations"
@@ -36,5 +36,5 @@ features:
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true
-    auth: true
+    auth: false
   
