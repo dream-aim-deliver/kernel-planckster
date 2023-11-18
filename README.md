@@ -53,18 +53,15 @@ cp .env.example .env
 
 ### Autogenerate Alembic Migrations
 
-Using docker containers to spin up an SQL database, you can autogenerate migrations with Alembic:
+Using docker containers to spin up an SQL database, you can autogenerate migrations with Alembic. From the root of the project, do:
 
 ```bash
-cd tests
 docker compose up -d
-cd ../
 alembic upgrade head
 alembic revision --autogenerate -m "migration message"
 alembic upgrade head
 alembic downgrade base
 alembic upgrade head
-cd tests
 docker compose down
 ```
 
