@@ -14,7 +14,7 @@ TQueryParameters = TypeVar("TQueryParameters", bound=BaseModel)
 TBodyParameters = TypeVar("TBodyParameters", bound=BaseModel)
 
 
-class FastAPIFeature(ABC, Generic[TQueryParameters, TBodyParameters, TBaseControllerParameters, TBaseViewModel]):
+class FastAPIEndpoint(ABC, Generic[TQueryParameters, TBodyParameters, TBaseControllerParameters, TBaseViewModel]):
     def __init__(
         self,
         name: str,
