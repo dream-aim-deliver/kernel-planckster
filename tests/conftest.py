@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 import psycopg2
 import pytest
-import yaml  # type: ignore
+import yaml
 import lib
 from lib.core.entity.models import ProtocolEnum
 from lib.infrastructure.config.containers import ApplicationContainer
