@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import logging
 from typing import List
 
-from lib.core.dto.user_repository_dto import GetUserDTO, NewUserResearchContextDTO
+from lib.core.dto.user_repository_dto import GetUserDTO, ListUserResearchContextsDTO, NewUserResearchContextDTO
 from lib.core.entity.models import SourceData, VectorStore
 
 
@@ -34,7 +34,9 @@ class UserRepositoryOutputPort(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def new_research_context(self, research_context_title: str, user_id: int, llm_id: int, source_data_ids: List[int]) -> NewUserResearchContextDTO:
+    def new_research_context(
+        self, research_context_title: str, user_id: int, llm_id: int, source_data_ids: List[int]
+    ) -> NewUserResearchContextDTO:
         """
         Creates a new research context for a user.
 
@@ -50,5 +52,17 @@ class UserRepositoryOutputPort(ABC):
         @type vector_store: VectorStore
         @return: A DTO containing the result of the operation.
         @rtype: NewUserResearchContextDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_research_contexts(self, user_id: int) -> ListUserResearchContextsDTO:
+        """
+        Lists all research contexts for a user.
+
+        @param user_id: The ID of the user to list research contexts for.
+        @type user_id: int
+        @return: A DTO containing the result of the operation.
+        @rtype: ListUserResearchContextsDTO
         """
         raise NotImplementedError
