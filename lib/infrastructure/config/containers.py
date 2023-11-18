@@ -5,6 +5,7 @@ from dependency_injector import containers, providers
 from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.features.demo_feature_container import DemoFeatureContainer
 from lib.infrastructure.config.features.list_conversations_feature_container import ListConversationsFeatureContainer
+from lib.infrastructure.config.features.create_default_data_feature_container import CreateDefaultDataFeatureContainer
 from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
 from lib.infrastructure.repository.sqla.sqla_user_repository import SQLAUserRepository
 import lib.infrastructure.rest.endpoints as endpoints
@@ -58,8 +59,15 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     # Features:
     demo_feature = providers.Container(DemoFeatureContainer, config=config.features.demo)
+
     list_conversations_feature = providers.Container(
         ListConversationsFeatureContainer,
         config=config.features.list_conversations,
         research_context_repository=sqla_research_context_repository,
+    )
+
+    create_default_data_feature = providers.Container(
+        CreateDefaultDataFeatureContainer,
+        config=config.features.create_default_data,
+        session_factory=db.provided.session,
     )

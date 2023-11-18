@@ -18,8 +18,9 @@ class KnowledgeSourceEnum(Enum):
     """
     Enum for the different knowledge sources that can be used to create a research context.
     """
+
     TELEGRAM = "telegram"
-    TWITTER = "twitter" 
+    TWITTER = "twitter"
     AUGMENTED = "augmented"
     SENTINEL = "sentinel"
 
