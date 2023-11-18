@@ -69,6 +69,83 @@ def cleanup_handler(signum, frame) -> None:  # type: ignore
     raise SystemExit(0)
 
 
+def start_depdendencies(
+    project_root_dir: Path,
+    compose_rel_path: Path = Path("docker-compose.yml"),
+    alemibc_ini_rel_path: Path = Path("alembic.ini"),
+    pg_host: str = "localhost",
+    pg_port: int = 5432,
+    pg_user: str = "postgres",
+    pg_password: str = "postgres",
+    pg_db: str = "kp-dev",
+) -> None:
+    print("Starting Docker Compose service...")
+    compose_file = str(project_root_dir / compose_rel_path)
+    print(f"Compose file: {compose_file}")
+    alembic_ini_path = str(project_root_dir / alemibc_ini_rel_path)
+    print(f"Alembic ini file: {alembic_ini_path}")
+    alembic_scripts_path = str(project_root_dir / "alembic")
+    # Start Docker Compose service
+    process = subprocess.Popen(
+        ["docker-compose", "-f", compose_file, "up", "-d"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    out, err = process.communicate()
+
+    # Print the output of the Docker Compose down command
+    print("Docker Compose Up Output:")
+    print(out)
+    print("Docker Compose Up Error:")
+    print(err)
+
+    # Wait for the service to be ready (you might need to adjust the delay)
+    wait_for_postgres_to_be_responsive(
+        db_host=pg_host,
+        db_port=pg_port,
+        db_user=pg_user,
+        db_password=pg_password,
+        db_name=pg_db,
+        max_retries=10,
+        wait_seconds=5,
+    )
+
+    # Run Alembic migrations
+    run_alembic_migrations(
+        alembic_ini_path=alembic_ini_path,
+        alembic_scripts_path=alembic_scripts_path,
+        db_host=pg_host,
+        db_port=pg_port,
+        db_user=pg_user,
+        db_password=pg_password,
+        db_name=pg_db,
+    )
+
+
+def stop_dependencies(
+    project_root_dir: Path,
+    compose_rel_path: Path = Path("docker-compose.yml"),
+) -> None:
+    print("Stopping Docker Compose service...")
+    compose_file = str(project_root_dir / compose_rel_path)
+    print(f"Compose file: {compose_file}")
+    # Stop Docker Compose service
+    process = subprocess.Popen(
+        ["docker-compose", "-f", compose_file, "down", "-v", "--remove-orphans"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    out, err = process.communicate()
+
+    # Print the output of the Docker Compose down command
+    print("Docker Compose Down Output:")
+    print(out)
+    print("Docker Compose Down Error:")
+    print(err)
+
+
 @contextmanager
 def docker_compose_context(  # type: ignore
     project_root_dir: Path,
@@ -84,56 +161,21 @@ def docker_compose_context(  # type: ignore
     signal.signal(signal.SIGTERM, cleanup_handler)
     signal.signal(signal.SIGINT, cleanup_handler)
     try:
-        print("Starting Docker Compose service...")
-        compose_file = str(project_root_dir / compose_rel_path)
-        print(f"Compose file: {compose_file}")
-        alembic_ini_path = str(project_root_dir / alemibc_ini_rel_path)
-        print(f"Alembic ini file: {alembic_ini_path}")
-        alembic_scripts_path = str(project_root_dir / "alembic")
-        # Start Docker Compose service
-        process = subprocess.Popen(
-            ["docker-compose", "-f", compose_file, "up", "-d"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
+        start_depdendencies(
+            project_root_dir=project_root_dir,
+            compose_rel_path=compose_rel_path,
+            alemibc_ini_rel_path=alemibc_ini_rel_path,
+            pg_host=pg_host,
+            pg_port=pg_port,
+            pg_user=pg_user,
+            pg_password=pg_password,
+            pg_db=pg_db,
         )
-
-        # Wait for the service to be ready (you might need to adjust the delay)
-        wait_for_postgres_to_be_responsive(
-            db_host=pg_host,
-            db_port=pg_port,
-            db_user=pg_user,
-            db_password=pg_password,
-            db_name=pg_db,
-            max_retries=10,
-            wait_seconds=5,
-        )
-
-        # Run Alembic migrations
-        run_alembic_migrations(
-            alembic_ini_path=alembic_ini_path,
-            alembic_scripts_path=alembic_scripts_path,
-            db_host=pg_host,
-            db_port=pg_port,
-            db_user=pg_user,
-            db_password=pg_password,
-            db_name=pg_db,
-        )
-
         yield
 
     finally:
         # Clean up: Stop and remove Docker Compose service
-        process = subprocess.Popen(
-            ["docker-compose", "-f", compose_file, "down", "-v", "--remove-orphans"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
+        stop_dependencies(
+            project_root_dir=project_root_dir,
+            compose_rel_path=compose_rel_path,
         )
-        out, err = process.communicate()
-
-        # Print the output of the Docker Compose down command
-        print("Docker Compose Down Output:")
-        print(out)
-        print("Docker Compose Down Error:")
-        print(err)

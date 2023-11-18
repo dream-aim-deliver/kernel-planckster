@@ -84,6 +84,33 @@ class FastAPIEndpoint(ABC, Generic[TQueryParameters, TBodyParameters, TBaseContr
     ) -> TBaseControllerParameters:
         raise NotImplementedError("You must implement the create_controller_parameters method in your feature")
 
+    # def endpoint(self) -> None:
+    #     if self.descriptor.verb == "GET":
+
+    #         @self.router.get(
+    #             path=self.descriptor.endpoint,
+    #             name=self.descriptor.name,
+    #             description=self.descriptor.description,
+    #             responses=self.responses,
+    #         )
+    #         async def endpoint_fn(
+    #             request: Request,
+    #             response: Response,
+    #             request_query_parameters: TQueryParameters | None = None,
+    #         ) -> TBaseViewModel:
+    #             controller_parameters: TBaseControllerParameters = self.create_controller_parameters(
+    #                 query=request_query_parameters,
+    #                 body=None,
+    #             )
+    #             view_model: TBaseViewModel | None = self.controller.execute(
+    #                 parameters=controller_parameters,
+    #             )
+    #             if view_model is None:
+    #                 raise HTTPException(500, "View model is None")
+    #             else:
+    #                 response.status_code = view_model.code
+    #                 return view_model
+
     def endpoint_fn(
         self,
         request: Request,
