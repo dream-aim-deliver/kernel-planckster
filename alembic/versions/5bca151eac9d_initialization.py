@@ -281,4 +281,5 @@ def downgrade() -> None:
     # These were added by hand
     # We need to manually drop the enums created in the upgrade
     sa_enum_protocolenum = sa.Enum(name="protocolenum")
-    sa_enum_protocolenum.drop(op.get_bind(), checkfirst=True)  # type: ignore    # ### end Alembic commands ###
+    sa_enum_protocolenum.drop(op.get_bind(), checkfirst=True)  # type: ignore
+    # ### end Alembic commands ###
