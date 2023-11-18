@@ -309,7 +309,7 @@ class SQLAVectorStore(Base, ModelBase):  # type: ignore
     name: Mapped[str] = mapped_column(String, nullable=False)
     lfn: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     protocol: Mapped[ProtocolEnum] = mapped_column(SAEnum(ProtocolEnum), nullable=False)
-    research_context_id: Mapped[int] = mapped_column(ForeignKey("research_context.id"), nullable=False)
+    research_context_id: Mapped[int] = mapped_column(ForeignKey("research_context.id"), nullable=True)
     research_context: Mapped["SQLAResearchContext"] = relationship("SQLAResearchContext", back_populates="vector_store")
     embedding_model_id: Mapped[int] = mapped_column(ForeignKey("embedding_model.id"), nullable=False)
 
