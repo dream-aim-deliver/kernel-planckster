@@ -32,6 +32,12 @@ class CreateDefaultDataUseCase(CreateDefaultDataInputPort):
         successful_ks: Dict[str, int] = {}
 
         for ks_enum in ks_enum_members:
+            queried_sqla_ks = self.session.query(SQLAKnowledgeSource).filter_by(source=ks_enum).first()
+
+            if queried_sqla_ks is not None:
+                successful_ks[f"{queried_sqla_ks.source.name}"] = queried_sqla_ks.id
+                continue
+
             sqla_ks_alpha = SQLAKnowledgeSource(
                 source=ks_enum,
                 content_metadata=self._default_parameters["ks_metadata"],

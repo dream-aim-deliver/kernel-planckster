@@ -44,6 +44,6 @@ features:
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true
-    auth: false
+    auth: true
 
   

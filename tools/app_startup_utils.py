@@ -87,7 +87,7 @@ def start_depdendencies(
     alembic_scripts_path = str(project_root_dir / "alembic")
     # Start Docker Compose service
     process = subprocess.Popen(
-        ["docker-compose", "-f", compose_file, "up", "-d"],
+        ["docker", "compose", "-f", compose_file, "up", "-d"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -132,7 +132,7 @@ def stop_dependencies(
     print(f"Compose file: {compose_file}")
     # Stop Docker Compose service
     process = subprocess.Popen(
-        ["docker-compose", "-f", compose_file, "down", "-v", "--remove-orphans"],
+        ["docker", "compose", "-f", compose_file, "down", "-v", "--remove-orphans"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
