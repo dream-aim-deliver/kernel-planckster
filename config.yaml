@@ -38,7 +38,7 @@ features:
     version: "1.0.0"
     verb: "GET"
     tags: ["client: websat"]
-    endpoint: "/conversations"
+    endpoint: "/research_context/{id}/conversations"
     enabled: true
     auth: true
   

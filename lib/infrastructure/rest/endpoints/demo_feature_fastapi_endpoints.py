@@ -51,6 +51,7 @@ class DemoFastAPIFeature(FastAPIEndpoint[DemoFastAPIQueryParameters, Any, DemoCo
     def endpoint_fn(  # type: ignore
         self,
         request: Request,
+        id: int,
         response: Response,
         request_query_parameters: Annotated[DemoFastAPIQueryParameters, Depends()],
     ) -> DemoViewModel | None:
