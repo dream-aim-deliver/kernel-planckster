@@ -4,19 +4,6 @@ from lib.core.sdk.dto import BaseDTO
 from lib.core.entity.models import Conversation, MessageQuery, ResearchContext, SourceData, TMessageBase
 
 
-class NewConversationDTO(BaseDTO[Conversation]):
-    """
-    Basic DTO for conversations
-
-    @param conversation_id: The id of the conversation
-    @type conversation_id: int | None
-    @param data: The conversation to be created
-    @type data: Conversation | List[Conversation] | None | List[None]
-    """
-
-    conversation_id: int | None = None
-
-
 class GetConversationDTO(BaseDTO[Conversation]):
     """
     DTO for a conversation obtained by ID
