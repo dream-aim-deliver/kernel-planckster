@@ -143,7 +143,7 @@ class SoftModelBase(ModelBase):
         self.save(session=session)  # TODO: typing: if session is None, it doesn't have save
 
 
-class SQLAUser(Base, ModelBase):  # type: ignore
+class SQLAUser(Base, SoftModelBase):  # type: ignore
     """
     SQLAlchemy User model
 

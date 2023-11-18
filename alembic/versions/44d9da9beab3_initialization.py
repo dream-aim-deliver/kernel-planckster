@@ -1,8 +1,8 @@
 """Initialization
 
-Revision ID: 231d7b02e432
+Revision ID: 44d9da9beab3
 Revises: 
-Create Date: 2023-11-16 03:12:32.288823
+Create Date: 2023-11-18 03:50:38.198624
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "231d7b02e432"
+revision: str = "44d9da9beab3"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -67,9 +67,12 @@ def upgrade() -> None:
         "user",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("sid", sa.String(), nullable=False),
+        sa.Column("deleted", sa.Boolean(), nullable=False),
+        sa.Column("deleted_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.CheckConstraint("CREATED_AT IS NOT NULL", name="USER_CREATED_NN"),
+        sa.CheckConstraint("DELETED IS NOT NULL", name="USER_DELETED_NN"),
         sa.CheckConstraint("UPDATED_AT IS NOT NULL", name="USER_UPDATED_NN"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("sid"),
@@ -278,5 +281,4 @@ def downgrade() -> None:
     # These were added by hand
     # We need to manually drop the enums created in the upgrade
     sa_enum_protocolenum = sa.Enum(name="protocolenum")
-    sa_enum_protocolenum.drop(op.get_bind(), checkfirst=True)  # type: ignore
-    # ### end Alembic commands ###
+    sa_enum_protocolenum.drop(op.get_bind(), checkfirst=True)  # type: ignore    # ### end Alembic commands ###
