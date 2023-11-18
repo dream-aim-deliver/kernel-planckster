@@ -11,6 +11,7 @@ class GetUserDTO(BaseDTO[User]):
 
     data: User | None = None
 
+
 class NewUserResearchContextDTO(BaseDTO[ResearchContext]):
     """
     A DTO for whenever a new research context is created
@@ -20,3 +21,14 @@ class NewUserResearchContextDTO(BaseDTO[ResearchContext]):
     """
 
     research_context_id: int | None = None
+
+
+class ListUserResearchContextsDTO(BaseDTO[ResearchContext]):
+    """
+    A DTO for listing the research contexts of a user
+
+    @param data: The research contexts
+    @type data: List[ResearchContext] | None
+    """
+
+    data: list[ResearchContext] | None = None

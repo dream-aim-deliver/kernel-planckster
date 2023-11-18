@@ -1,12 +1,21 @@
 from typing import List
-from lib.core.dto.user_repository_dto import GetUserDTO, NewUserResearchContextDTO
-from lib.core.entity.models import SourceData, User, VectorStore
+from lib.core.dto.user_repository_dto import GetUserDTO, ListUserResearchContextsDTO, NewUserResearchContextDTO
+from lib.core.entity.models import ResearchContext, SourceData, User, VectorStore
 from lib.core.ports.secondary.user_repository import UserRepositoryOutputPort
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from sqlalchemy.orm import Session
 
-from lib.infrastructure.repository.sqla.models import SQLAResearchContext, SQLASourceData, SQLAUser, SQLAVectorStore
-from lib.infrastructure.repository.sqla.utils import convert_sqla_user_to_core_user
+from lib.infrastructure.repository.sqla.models import (
+    SQLALLM,
+    SQLAResearchContext,
+    SQLASourceData,
+    SQLAUser,
+    SQLAVectorStore,
+)
+from lib.infrastructure.repository.sqla.utils import (
+    convert_sqla_research_context_to_core_research_context,
+    convert_sqla_user_to_core_user,
+)
 
 
 class SQLAUserRepository(UserRepositoryOutputPort):
@@ -63,8 +72,9 @@ class SQLAUserRepository(UserRepositoryOutputPort):
 
         return GetUserDTO(status=True, data=core_user)
 
-
-    def new_research_context(self, research_context_title: str, user_id: int, llm_id: int, source_data_ids: List[int]) -> NewUserResearchContextDTO:
+    def new_research_context(
+        self, research_context_title: str, user_id: int, llm_id: int, source_data_ids: List[int]
+    ) -> NewUserResearchContextDTO:
         """
         Creates a new research context for a user.
 
@@ -105,7 +115,7 @@ class SQLAUserRepository(UserRepositoryOutputPort):
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
-        
+
         if source_data_ids is None:
             self.logger.error("Source data cannot be None")
             errorDTO = NewUserResearchContextDTO(
@@ -117,7 +127,7 @@ class SQLAUserRepository(UserRepositoryOutputPort):
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
-        
+
         if source_data_ids == []:
             self.logger.error("Source data cannot be empty")
             errorDTO = NewUserResearchContextDTO(
@@ -129,7 +139,6 @@ class SQLAUserRepository(UserRepositoryOutputPort):
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
-
 
         sqla_source_data: List[SQLASourceData] = []
         sqla_source_data_error_ids: List[int] = []
@@ -147,7 +156,7 @@ class SQLAUserRepository(UserRepositoryOutputPort):
             except:
                 sqla_source_data_error_ids.append(source_data_id)
                 continue
-        
+
         if sqla_source_data_error_ids != []:
             self.logger.error(f"Source data with IDs {sqla_source_data_error_ids} not found in the database")
             errorDTO = NewUserResearchContextDTO(
@@ -159,7 +168,6 @@ class SQLAUserRepository(UserRepositoryOutputPort):
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
-
 
         sqla_new_research_context: SQLAResearchContext = SQLAResearchContext(
             title=research_context_title,
@@ -173,7 +181,7 @@ class SQLAUserRepository(UserRepositoryOutputPort):
             self.session.commit()
 
             return NewUserResearchContextDTO(status=True, research_context_id=sqla_new_research_context.id)
-        
+
         except Exception as e:
             self.logger.error(f"Error while creating new research context: {e}")
             errorDTO = NewUserResearchContextDTO(
@@ -185,3 +193,48 @@ class SQLAUserRepository(UserRepositoryOutputPort):
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
+
+    def list_research_contexts(self, user_id: int) -> ListUserResearchContextsDTO:
+        """
+        Lists all research contexts for a user.
+
+        @param user_id: The ID of the user to list research contexts for.
+        @type user_id: int
+        @return: A DTO containing the result of the operation.
+        @rtype: ListUserResearchContextsDTO
+        """
+
+        if user_id is None:
+            self.logger.error("User ID cannot be None")
+            errorDTO = ListUserResearchContextsDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="User ID cannot be None",
+                errorName="User ID not provided",
+                errorType="UserIdNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_user: SQLAUser | None = self.session.get(SQLAUser, user_id)
+
+        if sqla_user is None:
+            self.logger.error(f"User with ID {user_id} not found in the database")
+            errorDTO = ListUserResearchContextsDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"User with ID {user_id} not found in the database",
+                errorName="User not found",
+                errorType="UserNotFound",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_research_contexts: List[SQLAResearchContext] = sqla_user.research_contexts
+        core_research_contexts: List[ResearchContext] = []
+
+        for sqla_research_context in sqla_research_contexts:
+            core_research_context = convert_sqla_research_context_to_core_research_context(sqla_research_context)
+            core_research_contexts.append(core_research_context)
+
+        return ListUserResearchContextsDTO(status=True, data=core_research_contexts)
