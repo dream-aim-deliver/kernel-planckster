@@ -83,4 +83,4 @@ extend-exclude = '''
 
 
 [tool.poetry.scripts]
-dev = 'lib.infrastructure.rest.main:server'
+dev = 'lib.infrastructure.rest.main:dev_server'

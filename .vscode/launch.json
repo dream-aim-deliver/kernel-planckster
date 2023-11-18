@@ -10,7 +10,11 @@
             "request": "launch",
             "program": "${workspaceFolder}/lib/infrastructure/rest/main.py",
             "console": "integratedTerminal",
-            "justMyCode": false
+            "justMyCode": false,
+            "env": {
+                "KP_MODE": "development"
+            },
+            "postDebugTask":  "remove-docker-containers",
         }
     ]
 }
