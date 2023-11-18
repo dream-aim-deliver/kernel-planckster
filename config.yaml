@@ -26,9 +26,7 @@ features:
     name: "Sum Feature"
     description: "Adds 2 numbers"
     version: "1.0.0"
-    verb: "GET"
     tags: ["client: websat"]
-    endpoint: "/sum"
     enabled: true
     auth: true
   
@@ -36,9 +34,7 @@ features:
     name: "List Conversations"
     description: "List all conversations in a research context"
     version: "1.0.0"
-    verb: "GET"
     tags: ["client: websat"]
-    endpoint: "/research_context/{id}/conversations"
     enabled: true
     auth: true
   

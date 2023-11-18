@@ -12,3 +12,31 @@ class ListConversationsViewModel(BaseViewModel):
 
     research_context_id: int = Field(description="Research context id for which the conversations are to be listed.")
     conversations: List[Conversation] = Field(description="List of conversations in the research context.")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "research_context_id": 1,
+                    "conversations": [
+                        {
+                            "id": 1,
+                            "research_context_id": 1,
+                            "name": "Conversation 1",
+                            "description": "Conversation 1 Description",
+                            "created_at": "2021-05-01T00:00:00",
+                            "updated_at": "2021-05-01T00:00:00",
+                        },
+                        {
+                            "id": 2,
+                            "research_context_id": 1,
+                            "name": "Conversation 2",
+                            "description": "Conversation 2 Description",
+                            "created_at": "2021-05-01T00:00:00",
+                            "updated_at": "2021-05-01T00:00:00",
+                        },
+                    ],
+                }
+            ]
+        }
+    }
