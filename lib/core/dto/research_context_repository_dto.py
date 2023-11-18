@@ -17,10 +17,8 @@ class NewResearchContextConversationDTO(BaseDTO[Conversation]):
     """
     Basic DTO for conversations
 
-    @param conversation_id: The id of the conversation
+    @param conversation_id: The id of the new conversation
     @type conversation_id: int | None
-    @param data: The conversation to be created
-    @type data: Conversation | List[Conversation] | None | List[None]
     """
 
     conversation_id: int | None = None
