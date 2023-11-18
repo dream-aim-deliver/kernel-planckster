@@ -1,7 +1,11 @@
 from abc import ABC, abstractmethod
 import logging
 
-from lib.core.dto.research_context_repository_dto import GetResearchContextDTO, ListResearchContextConversationsDTO
+from lib.core.dto.research_context_repository_dto import (
+    GetResearchContextDTO,
+    ListResearchContextConversationsDTO,
+    NewResearchContextConversationDTO,
+)
 
 
 class ResearchContextRepositoryOutputPort(ABC):
@@ -28,6 +32,20 @@ class ResearchContextRepositoryOutputPort(ABC):
         @type research_context_id: int
         @return: A DTO containing the result of the operation.
         @rtype: GetResearchContextDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def new_conversation(self, research_context_id: int, conversation_title: str) -> NewResearchContextConversationDTO:
+        """
+        Creates a new conversation in the research context.
+
+        @param research_context_id: The ID of the research context to create the conversation in.
+        @type research_context_id: int
+        @param conversation_title: The title of the conversation.
+        @type conversation_title: str
+        @return: A DTO containing the result of the operation.
+        @rtype: ConversationDTO
         """
         raise NotImplementedError
 

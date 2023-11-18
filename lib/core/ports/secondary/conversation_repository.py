@@ -6,7 +6,6 @@ from lib.core.dto.conversation_repository_dto import (
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
-    NewConversationDTO,
     SendMessageToConversationDTO,
     UpdateConversationDTO,
 )
@@ -23,20 +22,6 @@ class ConversationRepository(ABC):
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
-
-    @abstractmethod
-    def new_conversation(self, research_context_id: int, conversation_title: str) -> NewConversationDTO:
-        """
-        Creates a new conversation in the research context.
-
-        @param research_context_id: The ID of the research context to create the conversation in.
-        @type research_context_id: int
-        @param conversation_title: The title of the conversation.
-        @type conversation_title: str
-        @return: A DTO containing the result of the operation.
-        @rtype: ConversationDTO
-        """
-        raise NotImplementedError
 
     @abstractmethod
     def get_conversation(self, conversation_id: int) -> GetConversationDTO:

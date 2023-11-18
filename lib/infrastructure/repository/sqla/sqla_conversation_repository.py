@@ -6,7 +6,6 @@ from lib.core.dto.conversation_repository_dto import (
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
-    NewConversationDTO,
     SendMessageToConversationDTO,
     UpdateConversationDTO,
 )
@@ -40,79 +39,6 @@ class SQLAConversationRepository(ConversationRepository):
 
         with session_factory() as session:
             self.session = session
-
-    def new_conversation(self, research_context_id: int, conversation_title: str) -> NewConversationDTO:
-        """
-        Creates a new conversation in the research context.
-
-        @param research_context_id: The ID of the research context to create the conversation in.
-        @type research_context_id: int
-        @param conversation_title: The title of the conversation.
-        @type conversation_title: str
-        @return: A DTO containing the result of the operation.
-        @rtype: ConversationDTO
-        """
-        if research_context_id is None:
-            errorDTO = NewConversationDTO(
-                status=False,
-                errorCode=-1,
-                errorMessage="Research Context ID cannot be None",
-                errorName="Research Context ID not provided",
-                errorType="ResearchContextIdNotProvided",
-            )
-            self.logger.error(f"{errorDTO}")
-            return errorDTO
-
-        if conversation_title is None:
-            errorDTO = NewConversationDTO(
-                status=False,
-                errorCode=-1,
-                errorMessage="Conversation title cannot be None",
-                errorName="Conversation title not provided",
-                errorType="ConversationTitleNotProvided",
-            )
-            self.logger.error(f"{errorDTO}")
-            return errorDTO
-
-        sqla_research_context: SQLAResearchContext | None = (
-            self.session.query(SQLAResearchContext).filter_by(id=research_context_id).first()
-        )
-
-        if sqla_research_context is None:
-            self.logger.error(f"Research Context with ID {research_context_id} not found in the database.")
-            errorDTO = NewConversationDTO(
-                status=False,
-                errorCode=-1,
-                errorMessage=f"Research Context with ID {research_context_id} not found in the database.",
-                errorName="Research Context not found",
-                errorType="ResearchContextNotFound",
-            )
-            self.logger.error(f"{errorDTO}")
-            return errorDTO
-
-        sqla_new_conversation: SQLAConversation = SQLAConversation(
-            title=conversation_title,
-            research_context_id=research_context_id,
-            messages=[],
-        )
-
-        try:
-            sqla_new_conversation.save(session=self.session)
-            self.session.commit()
-
-            return NewConversationDTO(status=True, conversation_id=sqla_new_conversation.id)
-
-        except Exception as e:
-            self.logger.error(f"Error while creating new conversation: {e}")
-            errorDTO = NewConversationDTO(
-                status=False,
-                errorCode=-1,
-                errorMessage=f"Error while creating new conversation: {e}",
-                errorName="Error while creating new conversation",
-                errorType="ErrorWhileCreatingNewConversation",
-            )
-            self.logger.error(f"{errorDTO}")
-            return errorDTO
 
     def get_conversation(self, conversation_id: int) -> GetConversationDTO:
         """

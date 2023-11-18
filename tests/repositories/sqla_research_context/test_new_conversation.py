@@ -1,8 +1,7 @@
 import random
 from faker import Faker
-from lib.core.dto.conversation_repository_dto import (
-    NewConversationDTO,
-)
+from lib.core.dto.research_context_repository_dto import NewResearchContextConversationDTO
+
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
@@ -20,7 +19,7 @@ def test_create_new_conversation(
     fake_conversation: SQLAConversation,
     fake_user_with_conversation: SQLAUser,
 ) -> None:
-    conversation_repository = app_initialization_container.sqla_conversation_repository()
+    research_context_repository = app_initialization_container.sqla_research_context_repository()
 
     user_with_conv = fake_user_with_conversation
     llm = SQLALLM(
@@ -37,7 +36,7 @@ def test_create_new_conversation(
     with db_session() as session:
         session.add(researchContext)
         session.commit()
-        conv_DTO: NewConversationDTO = conversation_repository.new_conversation(
+        conv_DTO: NewResearchContextConversationDTO = research_context_repository.new_conversation(
             research_context_id=researchContext.id, conversation_title=conversation_title
         )
 
@@ -52,9 +51,9 @@ def test_create_new_conversation(
 def test_error_new_conversation_none_research_context_id(
     app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_initialization_container.sqla_conversation_repository()
+    research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    conv_DTO: NewConversationDTO = conversation_repository.new_conversation(research_context_id=None, conversation_title="test")  # type: ignore
+    conv_DTO: NewResearchContextConversationDTO = research_context_repository.new_conversation(research_context_id=None, conversation_title="test")  # type: ignore
 
     assert conv_DTO.status == False
     assert conv_DTO.errorCode == -1
@@ -66,9 +65,9 @@ def test_error_new_conversation_none_research_context_id(
 def test_error_new_conversation_none_conversation_title(
     app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_initialization_container.sqla_conversation_repository()
+    research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    conv_DTO: NewConversationDTO = conversation_repository.new_conversation(research_context_id=1, conversation_title=None)  # type: ignore
+    conv_DTO: NewResearchContextConversationDTO = research_context_repository.new_conversation(research_context_id=1, conversation_title=None)  # type: ignore
 
     assert conv_DTO.status == False
     assert conv_DTO.errorCode == -1
@@ -80,10 +79,10 @@ def test_error_new_conversation_none_conversation_title(
 def test_error_new_conversation_none_sqla_research_context(
     app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
-    conversation_repository = app_initialization_container.sqla_conversation_repository()
+    research_context_repository = app_initialization_container.sqla_research_context_repository()
 
     irrealistic_ID = 99999999
-    conv_DTO: NewConversationDTO = conversation_repository.new_conversation(
+    conv_DTO: NewResearchContextConversationDTO = research_context_repository.new_conversation(
         research_context_id=irrealistic_ID, conversation_title="test"
     )
 
