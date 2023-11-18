@@ -135,14 +135,26 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
         @rtype: ListResearchContextConversationsDTO
         """
 
+        if research_context_id is None:
+            errorDTO = ListResearchContextConversationsDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Research Context ID cannot be None",
+                errorName="Research Context ID not provided",
+                errorType="ResearchContextIdNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
         sqla_research_context: SQLAResearchContext | None = self.session.get(SQLAResearchContext, research_context_id)
+
         if sqla_research_context is None:
             self.logger.error(f"Research context {research_context_id} not found.")
             errorDTO = ListResearchContextConversationsDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage=f"Research context {research_context_id} not found.",
-                errorName="ResearchContextNotFound",
+                errorMessage=f"Research Context with ID {research_context_id} not found in the database",
+                errorName="Research Context not found",
                 errorType="ResearchContextNotFound",
             )
             self.logger.error(f"{errorDTO}")

@@ -86,3 +86,39 @@ def test_empty_list_conversations_in_research_context(
         assert list_convs_DTO is not None
         assert list_convs_DTO.status == True
         assert list_convs_DTO.data == []
+
+
+def test_error_list_conversations_research_context_id_is_None(
+    app_initialization_container: ApplicationContainer,
+    db_session: TDatabaseFactory,
+) -> None:
+    sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
+
+    list_convs_DTO: ListResearchContextConversationsDTO = sqla_research_context_repository.list_conversations(research_context_id=None)  # type: ignore
+
+    assert list_convs_DTO is not None
+    assert list_convs_DTO.status == False
+    assert list_convs_DTO.errorCode == -1
+    assert list_convs_DTO.errorMessage == "Research Context ID cannot be None"
+    assert list_convs_DTO.errorName == "Research Context ID not provided"
+    assert list_convs_DTO.errorType == "ResearchContextIdNotProvided"
+
+
+def test_error_list_conversations_research_context_not_found_by_id(
+    app_initialization_container: ApplicationContainer,
+    db_session: TDatabaseFactory,
+) -> None:
+    sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
+
+    irrealistic_id = 99999999
+
+    list_convs_DTO: ListResearchContextConversationsDTO = sqla_research_context_repository.list_conversations(
+        research_context_id=irrealistic_id
+    )
+
+    assert list_convs_DTO is not None
+    assert list_convs_DTO.status == False
+    assert list_convs_DTO.errorCode == -1
+    assert list_convs_DTO.errorMessage == f"Research Context with ID {irrealistic_id} not found in the database"
+    assert list_convs_DTO.errorName == "Research Context not found"
+    assert list_convs_DTO.errorType == "ResearchContextNotFound"

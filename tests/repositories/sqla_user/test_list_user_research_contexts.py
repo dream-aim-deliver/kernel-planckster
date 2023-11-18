@@ -82,3 +82,39 @@ def test_empty_list_research_contexts_in_user(
         assert list_research_contexts_DTO is not None
         assert list_research_contexts_DTO.status == True
         assert list_research_contexts_DTO.data == []
+
+
+def test_error_list_research_contexts_user_id_is_none(
+    app_initialization_container: ApplicationContainer,
+    db_session: TDatabaseFactory,
+) -> None:
+    sqla_user_repository = app_initialization_container.sqla_user_repository()
+
+    list_research_contexts_DTO: ListUserResearchContextsDTO = sqla_user_repository.list_research_contexts(user_id=None)  # type: ignore
+
+    assert list_research_contexts_DTO is not None
+    assert list_research_contexts_DTO.status == False
+    assert list_research_contexts_DTO.errorCode == -1
+    assert list_research_contexts_DTO.errorMessage == "User ID cannot be None"
+    assert list_research_contexts_DTO.errorName == "User ID not provided"
+    assert list_research_contexts_DTO.errorType == "UserIdNotProvided"
+
+
+def test_error_list_research_contexts_user_not_found_by_id(
+    app_initialization_container: ApplicationContainer,
+    db_session: TDatabaseFactory,
+) -> None:
+    sqla_user_repository = app_initialization_container.sqla_user_repository()
+
+    irrealistic_id = 99999999
+
+    list_research_contexts_DTO: ListUserResearchContextsDTO = sqla_user_repository.list_research_contexts(
+        user_id=irrealistic_id
+    )
+
+    assert list_research_contexts_DTO is not None
+    assert list_research_contexts_DTO.status == False
+    assert list_research_contexts_DTO.errorCode == -1
+    assert list_research_contexts_DTO.errorMessage == f"User with ID {irrealistic_id} not found in the database"
+    assert list_research_contexts_DTO.errorName == "User not found"
+    assert list_research_contexts_DTO.errorType == "UserNotFound"
