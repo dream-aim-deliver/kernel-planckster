@@ -132,7 +132,7 @@ def app_container(app_migrated_db: Database) -> ApplicationContainer:
 def server(app_container: None) -> FastAPI:
     from lib.infrastructure.rest.main import create_app
 
-    app, _ = create_app(app_container)
+    app = create_app()
     return app
 
 
