@@ -1,3 +1,4 @@
+import random
 from faker import Faker
 from lib.core.dto.research_context_repository_dto import ListResearchContextConversationsDTO
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -18,9 +19,12 @@ def test_list_conversations_in_research_context(
         llm_name=fake.name(),
         research_contexts=user_with_conv.research_contexts,
     )
-    research_context_title = user_with_conv.research_contexts[0].title
 
-    conversations = user_with_conv.research_contexts[0].conversations
+    rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
+    research_context = user_with_conv.research_contexts[rand_int_1]
+    research_context_title = research_context.title
+
+    conversations = research_context.conversations
     conversation_titles = [conversation.title for conversation in conversations]
 
     with db_session() as session:
@@ -28,10 +32,12 @@ def test_list_conversations_in_research_context(
         session.commit()
 
     with db_session() as session:
-        research_context = session.query(SQLAResearchContext).filter_by(title=research_context_title).first()
-        assert research_context is not None
+        sqla_research_context = session.query(SQLAResearchContext).filter_by(title=research_context_title).first()
+
+        assert sqla_research_context is not None
+
         list_convs_DTO: ListResearchContextConversationsDTO = sqla_research_context_repository.list_conversations(
-            research_context.id
+            sqla_research_context.id
         )
         assert list_convs_DTO is not None
         assert list_convs_DTO.status == True
@@ -41,3 +47,42 @@ def test_list_conversations_in_research_context(
 
         for title in conversation_titles:
             assert title in sql_convs_titles
+
+
+def test_empty_list_conversations_in_research_context(
+    app_initialization_container: ApplicationContainer,
+    db_session: TDatabaseFactory,
+    fake: Faker,
+    fake_user: SQLAUser,
+) -> None:
+    sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
+
+    research_context = SQLAResearchContext(
+        title=fake.name(),
+    )
+
+    user = fake_user
+    user.research_contexts.append(research_context)
+
+    llm = SQLALLM(
+        llm_name=fake.name(),
+        research_contexts=user.research_contexts,
+    )
+
+    research_context_title = user.research_contexts[0].title
+
+    with db_session() as session:
+        user.save(session=session, flush=True)
+        session.commit()
+
+    with db_session() as session:
+        sqla_research_context = session.query(SQLAResearchContext).filter_by(title=research_context_title).first()
+
+        assert sqla_research_context is not None
+
+        list_convs_DTO: ListResearchContextConversationsDTO = sqla_research_context_repository.list_conversations(
+            sqla_research_context.id
+        )
+        assert list_convs_DTO is not None
+        assert list_convs_DTO.status == True
+        assert list_convs_DTO.data == []
