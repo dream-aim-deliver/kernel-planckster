@@ -14,6 +14,16 @@ class ProtocolEnum(Enum):
     LOCAL = "local"
 
 
+class KnowledgeSourceEnum(Enum):
+    """
+    Enum for the different knowledge sources that can be used to create a research context.
+    """
+    TELEGRAM = "telegram"
+    TWITTER = "twitter" 
+    AUGMENTED = "augmented"
+    SENTINEL = "sentinel"
+
+
 class BaseKernelPlancksterModel(BaseModel):
     """
     Base class for all models in the project
@@ -66,12 +76,12 @@ class KnowledgeSource(BaseSoftDeleteKernelPlancksterModel):
     Represents a knowledge source, a collection of sources defined by the user
 
     @param id: the id of the knowledge source
-    @param source: the source of the source_data (e.g., Google, YouTube, UserUpload, etc.)
+    @param source: the source of the source_data (e.g., Twitter, Telegram, etc.)
     @param content_metadata: depending on the source, can be the query made to the source or the list of user uploads; meant to be a json formatted string, including e.g. an URL
     """
 
     id: int
-    source: str
+    source: KnowledgeSourceEnum
     content_metadata: str
 
     def __str__(self) -> str:
