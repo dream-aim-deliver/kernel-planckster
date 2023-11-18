@@ -6,7 +6,7 @@ from fastapi import APIRouter, FastAPI
 import subprocess
 
 import uvicorn
-from lib.core.sdk.fastapi import FastAPIFeature
+from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.containers import ApplicationContainer
 import lib.infrastructure.rest.endpoints as endpoints
@@ -29,7 +29,7 @@ def create_app(app_container: ApplicationContainer | None = None) -> tuple[FastA
             (
                 obj
                 for name, obj in module.__dict__.items()
-                if isinstance(obj, type) and "FastAPIFeature" in obj.__name__ and obj != FastAPIFeature
+                if isinstance(obj, type) and "FastAPIFeature" in obj.__name__ and obj != FastAPIEndpoint
             ),
             None,
         )

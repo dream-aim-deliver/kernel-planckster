@@ -1,7 +1,7 @@
 from typing import Annotated, Any
 
 from fastapi import Depends, Request, Response
-from lib.core.sdk.fastapi import FastAPIFeature
+from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.list_conversations_view_model import ListConversationsViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.controller.list_conversations_controller import ListConversationsControllerParameters
@@ -10,7 +10,7 @@ from dependency_injector.wiring import inject, Provide
 
 
 class ListConversationsFastAPIFeature(
-    FastAPIFeature[
+    FastAPIEndpoint[
         ListConversationsControllerParameters, Any, ListConversationsControllerParameters, ListConversationsViewModel
     ]
 ):
