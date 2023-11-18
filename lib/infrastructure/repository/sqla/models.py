@@ -20,7 +20,7 @@ from sqlalchemy.orm import mapped_column, object_mapper, relationship, Mapped, M
 from sqlalchemy.orm.session import Session
 
 from lib.infrastructure.repository.sqla.database import Base
-from lib.core.entity.models import ProtocolEnum
+from lib.core.entity.models import KnowledgeSourceEnum, ProtocolEnum
 
 
 class ModelBase(object):
@@ -183,7 +183,7 @@ class SQLAKnowledgeSource(Base, SoftModelBase):  # type: ignore
     __tablename__ = "knowledge_source"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    source: Mapped[str] = mapped_column(String, nullable=False)
+    source: Mapped[KnowledgeSourceEnum] = mapped_column(SAEnum(KnowledgeSourceEnum), nullable=False)
     content_metadata: Mapped[str] = mapped_column(String, nullable=False)
     source_data: Mapped[List["SQLASourceData"]] = relationship(
         "SQLASourceData", backref="knowledge_source", cascade="all, delete"
