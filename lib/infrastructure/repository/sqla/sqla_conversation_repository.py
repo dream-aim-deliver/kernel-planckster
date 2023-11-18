@@ -6,7 +6,6 @@ from lib.core.dto.conversation_repository_dto import (
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
-    ListConversationsDTO,
     NewConversationDTO,
     SendMessageToConversationDTO,
     UpdateConversationDTO,
@@ -460,47 +459,6 @@ class SQLAConversationRepository(ConversationRepository):
         return ListConversationSourcesDTO(
             status=True,
             data=core_source_data,
-        )
-
-    def list_conversations(self) -> ListConversationsDTO:
-        """
-        Lists all conversations in the database.
-
-        @return: A DTO containing the result of the operation.
-        @rtype: ListConversationsDTO
-        """
-
-        sqla_conversations: List[SQLAConversation] = self.session.query(SQLAConversation).all()
-
-        if sqla_conversations == []:
-            self.logger.error("No Conversations found in the database.")
-            errorDTO = ListConversationsDTO(
-                status=False,
-                errorCode=-1,
-                errorMessage="No Conversations found in the database.",
-                errorName="No Conversations found",
-                errorType="NoConversationsFound",
-            )
-            self.logger.error(f"{errorDTO}")
-            return errorDTO
-
-        core_conversations: List[Conversation] = []
-
-        for sqla_conversation in sqla_conversations:
-            core_conversations.append(
-                Conversation(
-                    created_at=sqla_conversation.created_at,
-                    updated_at=sqla_conversation.updated_at,
-                    deleted=sqla_conversation.deleted,
-                    deleted_at=sqla_conversation.deleted_at,
-                    id=sqla_conversation.id,
-                    title=sqla_conversation.title,
-                )
-            )
-
-        return ListConversationsDTO(
-            status=True,
-            data=core_conversations,
         )
 
     def send_message_to_conversation(self, conversation_id: int, message_content: str) -> SendMessageToConversationDTO:
