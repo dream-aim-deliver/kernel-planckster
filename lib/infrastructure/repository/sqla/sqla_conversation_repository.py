@@ -11,11 +11,7 @@ from lib.core.dto.conversation_repository_dto import (
     UpdateConversationDTO,
 )
 from lib.core.entity.models import (
-    Conversation,
     MessageBase,
-    MessageQuery,
-    MessageResponse,
-    ResearchContext,
     SourceData,
     TMessageBase,
 )
@@ -29,7 +25,13 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAResearchContext,
     SQLASourceData,
 )
-from lib.infrastructure.repository.sqla.utils import convert_sqla_conversation_to_core_conversation
+from lib.infrastructure.repository.sqla.utils import (
+    convert_sqla_conversation_to_core_conversation,
+    convert_sqla_message_query_to_core_message_query,
+    convert_sqla_message_response_to_core_message_response,
+    convert_sqla_research_context_to_core_research_context,
+    convert_sqla_source_data_to_core_source_data,
+)
 
 
 class SQLAConversationRepository(ConversationRepository):
@@ -96,10 +98,9 @@ class SQLAConversationRepository(ConversationRepository):
 
         try:
             sqla_new_conversation.save(session=self.session)
-            new_conversation = self.session.query(SQLAConversation).filter_by(id=sqla_new_conversation.id)[0]
             self.session.commit()
 
-            return NewConversationDTO(status=True, conversation_id=new_conversation.id)
+            return NewConversationDTO(status=True, conversation_id=sqla_new_conversation.id)
 
         except Exception as e:
             self.logger.error(f"Error while creating new conversation: {e}")
@@ -212,14 +213,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        core_research_context = ResearchContext(
-            created_at=sqla_research_context.created_at,
-            updated_at=sqla_research_context.updated_at,
-            deleted=sqla_research_context.deleted,
-            deleted_at=sqla_research_context.deleted_at,
-            id=sqla_research_context.id,
-            title=sqla_research_context.title,
-        )
+        core_research_context = convert_sqla_research_context_to_core_research_context(sqla_research_context)
 
         return GetConversationResearchContextDTO(
             status=True,
@@ -265,26 +259,11 @@ class SQLAConversationRepository(ConversationRepository):
 
         for sqla_message in sqla_conversation.messages:
             if isinstance(sqla_message, SQLAMessageQuery):
-                core_message_query = MessageQuery(
-                    created_at=sqla_message.created_at,
-                    updated_at=sqla_message.updated_at,
-                    deleted=sqla_message.deleted,
-                    deleted_at=sqla_message.deleted_at,
-                    id=sqla_message.id,
-                    content=sqla_message.content,
-                    timestamp=sqla_message.timestamp,
-                )
+                core_message_query = convert_sqla_message_query_to_core_message_query(sqla_message)
                 core_messages.append(core_message_query)
+
             if isinstance(sqla_message, SQLAMessageResponse):
-                core_message_response = MessageResponse(
-                    created_at=sqla_message.created_at,
-                    updated_at=sqla_message.updated_at,
-                    deleted=sqla_message.deleted,
-                    deleted_at=sqla_message.deleted_at,
-                    id=sqla_message.id,
-                    content=sqla_message.content,
-                    timestamp=sqla_message.timestamp,
-                )
+                core_message_response = convert_sqla_message_response_to_core_message_response(sqla_message)
                 core_messages.append(core_message_response)
 
         return ListConversationMessagesDTO[TMessageBase](
@@ -431,17 +410,7 @@ class SQLAConversationRepository(ConversationRepository):
         core_source_data: List[SourceData] = []
 
         for sqlasourcedatum in sqlasourcedata:
-            coresourcedatum = SourceData(
-                created_at=sqlasourcedatum.created_at,
-                updated_at=sqlasourcedatum.updated_at,
-                deleted=sqlasourcedatum.deleted,
-                deleted_at=sqlasourcedatum.deleted_at,
-                id=sqlasourcedatum.id,
-                name=sqlasourcedatum.name,
-                type=sqlasourcedatum.type,
-                lfn=sqlasourcedatum.lfn,
-                protocol=sqlasourcedatum.protocol,
-            )
+            coresourcedatum = convert_sqla_source_data_to_core_source_data(sqlasourcedatum)
             core_source_data.append(coresourcedatum)
 
         if core_source_data == []:
@@ -521,15 +490,7 @@ class SQLAConversationRepository(ConversationRepository):
             sqla_message_query.save(session=self.session)
             self.session.commit()
 
-            core_message_query = MessageQuery(
-                created_at=sqla_message_query.created_at,
-                updated_at=sqla_message_query.updated_at,
-                deleted=sqla_message_query.deleted,
-                deleted_at=sqla_message_query.deleted_at,
-                id=sqla_message_query.id,
-                content=sqla_message_query.content,
-                timestamp=sqla_message_query.timestamp,
-            )
+            core_message_query = convert_sqla_message_query_to_core_message_query(sqla_message_query)
 
             return SendMessageToConversationDTO(status=True, data=core_message_query)
 
