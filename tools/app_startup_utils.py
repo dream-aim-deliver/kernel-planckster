@@ -1,7 +1,8 @@
 from contextlib import contextmanager
+from pathlib import Path
+import signal
 import subprocess
 import time
-
 import psycopg2
 from alembic.config import Config
 from alembic import command
@@ -22,16 +23,16 @@ def is_postgres_responsive(
 
 
 def wait_for_postgres_to_be_responsive(
-    host: str,
-    port: int,
-    user: str,
-    password: str,
-    database: str,
+    db_host: str,
+    db_port: int,
+    db_user: str,
+    db_password: str,
+    db_name: str,
     max_retries: int = 10,
     wait_seconds: int = 5,
 ) -> None:
     for i in range(max_retries):
-        if is_postgres_responsive(host=host, port=port, user=user, password=password, database=database):
+        if is_postgres_responsive(host=db_host, port=db_port, user=db_user, password=db_password, database=db_name):
             return
         else:
             print(f"Postgres is not responsive yet, waiting {wait_seconds} seconds...")
@@ -39,16 +40,56 @@ def wait_for_postgres_to_be_responsive(
     raise Exception("Postgres is not responsive yet, aborting tests...")
 
 
+def run_alembic_migrations(
+    alembic_scripts_path: str,
+    alembic_ini_path: str,
+    db_host: str = "localhost",
+    db_port: int = 5432,
+    db_user: str = "postgres",
+    db_password: str = "postgres",
+    db_name: str = "kp-dev",
+) -> None:
+    alembic_cfg = Config(alembic_ini_path)
+
+    alembic_cfg.set_main_option("script_location", alembic_scripts_path)
+
+    alembic_cfg.set_main_option("sqlalchemy.url", f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
+
+    try:
+        command.upgrade(alembic_cfg, "head")
+    except Exception as e:
+        print(f"Failed to run alembic migrations with error: {e}")
+        raise e
+
+
+def cleanup_handler(signum, frame) -> None:  # type: ignore
+    # This function will be called when a signal is received
+    print(f"Received signal {signum}. Cleaning up...")
+    # Add your cleanup logic here
+    raise SystemExit(0)
+
+
 @contextmanager
 def docker_compose_context(  # type: ignore
-    compose_file,
-    pg_host="localhost",
-    pg_port=5432,
-    pg_user="postgres",
-    pg_password="postgres",
-    pg_db="kp-dev",
+    project_root_dir: Path,
+    compose_rel_path: Path = Path("docker-compose.yml"),
+    alemibc_ini_rel_path: Path = Path("alembic.ini"),
+    pg_host: str = "localhost",
+    pg_port: int = 5432,
+    pg_user: str = "postgres",
+    pg_password: str = "postgres",
+    pg_db: str = "kp-dev",
 ):
+    # Register the cleanup_handler for specific signals
+    signal.signal(signal.SIGTERM, cleanup_handler)
+    signal.signal(signal.SIGINT, cleanup_handler)
     try:
+        print("Starting Docker Compose service...")
+        compose_file = str(project_root_dir / compose_rel_path)
+        print(f"Compose file: {compose_file}")
+        alembic_ini_path = str(project_root_dir / alemibc_ini_rel_path)
+        print(f"Alembic ini file: {alembic_ini_path}")
+        alembic_scripts_path = str(project_root_dir / "alembic")
         # Start Docker Compose service
         process = subprocess.Popen(
             ["docker-compose", "-f", compose_file, "up", "-d"],
@@ -59,13 +100,24 @@ def docker_compose_context(  # type: ignore
 
         # Wait for the service to be ready (you might need to adjust the delay)
         wait_for_postgres_to_be_responsive(
-            host=pg_host,
-            port=pg_port,
-            user=pg_user,
-            password=pg_password,
-            database=pg_db,
+            db_host=pg_host,
+            db_port=pg_port,
+            db_user=pg_user,
+            db_password=pg_password,
+            db_name=pg_db,
             max_retries=10,
             wait_seconds=5,
+        )
+
+        # Run Alembic migrations
+        run_alembic_migrations(
+            alembic_ini_path=alembic_ini_path,
+            alembic_scripts_path=alembic_scripts_path,
+            db_host=pg_host,
+            db_port=pg_port,
+            db_user=pg_user,
+            db_password=pg_password,
+            db_name=pg_db,
         )
 
         yield
@@ -85,26 +137,3 @@ def docker_compose_context(  # type: ignore
         print(out)
         print("Docker Compose Down Error:")
         print(err)
-
-
-def run_alembic_migrations(
-    alembic_ini_path: str,
-    db_host: str = "localhost",
-    db_port: int = 5432,
-    db_user: str = "postgres",
-    db_password: str = "postgres",
-    db_name: str = "kp-dev",
-) -> None:
-    alembic_ini_path = os.path.join(str(request.config.rootdir), "alembic.ini")  # type: ignore
-    alembic_cfg = Config(alembic_ini_path)
-
-    alembic_scripts_path = os.path.join(str(request.config.rootdir), "alembic")  # type: ignore
-    alembic_cfg.set_main_option("script_location", alembic_scripts_path)
-
-    alembic_cfg.set_main_option("sqlalchemy.url", f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}")
-
-    try:
-        command.upgrade(alembic_cfg, "head")
-    except Exception as e:
-        print(f"Failed to run alembic migrations with error: {e}")
-        raise e

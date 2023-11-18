@@ -47,7 +47,7 @@ pre-commit run --all-files
 # Create a .env file
 cp .env.example .env
 
-# Set up environment variables for pytest in pyproject.toml as needed
+# Set up environment variables for pytest in pyproject.toml as needed, but the defaults should work
 ```
 
 
@@ -71,25 +71,82 @@ docker compose down
 Make sure to fix any errors given by the alembic commands above before executing the next one and commiting the changes.
 
 
-### Accessing the database
+### Accessing the server and database
 
-You can access `Adminer interface` at `http://localhost:8080` to check the database. The credentials are:
+For development, the environment variable `KP_MODE` has to be set to `development`. This is the default value used by the `docker-compose.yml` and `launch.json` files.
+
+In development mode, postgres, fastapi and adminer are all running in docker containers. These containers will be started automatically when you start `FastAPI` launch configuration in VSCode or when you run the `dev` script in the root of the project, as shown below:
+
+```bash
+poetry run dev
+```
+
+The containers will be removed when you stop the `dev` script or stop the `FastAPI` launch configuration in VSCode.
+
+| Service    | Host/Port             | Mode        |
+| ---------- | --------------------- | ----------- |
+| FastAPI    | http://localhost:8000 | development |
+| Postgres   | 0.0.0.0:5432          | development |
+| Adminer UI | http://localhost:8080 | development |
+
+
+In development mode, you can access `Adminer interface` at `http://localhost:8080` to check the database. The credentials are:
+
 ```
 System: PostgreSQL
-Server: kp-test
+Server: db
 Username: postgres
 Password: postgres
 Database: kp-db
 ```
 
-### Running the development server (FastAPI/Socket.IO)
+## Testing
+You run tests on the command line with
+```bash
+poetry run pytest -s
+``` 
 
-You can start the FastAPI development server with:
+Or in the [VSCode test explorer UI](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-test-explorer).
+
+In test mode, postgres, fastapi and adminer are all running in docker container and will be automatically removed once the tests are finished. 
+
+**DANGLING CONTAINER WARNING**: If you are debugging tests in VSCode and notice that your test is failing, which triggers a breakpoint, then DO NOT STOP the debugger. Just press `F5` and let the tests finish. The containers will be removed automatically once the tests are finished. Otherwise, you will end up with dangling test containers that will have to be removed manually. To remove these containers manually
+
+```bash
+cd tests
+docker compose down
+```
+
+In testing mode, you can access the services as follows:
+| Service    | Host/Port             | Mode |
+| ---------- | --------------------- | ---- |
+| FastAPI    | http://localhost:8005 | test |
+| Postgres   | 0.0.0.0:5435          | test |
+| Adminer UI | http://localhost:8085 | test |
+
+
+In test mode, you can access `Adminer interface` at `http://localhost:8085` to check the database. The credentials are:
+
+```
+System: PostgreSQL
+Server: db
+Username: postgres
+Password: postgres
+Database: kp-db
+```
+
+
+### Running the production server (FastAPI/Socket.IO)
+
+You can start the FastAPI production server with:
 
 ```bash
  cd lib/infrastructure/rest
+ export KP_MODE=production
+ export KP_DB_URL=postgresql://postgres:postgres@localhost:5432/kp-db
  poetry run dev
 ```
+
 
 ## Contributing
 
@@ -122,11 +179,6 @@ Valid component names are listed in the [label](https://github.com/dream-aim-del
 
 Add additional explanations to the body of the commit, such as motivation for certain decisions and background information. Here are some general rules: https://cbea.ms/git-commit/.
 
-If you add a [github-recognised keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) then the associated issue can be closed automatically once the pull request is merged, e.g.:
-
-```bash
-<component>: <change_message> Fix #<issue number>
-```
 
 Using multiple commits is allowed as long as they achieve an independent, well-defined, change and are well-described. Otherwise multiple commits should be squashed.
 
@@ -152,3 +204,10 @@ poetry run black .
 Push the commit to your forked repository and create the pull request. Try to keep the Pull Request simple, it should achieve the single objective described in the issue. Multiple enhancements/fixes should be split into multiple Pull Requests.
 
 Watch the pull request for comments and reviews. For any pull requests update, please try to squash/amend your commits to avoid “in-between” commits.
+
+If you add a [github-recognised keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) in the pull request name or in the pull request description, then the associated issue can be closed automatically once the pull request is merged, e.g.:
+
+
+```bash
+<component>: <change_message> Fix #<issue number>
+```

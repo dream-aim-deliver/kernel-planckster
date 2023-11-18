@@ -5,7 +5,7 @@ services:
   db:
     image: postgres
     restart: always
-    container_name: kp-test
+    container_name: kp-dev
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
