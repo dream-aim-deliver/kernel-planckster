@@ -88,10 +88,10 @@ class FastAPIEndpoint(ABC, Generic[TBaseControllerParameters, TBaseViewModel]):
         auth_required = self.descriptor.auth
         if not auth_required:
             return
-        # if x_auth_token is None:
-        #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+        if x_auth_token is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
         # TODO: Add auth logic here to validate the auth token
-        # if x_auth_token == "test":
-        #     return
-        # else:
-        #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+        if x_auth_token == "test123":
+            return
+        else:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
