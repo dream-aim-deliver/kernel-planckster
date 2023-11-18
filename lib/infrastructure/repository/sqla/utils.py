@@ -1,11 +1,31 @@
-from lib.core.entity.models import Conversation, MessageQuery, MessageResponse, ResearchContext, SourceData
+from lib.core.entity.models import Conversation, MessageQuery, MessageResponse, ResearchContext, SourceData, User
 from lib.infrastructure.repository.sqla.models import (
     SQLAConversation,
     SQLAMessageQuery,
     SQLAMessageResponse,
     SQLAResearchContext,
     SQLASourceData,
+    SQLAUser,
 )
+
+
+def convert_sqla_user_to_core_user(sqla_user: SQLAUser) -> User:
+    """
+    Converts a SQLAUser to a (core) User
+
+    @param sqla_user: The SQLAUser to convert
+    @type sqla_user: SQLAUser
+    @return: The converted User
+    @rtype: User
+    """
+    return User(
+        created_at=sqla_user.created_at,
+        updated_at=sqla_user.updated_at,
+        deleted=sqla_user.deleted,
+        deleted_at=sqla_user.deleted_at,
+        id=sqla_user.id,
+        sid=sqla_user.sid,
+    )
 
 
 def convert_sqla_research_context_to_core_research_context(
