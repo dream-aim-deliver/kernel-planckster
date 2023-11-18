@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict, Generic
-from fastapi import APIRouter, HTTPException
+from typing import Annotated, Any, Dict, Generic
+from fastapi import APIRouter, Depends, HTTPException, Header
 from lib.core.sdk.controller import BaseController, TBaseControllerParameters
 from lib.core.sdk.feature_descriptor import BaseFeatureDescriptor
 
 from lib.core.sdk.viewmodel import (
     TBaseViewModel,
 )
+
+from fastapi import status
 
 
 class FastAPIEndpoint(ABC, Generic[TBaseControllerParameters, TBaseViewModel]):
@@ -30,10 +32,14 @@ class FastAPIEndpoint(ABC, Generic[TBaseControllerParameters, TBaseViewModel]):
         else:
             tags.append("Public Endpoints")
 
-        self._router: APIRouter = APIRouter(
-            prefix=f"/api/v1",
+        self.prefix = f"/api/v1"
+        router: APIRouter = APIRouter(
             tags=tags,
         )
+        if self._descriptor.auth:
+            router.dependencies.append(Depends(self.check_auth))
+
+        self._router = router
 
     @property
     def name(self) -> str:
@@ -77,3 +83,15 @@ class FastAPIEndpoint(ABC, Generic[TBaseControllerParameters, TBaseViewModel]):
                 return view_model
         except Exception as e:
             raise e
+
+    def check_auth(self, x_auth_token: Annotated[str, Header()]) -> None:
+        auth_required = self.descriptor.auth
+        if not auth_required:
+            return
+        # if x_auth_token is None:
+        #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+        # TODO: Add auth logic here to validate the auth token
+        # if x_auth_token == "test":
+        #     return
+        # else:
+        #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
