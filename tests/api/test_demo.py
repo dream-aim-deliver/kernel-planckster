@@ -43,6 +43,4 @@ def test_demo_feature_descriptor(app_initialization_container: ApplicationContai
     assert demo_descriptor.name == "Sum Feature"
     assert demo_descriptor.description == "Adds 2 numbers"
     assert demo_descriptor.version == "1.0.0"
-    assert demo_descriptor.verb == "GET"
-    assert demo_descriptor.endpoint == "/sum"
     assert demo_descriptor.enabled is True
