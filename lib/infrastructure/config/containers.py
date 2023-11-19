@@ -9,6 +9,7 @@ from lib.infrastructure.config.features.create_default_data_feature_container im
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
 from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import SQLAKnowledgeSourceRepository
 from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
+from lib.infrastructure.repository.sqla.sqla_source_data_repository import SQLASourceDataRepository
 from lib.infrastructure.repository.sqla.sqla_user_repository import SQLAUserRepository
 import lib.infrastructure.rest.endpoints as endpoints
 
@@ -53,6 +54,11 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     sqla_knowledge_source_repository: providers.Factory[SQLAKnowledgeSourceRepository] = providers.Factory(
         SQLAKnowledgeSourceRepository,
+        session_factory=db.provided.session,
+    )
+
+    sqla_source_data_repository: providers.Factory[SQLASourceDataRepository] = providers.Factory(
+        SQLASourceDataRepository,
         session_factory=db.provided.session,
     )
 
