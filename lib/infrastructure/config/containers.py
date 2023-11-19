@@ -84,6 +84,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
         CreateDefaultDataFeatureContainer,
         config=config.features.create_default_data,
         session_factory=db.provided.session,
+        default_user_sid=config.default_data.user_sid,
+        default_llm_name=config.default_data.llm_name,
     )
 
     new_source_data_feature = providers.Container(

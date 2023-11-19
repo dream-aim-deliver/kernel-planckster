@@ -15,9 +15,9 @@ from lib.infrastructure.presenter.create_default_data_presenter import CreateDef
 
 
 class CreateDefaultDataControllerParameters(BaseControllerParameters):
-    user_sid: str = Field(name="User String ID", description="SID of the new default user.")
+    user_sid: str | None = Field(name="User String ID", description="SID of the new default user.")
 
-    llm_name: str = Field(name="LLM Name", description="Name of the new default llm.")
+    llm_name: str | None = Field(name="LLM Name", description="Name of the new default llm.")
 
 
 class CreateDefaultDataController(
@@ -29,11 +29,25 @@ class CreateDefaultDataController(
         CreateDefaultDataViewModel,
     ]
 ):
-    def __init__(self, usecase: CreateDefaultDataUseCase, presenter: CreateDefaultDataPresenter) -> None:
+    def __init__(
+        self,
+        usecase: CreateDefaultDataUseCase,
+        presenter: CreateDefaultDataPresenter,
+        default_user_sid: str | None = None,
+        default_llm_name: str | None = None,
+    ) -> None:
         super().__init__(usecase=usecase, presenter=presenter)
+        self.default_user_sid = default_user_sid if default_user_sid is not None else "admin"
+        self.default_llm_name = default_llm_name if default_llm_name is not None else "gpt4"
 
     def create_request(self, parameters: CreateDefaultDataControllerParameters | None) -> CreateDefaultDataRequest:
         if parameters is None:
             raise HTTPException(status_code=400, detail="Invalid request parameters.")
         else:
-            return CreateDefaultDataRequest(user_sid=parameters.user_sid, llm_name=parameters.llm_name)
+            default_user_sid = self.default_user_sid
+            default_llm_name = self.default_llm_name
+
+            user_sid = parameters.user_sid if parameters.user_sid is not None else default_user_sid
+            llm_name = parameters.llm_name if parameters.llm_name is not None else default_llm_name
+
+            return CreateDefaultDataRequest(user_sid=user_sid, llm_name=llm_name)

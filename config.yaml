@@ -21,6 +21,10 @@ fastapi:
   debug: ${KP_FASTAPI_DEBUG:false}
   reload: ${KP_FASTAPI_RELOAD:false}
 
+default_data:
+  user_sid: "admin"
+  llm_name: "gpt4"
+
 features:
   demo:
     name: "Sum Feature"
