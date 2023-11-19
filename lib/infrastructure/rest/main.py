@@ -4,12 +4,15 @@ from pathlib import Path
 import signal
 from typing import Any
 from fastapi import APIRouter, FastAPI
-import subprocess
 
 import uvicorn
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.containers import ApplicationContainer
+from lib.infrastructure.controller.create_default_data_controller import (
+    CreateDefaultDataController,
+    CreateDefaultDataControllerParameters,
+)
 import lib.infrastructure.rest.endpoints as endpoints
 from tools.app_startup_utils import cleanup_handler, docker_compose_context, start_depdendencies, stop_dependencies
 
@@ -20,11 +23,17 @@ def create_app() -> FastAPI:
     app_container.config.from_yaml("../../../config.yaml")
     app.container = app_container  # type: ignore
 
+    create_default_data_controller: CreateDefaultDataController = (
+        app_container.create_default_data_feature().controller()
+    )
+    default_parameters: CreateDefaultDataControllerParameters = CreateDefaultDataControllerParameters(
+        user_sid=os.getenv("KP_USER_SID", "admin"), llm_name="gpt4"
+    )
+    create_default_data_controller.execute(default_parameters)
     fastapi_endpoints = get_all_modules(package=endpoints, relative_package_dir=Path(__file__).parent / "endpoints")
 
     for fastapi_endpoint in fastapi_endpoints:
         module = importlib.import_module(fastapi_endpoint)
-
         fastapi_feature_class = next(
             (
                 obj
@@ -40,6 +49,14 @@ def create_app() -> FastAPI:
             router: APIRouter | None = fastapi_feature.load()
             if router is not None:
                 app.include_router(fastapi_feature.router)
+        app.get(
+            "/ping",
+            name="health",
+            tags=["Health Check"],
+            summary="Health Check",
+            description="Checks if Kernel Planchester is alive",
+            response_model=Any,
+        )(lambda: {"pong"})
     return app
 
 
@@ -57,10 +74,6 @@ def dev_server() -> None:
         pg_db=os.getenv("KP_PG_DB", "kp-db"),
     )
     app = create_app()
-
-    @app.get("/ping")
-    def ping() -> Any:
-        return {"ping": "pong"}
 
     host = app.container.config.fastapi.host()  # type: ignore
     port = app.container.config.fastapi.port()  # type: ignore
