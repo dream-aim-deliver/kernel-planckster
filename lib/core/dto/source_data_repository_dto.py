@@ -9,4 +9,4 @@ class ListSourceDataDTO(BaseDTO[SourceData]):
     A DTO for whenever source data is listed
     """
 
-    data: List[SourceData] | None = None
+    data: List[SourceData] = []

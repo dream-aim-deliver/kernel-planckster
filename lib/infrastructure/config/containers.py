@@ -6,6 +6,7 @@ from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.features.demo_feature_container import DemoFeatureContainer
 from lib.infrastructure.config.features.list_conversations_feature_container import ListConversationsFeatureContainer
 from lib.infrastructure.config.features.create_default_data_feature_container import CreateDefaultDataFeatureContainer
+from lib.infrastructure.config.features.list_source_data_feature_container import ListSourceDataFeatureContainer
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
 from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import SQLAKnowledgeSourceRepository
 from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
@@ -89,4 +90,10 @@ class ApplicationContainer(containers.DeclarativeContainer):
         NewSourceDataFeatureContainer,
         config=config.features.new_source_data,
         knowledge_source_repository=sqla_knowledge_source_repository,
+    )
+
+    list_source_data_feature = providers.Container(
+        ListSourceDataFeatureContainer,
+        config=config.features.list_source_data,
+        source_data_repository=sqla_source_data_repository,
     )
