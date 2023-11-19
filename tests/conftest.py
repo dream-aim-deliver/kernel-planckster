@@ -333,14 +333,27 @@ def source_data() -> SQLASourceData:
     protocols = [
         attr_name.__str__().lower() for attr_name in vars(ProtocolEnum) if not attr_name.__str__().startswith("_")
     ]
+    knowledge_sources = [
+        attr_name.__str__().lower()
+        for attr_name in vars(KnowledgeSourceEnum)
+        if not attr_name.__str__().startswith("_")
+    ]
+
+    sd_protocol_choice: str = random.choice(protocols)
+    sd_protocol = ProtocolEnum(sd_protocol_choice)
+    sd_host = fake.domain_name()
+    sd_port = fake.port_number()
+    sd_minio_bucket = fake.name()
+    sd_tracer_id = random.randint(1, 1000000000)
+    sd_knowledge_source_choice: str = random.choice(knowledge_sources)
+    sd_job_id = random.randint(1, 1000000000)
 
     sd_filename = fake.file_name()
     sd_name = sd_filename.split(".")[0]
     sd_type = sd_filename.split(".")[1]
-    sd_path = fake.file_path(depth=3).split(".")[0] + "/" + sd_filename
-    sd_protocol_choice: str = random.choice(protocols)
-    sd_protocol = ProtocolEnum(sd_protocol_choice)
-    sd_lfn = f"{sd_protocol_choice}:/{sd_path}"
+    sd_relative_path = fake.file_path(depth=3).split(".")[0] + "/" + sd_filename
+
+    sd_lfn = f"{sd_protocol_choice}://{sd_host}:{sd_port}/{sd_minio_bucket}/{sd_tracer_id}/{sd_knowledge_source_choice}/{sd_job_id}{sd_relative_path}"
 
     statuses = [
         attr_name.__str__().lower()

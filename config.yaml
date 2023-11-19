@@ -53,4 +53,17 @@ features:
     tags: ["client: websat"]
     enabled: true
     auth: false
+
+  list_source_data:
+    name: "List Source Data"
+    description: |
+      List all source data registered in the database. If a knowledge source ID is provided, then list all source data registered for that knowledge source
+      Telegram ID: 1
+      Twitter ID: 2
+      Augmented ID: 3
+      Sentinel ID: 4
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: false
   
