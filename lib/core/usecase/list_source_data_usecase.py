@@ -15,7 +15,7 @@ class ListSourceDataUseCase(ListSourceDataInputPort):
         dto: ListSourceDataDTO = self.source_data_repository.list_source_data(knowledge_source_id=knowledge_source_id)
 
         if dto.status:
-            return ListSourceDataResponse(lfn_list=dto.data)
+            return ListSourceDataResponse(source_data_list=dto.data)
 
         return ListSourceDataError(
             knowledge_source_id=knowledge_source_id,
