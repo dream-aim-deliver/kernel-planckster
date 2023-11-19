@@ -27,7 +27,7 @@ def create_app() -> FastAPI:
         app_container.create_default_data_feature().controller()
     )
     default_parameters: CreateDefaultDataControllerParameters = CreateDefaultDataControllerParameters(
-        user_sid=os.getenv("KP_USER_SID", "admin"), llm_name="gpt4"
+        user_sid=None, llm_name=None
     )
     create_default_data_controller.execute(default_parameters)
     fastapi_endpoints = get_all_modules(package=endpoints, relative_package_dir=Path(__file__).parent / "endpoints")

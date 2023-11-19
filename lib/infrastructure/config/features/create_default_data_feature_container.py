@@ -14,6 +14,9 @@ from lib.infrastructure.presenter.create_default_data_presenter import CreateDef
 
 class CreateDefaultDataFeatureContainer(BaseFeatureContainer):
     session_factory: Any = providers.Dependency()
+    default_user_sid: Any = providers.Dependency()
+    default_llm_name: Any = providers.Dependency()
+
     presenter = providers.Factory[CreateDefaultDataOutputPort](
         CreateDefaultDataPresenter,
     )
@@ -24,4 +27,6 @@ class CreateDefaultDataFeatureContainer(BaseFeatureContainer):
         CreateDefaultDataController,
         usecase=usecase,
         presenter=presenter,
+        default_user_sid=default_user_sid,
+        default_llm_name=default_llm_name,
     )
