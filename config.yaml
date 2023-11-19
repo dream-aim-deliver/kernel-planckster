@@ -27,7 +27,7 @@ features:
     description: "Adds 2 numbers"
     version: "1.0.0"
     tags: ["client: websat"]
-    enabled: true
+    enabled: false
     auth: false
   
   list_conversations:
@@ -50,7 +50,7 @@ features:
     name: "Register Source Data"
     description: "Register a new source data in the database by passing a list of lfns"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client: service"]
     enabled: true
     auth: false
 
