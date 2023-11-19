@@ -9,11 +9,12 @@ from lib.core.view_model.list_source_data_view_model import ListSourceDataViewMo
 
 class MPIScraperLFN(BaseModel):
     """
-    Model for the LFNs scraped by the MPI Scraper.
+    Model for the LFNs scraped by the MPI Scraper. Contains the additional field "source_data_id" which is the ID of the source data coming from the database.
     """
 
+    source_data_id: int
     protocol: str
-    tracer_id: str
+    tracer_id: int
     job_id: int
     source: str
     relative_path: str
@@ -21,7 +22,7 @@ class MPIScraperLFN(BaseModel):
 
 class ListSourceDataPresenter(ListSourceDataOutputPort):
     def _MPI_pfn_to_lfn(
-        self, pfn: str, self_host: str, self_port: int, self_bucket: str, self_protocol: str
+        self, pfn: str, self_host: str, self_port: int, self_bucket: str, self_protocol: str, source_data_id: int
     ) -> MPIScraperLFN:
         """
         Generate a LFN from a PFN for MinIO S3 Repository.
@@ -42,15 +43,16 @@ class ListSourceDataPresenter(ListSourceDataOutputPort):
                 raise ValueError(
                     f"Bucket {bucket} does not match the bucket of this MinIO Repository at {self_url}. Cannot create a LFN for PFN {pfn}."
                 )
-            tracer_id = path_components[1]
+            tracer_id = int(path_components[1])
             source = KnowledgeSourceEnum(path_components[2])
             job_id = int(path_components[3])
             relative_path = "/".join(path_components[4:])
 
             lfn: MPIScraperLFN = MPIScraperLFN(
+                source_data_id=source_data_id,
                 protocol=self_protocol,
                 tracer_id=tracer_id,
-                source=source.value,
+                source=str(source.value),
                 job_id=job_id,
                 relative_path=relative_path,
             )
@@ -73,11 +75,11 @@ class ListSourceDataPresenter(ListSourceDataOutputPort):
         )
 
     def convert_response_to_view_model(self, response: ListSourceDataResponse) -> ListSourceDataViewModel:
-        lfn_list: List[SourceData] = response.lfn_list
+        source_data_list: List[SourceData] = response.source_data_list
 
         lfn_list_vm: List[Dict[str, str]] = []
 
-        for sd in lfn_list:
+        for sd in source_data_list:
             pfn = sd.lfn
             without_protocol = pfn.split("://")[1]
             path_components = without_protocol.split("/")
@@ -93,9 +95,10 @@ class ListSourceDataPresenter(ListSourceDataOutputPort):
                 self_port=port,
                 self_bucket=bucket,
                 self_protocol=sd_protocol_value,
+                source_data_id=sd.id,
             )
 
-            lfn_as_dict = {str(k): str(v) for k, v in lfn.__dict__.items() if not k.startswith("_")}
+            lfn_as_dict = {str(k): v for k, v in lfn.__dict__.items() if not k.startswith("_")}
 
             lfn_list_vm.append(lfn_as_dict)
 

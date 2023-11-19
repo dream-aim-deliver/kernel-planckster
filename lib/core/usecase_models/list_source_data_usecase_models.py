@@ -18,7 +18,7 @@ class ListSourceDataResponse(BaseResponse):
     Response Model for the List Source Data Use Case.
     """
 
-    lfn_list: List[SourceData]
+    source_data_list: List[SourceData]
 
 
 class ListSourceDataError(BaseErrorResponse):
