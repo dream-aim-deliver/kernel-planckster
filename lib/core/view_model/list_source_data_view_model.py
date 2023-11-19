@@ -1,7 +1,20 @@
-from typing import Any, Dict, List
+from typing import List
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from lib.core.sdk.viewmodel import BaseViewModel
+
+
+class MPIScraperLFNViewModel(BaseModel):
+    """
+    Model for the LFNs scraped by the MPI Scraper. Contains the additional field "source_data_id" which is the ID of the source data coming from the database.
+    """
+
+    source_data_id: int
+    protocol: str
+    tracer_id: int
+    job_id: int
+    source: str
+    relative_path: str
 
 
 class ListSourceDataViewModel(BaseViewModel):
@@ -9,7 +22,7 @@ class ListSourceDataViewModel(BaseViewModel):
     View Model for the List Source Data Feature. Represents all source data in the database if no knowledge_source_id was passed, or all source data for a given knowledge_source_id if it was provided as a parameter.
     """
 
-    lfn_list: List[Dict[str, Any]] = Field(description="List of source data in the database.")
+    lfn_list: List[MPIScraperLFNViewModel] = Field(description="List of source data in the database.")
 
     model_config = {
         "json_schema_extra": {
@@ -17,17 +30,19 @@ class ListSourceDataViewModel(BaseViewModel):
                 {
                     "lfn_list": [
                         {
-                            "protocol": "S3",
-                            "tracer_id": "1234567890",
-                            "job_id": "1",
-                            "source": "TELEGRAM",
+                            "source_data_id": 1,
+                            "protocol": "s3",
+                            "tracer_id": 1234567890,
+                            "job_id": 1,
+                            "source": "telegram",
                             "relative_path": "path/to/file",
                         },
                         {
-                            "protocol": "NAS",
-                            "tracer_id": "92839",
-                            "job_id": "2",
-                            "source": "Twitter",
+                            "source_data_id": 2,
+                            "protocol": "nas",
+                            "tracer_id": 92839,
+                            "job_id": 2,
+                            "source": "twitter",
                             "relative_path": "path/to/file2",
                         },
                     ],

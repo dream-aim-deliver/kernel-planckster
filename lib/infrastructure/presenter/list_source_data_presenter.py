@@ -1,29 +1,15 @@
-from typing import Dict, List
+from typing import List
 
-from pydantic import BaseModel
 from lib.core.entity.models import KnowledgeSourceEnum, SourceData
 from lib.core.ports.primary.list_source_data_primary_ports import ListSourceDataOutputPort
 from lib.core.usecase_models.list_source_data_usecase_models import ListSourceDataError, ListSourceDataResponse
-from lib.core.view_model.list_source_data_view_model import ListSourceDataViewModel
-
-
-class MPIScraperLFN(BaseModel):
-    """
-    Model for the LFNs scraped by the MPI Scraper. Contains the additional field "source_data_id" which is the ID of the source data coming from the database.
-    """
-
-    source_data_id: int
-    protocol: str
-    tracer_id: int
-    job_id: int
-    source: str
-    relative_path: str
+from lib.core.view_model.list_source_data_view_model import ListSourceDataViewModel, MPIScraperLFNViewModel
 
 
 class ListSourceDataPresenter(ListSourceDataOutputPort):
     def _MPI_pfn_to_lfn(
         self, pfn: str, self_host: str, self_port: int, self_bucket: str, self_protocol: str, source_data_id: int
-    ) -> MPIScraperLFN:
+    ) -> MPIScraperLFNViewModel:
         """
         Generate a LFN from a PFN for MinIO S3 Repository.
 
@@ -48,7 +34,7 @@ class ListSourceDataPresenter(ListSourceDataOutputPort):
             job_id = int(path_components[3])
             relative_path = "/".join(path_components[4:])
 
-            lfn: MPIScraperLFN = MPIScraperLFN(
+            lfn: MPIScraperLFNViewModel = MPIScraperLFNViewModel(
                 source_data_id=source_data_id,
                 protocol=self_protocol,
                 tracer_id=tracer_id,
@@ -77,7 +63,7 @@ class ListSourceDataPresenter(ListSourceDataOutputPort):
     def convert_response_to_view_model(self, response: ListSourceDataResponse) -> ListSourceDataViewModel:
         source_data_list: List[SourceData] = response.source_data_list
 
-        lfn_list_vm: List[Dict[str, str]] = []
+        lfn_vm_list: List[MPIScraperLFNViewModel] = []
 
         for sd in source_data_list:
             pfn = sd.lfn
@@ -89,7 +75,7 @@ class ListSourceDataPresenter(ListSourceDataOutputPort):
             bucket = path_components[1]
             sd_protocol_value = sd.protocol.value
 
-            lfn = self._MPI_pfn_to_lfn(
+            lfn_vm = self._MPI_pfn_to_lfn(
                 pfn=sd.lfn,
                 self_host=host,
                 self_port=port,
@@ -98,12 +84,10 @@ class ListSourceDataPresenter(ListSourceDataOutputPort):
                 source_data_id=sd.id,
             )
 
-            lfn_as_dict = {str(k): v for k, v in lfn.__dict__.items() if not k.startswith("_")}
-
-            lfn_list_vm.append(lfn_as_dict)
+            lfn_vm_list.append(lfn_vm)
 
         return ListSourceDataViewModel(
             status=True,
             code=200,
-            lfn_list=lfn_list_vm,
+            lfn_list=lfn_vm_list,
         )
