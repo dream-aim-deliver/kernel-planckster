@@ -358,6 +358,11 @@ def fake_source_data() -> SQLASourceData:
     return source_data()
 
 
+@pytest.fixture(scope="function")
+def fake_source_data_list() -> List[SQLASourceData]:
+    return [source_data() for _ in range(10)]
+
+
 def knowledge_source_with_source_data(number_of_source_data: int = 3) -> SQLAKnowledgeSource:
     fake = Faker().unique
 
