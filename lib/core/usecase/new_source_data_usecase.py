@@ -29,16 +29,19 @@ class NewSourceDataUseCase(NewSourceDataInputPort):
             protocol = self._get_protocol_by_value(protocol_str)
 
             source_datum = SourceData(
+                name=lfn.rsplit("/", 1)[-1],
+                type="default",
+                lfn=lfn,
+                protocol=protocol,
+                # NOTE: status is hardcoded to AVAILABLE for now
+                status=SourceDataStatusEnum.AVAILABLE,
+                # The fields below will be ignored by the repository
+                # and handled automatically by SQLA
                 created_at=datetime.datetime.now(),
                 updated_at=datetime.datetime.now(),
                 deleted=False,
                 deleted_at=None,
                 id=-1,
-                name=lfn.rsplit("/", 1)[-1],
-                type="default",
-                lfn=lfn,
-                protocol=protocol,
-                status=SourceDataStatusEnum.AVAILABLE,
             )
             source_data_list.append(source_datum)
 
