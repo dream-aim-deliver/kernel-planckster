@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel
-from typing import TypeVar
+from typing import Any, TypeVar
 from datetime import datetime
 
 
