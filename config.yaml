@@ -27,7 +27,7 @@ features:
     description: "Adds 2 numbers"
     version: "1.0.0"
     tags: ["client: websat"]
-    enabled: false
+    enabled: true
     auth: false
   
   list_conversations:
