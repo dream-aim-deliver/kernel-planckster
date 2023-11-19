@@ -131,3 +131,21 @@ def convert_sqla_source_data_to_core_source_data(sqla_source_data: SQLASourceDat
         protocol=sqla_source_data.protocol,
         status=sqla_source_data.status,
     )
+
+
+def convert_core_source_data_to_sqla_source_data(core_source_data: SourceData) -> SQLASourceData:
+    """
+    Converts a (core) SourceData to a SQLASourceData
+
+    @param core_source_data: The SourceData to convert
+    @type core_source_data: SourceData
+    @return: The converted SQLASourceData
+    @rtype: SQLASourceData
+    """
+    return SQLASourceData(
+        name=core_source_data.name,
+        type=core_source_data.type,
+        lfn=core_source_data.lfn,
+        protocol=core_source_data.protocol,
+        status=core_source_data.status,
+    )
