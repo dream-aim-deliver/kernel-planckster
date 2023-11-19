@@ -57,6 +57,11 @@ def dev_server() -> None:
         pg_db=os.getenv("KP_PG_DB", "kp-db"),
     )
     app = create_app()
+
+    @app.get("/ping")
+    def ping() -> Any:
+        return {"ping": "pong"}
+
     host = app.container.config.fastapi.host()  # type: ignore
     port = app.container.config.fastapi.port()  # type: ignore
     uvicorn.run("lib.infrastructure.rest.main:create_app", host=host, port=port, reload=True)

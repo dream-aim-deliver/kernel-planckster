@@ -46,4 +46,11 @@ features:
     enabled: true
     auth: true
 
+  new_source_data:
+    name: "Register Source Data"
+    description: "Register a new source data in the database by passing a list of lfns"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: false
   

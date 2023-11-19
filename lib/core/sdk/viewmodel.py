@@ -3,6 +3,23 @@ from pydantic import BaseModel, model_validator, root_validator, validator
 
 
 class BaseViewModel(BaseModel):
+    """
+    Base View Model for all View Models.
+
+    @param status: The status of the response.
+    @type status: bool
+    @param code: The status code of the response.
+    @type code: int
+    @param errorCode: The error code of the response.
+    @type errorCode: int
+    @param errorMessage: The error message of the response.
+    @type errorMessage: str
+    @param errorName: The name of the error.
+    @type errorName: str
+    @param errorType: The type of the error.
+    @type errorType: str
+    """
+
     status: bool
     code: int
     errorCode: int | None = None
