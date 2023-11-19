@@ -4,9 +4,29 @@ from typing import TypeVar
 from datetime import datetime
 
 
+class KnowledgeSourceEnum(Enum):
+    """
+    Enum for the different knowledge sources that can be used to create a research context.
+
+    TELEGRAM: the knowledge source is a Telegram channel
+    TWITTER: the knowledge source is a Twitter account
+    AUGMENTED: the knowledge source is a collection of user uploads
+    SENTINEL: the knowledge source is a collection of user uploads, and the user wants to be notified when new uploads are available
+    """
+
+    TELEGRAM = "telegram"
+    TWITTER = "twitter"
+    AUGMENTED = "augmented"
+    SENTINEL = "sentinel"
+
+
 class ProtocolEnum(Enum):
     """
     Enum for the different protocols that can be used to store a source_data.
+
+    S3: the source_data is stored in an S3 bucket
+    NAS: the source_data is stored in a NAS
+    LOCAL: the source_data is stored locally
     """
 
     S3 = "s3"
@@ -14,15 +34,20 @@ class ProtocolEnum(Enum):
     LOCAL = "local"
 
 
-class KnowledgeSourceEnum(Enum):
+class SourceDataStatusEnum(Enum):
     """
-    Enum for the different knowledge sources that can be used to create a research context.
+    Enum for the different status that a source data can have.
+
+    CREATED: the source data has been created
+    UNAVAILABLE: the source data is not available
+    AVAILABLE: the source data is available and part of a consistent dataset
+    INCONSISTENT_DATASET: the source data is available but part of an inconsistent dataset
     """
 
-    TELEGRAM = "telegram"
-    TWITTER = "twitter"
-    AUGMENTED = "augmented"
-    SENTINEL = "sentinel"
+    CREATED = "created"
+    UNAVAILABLE = "unavailable"
+    AVAILABLE = "available"
+    INCONSISTENT_DATASET = "inconsistent_dataset"
 
 
 class BaseKernelPlancksterModel(BaseModel):
@@ -102,6 +127,7 @@ class SourceData(BaseSoftDeleteKernelPlancksterModel):
     @param type: the type of the source_data (e.g., pdf, txt, etc.)
     @param lfn: the logical file name of the source_data
     @param protocol: the protocol used to store the source_data
+    @param status: the status of the source_data
     """
 
     id: int
@@ -109,6 +135,7 @@ class SourceData(BaseSoftDeleteKernelPlancksterModel):
     type: str
     lfn: str
     protocol: ProtocolEnum
+    status: SourceDataStatusEnum
 
     def __str__(self) -> str:
         return (
