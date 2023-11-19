@@ -129,4 +129,5 @@ def convert_sqla_source_data_to_core_source_data(sqla_source_data: SQLASourceDat
         type=sqla_source_data.type,
         lfn=sqla_source_data.lfn,
         protocol=sqla_source_data.protocol,
+        status=sqla_source_data.status,
     )

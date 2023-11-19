@@ -1,8 +1,8 @@
 """Initialization
 
-Revision ID: 471c84099754
+Revision ID: 47f96c986212
 Revises: 
-Create Date: 2023-11-18 18:14:23.847563
+Create Date: 2023-11-19 02:22:06.715257
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "471c84099754"
+revision: str = "47f96c986212"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -126,6 +126,11 @@ def upgrade() -> None:
         sa.Column("type", sa.String(), nullable=False),
         sa.Column("lfn", sa.String(), nullable=False),
         sa.Column("protocol", sa.Enum("S3", "NAS", "LOCAL", name="protocolenum"), nullable=False),
+        sa.Column(
+            "status",
+            sa.Enum("CREATED", "UNAVAILABLE", "AVAILABLE", "INCONSISTENT_DATASET", name="sourcedatastatusenum"),
+            nullable=False,
+        ),
         sa.Column("knowledge_source_id", sa.Integer(), nullable=False),
         sa.Column("deleted", sa.Boolean(), nullable=False),
         sa.Column("deleted_at", sa.DateTime(), nullable=True),
@@ -284,8 +289,10 @@ def downgrade() -> None:
     op.drop_table("embedding_model")
     # These were added by hand
     # We need to manually drop the enums created in the upgrade
-    sa_enum_protocolenum = sa.Enum(name="protocolenum")
-    sa_enum_protocolenum.drop(op.get_bind(), checkfirst=True)  # type: ignore
     sa_enum_knowledgesourceenum = sa.Enum(name="knowledgesourceenum")
     sa_enum_knowledgesourceenum.drop(op.get_bind(), checkfirst=True)  # type: ignore
+    sa_enum_protocolenum = sa.Enum(name="protocolenum")
+    sa_enum_protocolenum.drop(op.get_bind(), checkfirst=True)  # type: ignore
+    sa_enum_sourcedatastatusenum = sa.Enum(name="sourcedatastatusenum")
+    sa_enum_sourcedatastatusenum.drop(op.get_bind(), checkfirst=True)  # type: ignore
     # ### end Alembic commands ###

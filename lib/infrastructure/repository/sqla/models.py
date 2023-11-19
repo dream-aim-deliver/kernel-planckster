@@ -20,7 +20,7 @@ from sqlalchemy.orm import mapped_column, object_mapper, relationship, Mapped, M
 from sqlalchemy.orm.session import Session
 
 from lib.infrastructure.repository.sqla.database import Base
-from lib.core.entity.models import KnowledgeSourceEnum, ProtocolEnum
+from lib.core.entity.models import KnowledgeSourceEnum, ProtocolEnum, SourceDataStatusEnum
 
 
 class ModelBase(object):
@@ -212,6 +212,8 @@ class SQLASourceData(Base, SoftModelBase):  # type: ignore
     @type lfn: str
     @param protocol: The protocol of the source data
     @type protocol: ProtocolEnum
+    @param status: The status of the source data
+    @type status: SourceDataStatusEnum
     @param knowledge_source_id: The ID of the knowledge source of the source data
     @type knowledge_source_id: int
     @param citations: The citations of the source data by the llm associated to the research contexts this source data belongs to
@@ -225,6 +227,7 @@ class SQLASourceData(Base, SoftModelBase):  # type: ignore
     type: Mapped[str] = mapped_column(String, nullable=False)
     lfn: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     protocol: Mapped[ProtocolEnum] = mapped_column(SAEnum(ProtocolEnum), nullable=False)
+    status: Mapped[SourceDataStatusEnum] = mapped_column(SAEnum(SourceDataStatusEnum), nullable=False)
     knowledge_source_id: Mapped[int] = mapped_column(ForeignKey("knowledge_source.id"), nullable=False)
     citations: Mapped[List["SQLACitation"]] = relationship("SQLACitation", backref="source_data")
 

@@ -12,7 +12,7 @@ import psycopg2
 import pytest
 import yaml
 import lib
-from lib.core.entity.models import KnowledgeSourceEnum, ProtocolEnum
+from lib.core.entity.models import KnowledgeSourceEnum, ProtocolEnum, SourceDataStatusEnum
 from lib.infrastructure.config.containers import ApplicationContainer
 from alembic.config import Config
 from alembic import command
@@ -342,7 +342,15 @@ def source_data() -> SQLASourceData:
     sd_protocol = ProtocolEnum(sd_protocol_choice)
     sd_lfn = f"{sd_protocol_choice}:/{sd_path}"
 
-    return SQLASourceData(name=sd_name, type=sd_type, lfn=sd_lfn, protocol=sd_protocol)
+    statuses = [
+        attr_name.__str__().lower()
+        for attr_name in vars(SourceDataStatusEnum)
+        if not attr_name.__str__().startswith("_")
+    ]
+    sd_status_choice: str = random.choice(statuses)
+    sd_status = SourceDataStatusEnum(sd_status_choice)
+
+    return SQLASourceData(name=sd_name, type=sd_type, lfn=sd_lfn, protocol=sd_protocol, status=sd_status)
 
 
 @pytest.fixture(scope="function")
