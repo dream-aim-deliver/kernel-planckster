@@ -23,6 +23,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLACitation,
     SQLAConversation,
+    SQLAEmbeddingModel,
     SQLAKnowledgeSource,
     SQLAMessageBase,
     SQLAMessageQuery,
@@ -30,6 +31,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAResearchContext,
     SQLASourceData,
     SQLAUser,
+    SQLAVectorStore,
 )
 from tests.fixtures.factory.sqla_model_factory import SQLATemporaryModelFactory
 
@@ -328,6 +330,42 @@ def fake_user_with_conversation() -> SQLAUser:
     return user_with_conversation()
 
 
+def create_lfn() -> str:
+    fake = Faker().unique
+
+    protocols = [
+        attr_name.__str__().lower() for attr_name in vars(ProtocolEnum) if not attr_name.__str__().startswith("_")
+    ]
+    knowledge_sources = [
+        attr_name.__str__().lower()
+        for attr_name in vars(KnowledgeSourceEnum)
+        if not attr_name.__str__().startswith("_")
+    ]
+
+    sd_protocol_choice: str = random.choice(protocols)
+    sd_protocol = ProtocolEnum(sd_protocol_choice)
+    sd_host = fake.domain_name()
+    sd_port = fake.port_number()
+    sd_minio_bucket = fake.name()
+    sd_tracer_id = random.randint(1, 1000000000)
+    sd_knowledge_source_choice: str = random.choice(knowledge_sources)
+    sd_job_id = random.randint(1, 1000000000)
+
+    sd_filename = fake.file_name()
+    sd_name = sd_filename.split(".")[0]
+    sd_type = sd_filename.split(".")[1]
+    sd_relative_path = fake.file_path(depth=3).split(".")[0] + "/" + sd_filename
+
+    sd_lfn = f"{sd_protocol_choice}://{sd_host}:{sd_port}/{sd_minio_bucket}/{sd_tracer_id}/{sd_knowledge_source_choice}/{sd_job_id}{sd_relative_path}"
+
+    return sd_lfn
+
+
+@pytest.fixture(scope="function")
+def fake_lfn_list() -> List[str]:
+    return [create_lfn() for _ in range(10)]
+
+
 def source_data() -> SQLASourceData:
     fake = Faker().unique
 
@@ -444,3 +482,48 @@ def llm() -> SQLALLM:
 @pytest.fixture(scope="function")
 def fake_llm() -> SQLALLM:
     return llm()
+
+
+def embedding_model() -> SQLAEmbeddingModel:
+    fake = Faker().unique
+
+    fake_name = fake.name()
+
+    return SQLAEmbeddingModel(
+        name=fake_name,
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_embedding_model() -> SQLAEmbeddingModel:
+    return embedding_model()
+
+
+def vector_store() -> SQLAVectorStore:
+    fake = Faker().unique
+
+    lfn = create_lfn()
+    name = lfn.split("/")[-1]
+    protocol_str = lfn.split("://")[0]
+    protocol = ProtocolEnum(protocol_str)
+
+    return SQLAVectorStore(
+        name=name,
+        lfn=lfn,
+        protocol=protocol,
+    )
+
+
+def embedding_model_with_vector_stores() -> SQLAEmbeddingModel:
+    em = embedding_model()
+
+    vector_store_list = [vector_store() for _ in range(10)]
+
+    em.vector_stores = vector_store_list
+
+    return em
+
+
+@pytest.fixture(scope="function")
+def fake_embedding_model_with_vector_stores() -> SQLAEmbeddingModel:
+    return embedding_model_with_vector_stores()
