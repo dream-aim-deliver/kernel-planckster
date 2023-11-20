@@ -7,6 +7,7 @@ from lib.infrastructure.config.features.demo_feature_container import DemoFeatur
 from lib.infrastructure.config.features.list_conversations_feature_container import ListConversationsFeatureContainer
 from lib.infrastructure.config.features.create_default_data_feature_container import CreateDefaultDataFeatureContainer
 from lib.infrastructure.config.features.list_source_data_feature_container import ListSourceDataFeatureContainer
+from lib.infrastructure.config.features.new_research_context_feature_container import NewResearchContextFeatureContainer
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
 from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import SQLAKnowledgeSourceRepository
 from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
@@ -29,7 +30,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
         format=config.log.format,
     )
 
-    db = providers.Singleton(
+    db = providers.Factory(
         Database,
         db_host=config.rdbms.host,
         db_port=config.rdbms.port.as_int(),
@@ -98,4 +99,12 @@ class ApplicationContainer(containers.DeclarativeContainer):
         ListSourceDataFeatureContainer,
         config=config.features.list_source_data,
         source_data_repository=sqla_source_data_repository,
+    )
+
+    new_research_context_feature = providers.Container(
+        NewResearchContextFeatureContainer,
+        config=config.features.new_research_context,
+        user_repository=sqla_user_repository,
+        default_user_sid=config.default_data.user_sid,
+        default_llm_name=config.default_data.llm_name,
     )
