@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from lib.infrastructure.repository.sqla.database import Database, TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
+    SQLALLM,
     SQLACitation,
     SQLAConversation,
     SQLAKnowledgeSource,
@@ -428,3 +429,18 @@ def fake_citation() -> SQLACitation:
 @pytest.fixture(scope="function")
 def fake_citations() -> List[SQLACitation]:
     return [citation() for _ in range(20)]
+
+
+def llm() -> SQLALLM:
+    fake = Faker().unique
+
+    fake_name = fake.name()
+
+    return SQLALLM(
+        llm_name=fake_name,
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_llm() -> SQLALLM:
+    return llm()

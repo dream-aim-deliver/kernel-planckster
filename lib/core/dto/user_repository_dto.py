@@ -1,4 +1,4 @@
-from lib.core.entity.models import ResearchContext, User
+from lib.core.entity.models import LLM, ResearchContext, User
 from lib.core.sdk.dto import BaseDTO
 
 
@@ -12,7 +12,7 @@ class GetUserDTO(BaseDTO[User]):
     data: User | None = None
 
 
-class NewUserResearchContextDTO(BaseDTO[ResearchContext]):
+class NewResearchContextDTO(BaseDTO[ResearchContext]):
     """
     A DTO for whenever a new research context is created
 
@@ -20,7 +20,8 @@ class NewUserResearchContextDTO(BaseDTO[ResearchContext]):
     @type research_context_id: int | None
     """
 
-    research_context_id: int | None = None
+    research_context: ResearchContext | None = None
+    llm: LLM | None = None
 
 
 class ListUserResearchContextsDTO(BaseDTO[ResearchContext]):

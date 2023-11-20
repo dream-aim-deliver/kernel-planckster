@@ -1,5 +1,6 @@
-from lib.core.entity.models import Conversation, MessageQuery, MessageResponse, ResearchContext, SourceData, User
+from lib.core.entity.models import LLM, Conversation, MessageQuery, MessageResponse, ResearchContext, SourceData, User
 from lib.infrastructure.repository.sqla.models import (
+    SQLALLM,
     SQLAConversation,
     SQLAMessageQuery,
     SQLAMessageResponse,
@@ -148,4 +149,23 @@ def convert_core_source_data_to_sqla_source_data(core_source_data: SourceData) -
         lfn=core_source_data.lfn,
         protocol=core_source_data.protocol,
         status=core_source_data.status,
+    )
+
+
+def convert_sqla_LLM_to_core_LLM(sqla_llm: SQLALLM) -> LLM:
+    """
+    Converts a SQLALLM to a (core) LLM
+
+    @param sqla_llm: The SQLALLM to convert
+    @type sqla_llm: SQLALLM
+    @return: The converted LLM
+    @rtype: LLM
+    """
+    return LLM(
+        created_at=sqla_llm.created_at,
+        updated_at=sqla_llm.updated_at,
+        deleted=sqla_llm.deleted,
+        deleted_at=sqla_llm.deleted_at,
+        id=sqla_llm.id,
+        llm_name=sqla_llm.llm_name,
     )
