@@ -28,41 +28,40 @@ def test_update_conversation(
         research_contexts=user_with_conv.research_contexts,
     )
 
-    rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
-    researchContext = user_with_conv.research_contexts[rand_int_1]
-
-    rand_int_2 = random.randint(0, len(researchContext.conversations) - 1)
-    conversation = researchContext.conversations[rand_int_2]
-    conversation_title = conversation.title
-
-    new_conversation_title = fake.name()
-
     id = None
     with db_session() as session:
         user_with_conv.save(session=session, flush=True)
+        session.commit()
 
-        result = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+        rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
+        researchContext = user_with_conv.research_contexts[rand_int_1]
 
-        assert result is not None
+        rand_int_2 = random.randint(0, len(researchContext.conversations) - 1)
+        conversation = researchContext.conversations[rand_int_2]
+        conversation_id = conversation.id
+        conversation_title = conversation.title
 
-        id = result.id
+    with db_session() as session:
+        new_conversation_title = fake.name()
+
+        # result = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+
+        # assert result is not None
+
+        # id = result.id
         conv_DTO: UpdateConversationDTO = conversation_repository.update_conversation(
-            conversation_id=id, conversation_title=new_conversation_title
+            conversation_id=conversation_id, conversation_title=new_conversation_title
         )
+        assert conv_DTO.status == True
+        assert conv_DTO.conversation_id == conversation_id
 
-        old_conversation = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+    with db_session() as session:
+        queried_conversation = session.get(SQLAConversation, conversation_id)
+        assert queried_conversation is not None
 
-        new_conversation = session.query(SQLAConversation).filter_by(id=conv_DTO.conversation_id).first()
-
-        assert new_conversation is not None
-
-    assert conv_DTO.conversation_id is not None
-
-    assert old_conversation == None
-    assert conv_DTO.status == True
-    assert conv_DTO.errorCode == None
-    assert conv_DTO.conversation_id == id
-    assert new_conversation.title == new_conversation_title
+        assert queried_conversation.title == new_conversation_title
+        assert queried_conversation.title != conversation_title
+        assert queried_conversation.id == conversation_id
 
 
 def test_error_update_conversation_none_research_context_id(
