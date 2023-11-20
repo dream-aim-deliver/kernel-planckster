@@ -29,15 +29,16 @@ class ListSourceDataPresenter(ListSourceDataOutputPort):
                 raise ValueError(
                     f"Bucket {bucket} does not match the bucket of this MinIO Repository at {self_url}. Cannot create a LFN for PFN {pfn}."
                 )
-            tracer_id = int(path_components[1])
+            tracer_key = path_components[1]
             source = KnowledgeSourceEnum(path_components[2])
             job_id = int(path_components[3])
             relative_path = "/".join(path_components[4:])
 
             lfn: MPIScraperLFNViewModel = MPIScraperLFNViewModel(
                 source_data_id=source_data_id,
+                source_data_lfn=pfn,
                 protocol=self_protocol,
-                tracer_id=tracer_id,
+                tracer_key=tracer_key,
                 source=str(source.value),
                 job_id=job_id,
                 relative_path=relative_path,

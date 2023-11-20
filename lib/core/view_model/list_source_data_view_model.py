@@ -6,12 +6,13 @@ from lib.core.sdk.viewmodel import BaseViewModel
 
 class MPIScraperLFNViewModel(BaseModel):
     """
-    Model for the LFNs scraped by the MPI Scraper. Contains the additional field "source_data_id" which is the ID of the source data coming from the database.
+    Model for the LFNs scraped by the MPI Scraper. Contains the additional field "source_data_id" which is the ID of the source data coming from the database, and the "source_data_lfn" which is the lfn of the source data in the database.
     """
 
     source_data_id: int
+    source_data_lfn: str
     protocol: str
-    tracer_id: int
+    tracer_key: str
     job_id: int
     source: str
     relative_path: str
