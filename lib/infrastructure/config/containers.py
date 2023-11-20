@@ -13,6 +13,7 @@ from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import 
 from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
 from lib.infrastructure.repository.sqla.sqla_source_data_repository import SQLASourceDataRepository
 from lib.infrastructure.repository.sqla.sqla_user_repository import SQLAUserRepository
+from lib.infrastructure.repository.sqla.sqla_vector_store_repository import SQLAVectorStoreRepository
 import lib.infrastructure.rest.endpoints as endpoints
 
 from lib.infrastructure.repository.sqla.database import Database
@@ -61,6 +62,11 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     sqla_source_data_repository: providers.Factory[SQLASourceDataRepository] = providers.Factory(
         SQLASourceDataRepository,
+        session_factory=db.provided.session,
+    )
+
+    sqla_vector_store_repository: providers.Factory[SQLAVectorStoreRepository] = providers.Factory(
+        SQLAVectorStoreRepository,
         session_factory=db.provided.session,
     )
 
