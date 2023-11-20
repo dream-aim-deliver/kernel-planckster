@@ -300,8 +300,7 @@ class SQLAVectorStore(Base, ModelBase):  # type: ignore
     @type protocol: ProtocolEnum
     @param research_context_id: The ID of the research context of the vector store
     @type research_context_id: int
-    @param research_context: The research context of the vector store
-    @type research_context: SQLAResearchContext
+    @sqlarel research_context: The research context of the vector store, goes here to represent a one-to-one relation, no need to pass it as parameter
     @param embedding_model_id: The ID of the embedding model of the vector store
     @type embedding_model_id: int
     """
