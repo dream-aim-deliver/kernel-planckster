@@ -6,7 +6,9 @@ from lib.core.dto.research_context_repository_dto import (
     GetResearchContextUserDTO,
     ListResearchContextConversationsDTO,
     NewResearchContextConversationDTO,
+    UpdateResearchContextVectorStoreDTO,
 )
+from lib.core.entity.models import ProtocolEnum
 
 
 class ResearchContextRepositoryOutputPort(ABC):
@@ -33,6 +35,22 @@ class ResearchContextRepositoryOutputPort(ABC):
         @type research_context_id: int
         @return: A DTO containing the result of the operation.
         @rtype: GetResearchContextDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_research_context_vector_store(
+        self,
+        research_context_id: int,
+        vector_store_id: int,
+    ) -> UpdateResearchContextVectorStoreDTO:
+        """
+        Updates the vector store of a research context.
+
+        @param research_context_id: The ID of the research context to update the vector store for.
+        @type research_context_id: int
+        @param vector_store_id: The ID of the vector store to set.
+        @type vector_store_id: int
         """
         raise NotImplementedError
 

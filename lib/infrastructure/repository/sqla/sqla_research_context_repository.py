@@ -4,13 +4,20 @@ from lib.core.dto.research_context_repository_dto import (
     GetResearchContextUserDTO,
     ListResearchContextConversationsDTO,
     NewResearchContextConversationDTO,
+    UpdateResearchContextVectorStoreDTO,
 )
-from lib.core.entity.models import Conversation, ResearchContext
+from lib.core.entity.models import Conversation, ProtocolEnum, ResearchContext
 from lib.core.ports.secondary.research_context_repository import ResearchContextRepositoryOutputPort
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from sqlalchemy.orm import Session
 
-from lib.infrastructure.repository.sqla.models import SQLAConversation, SQLAResearchContext, SQLAUser
+from lib.infrastructure.repository.sqla.models import (
+    SQLAConversation,
+    SQLAEmbeddingModel,
+    SQLAResearchContext,
+    SQLAUser,
+    SQLAVectorStore,
+)
 from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_conversation_to_core_conversation,
     convert_sqla_research_context_to_core_research_context,
@@ -68,6 +75,96 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
         )
 
         return GetResearchContextDTO(status=True, data=core_research_context)
+
+    def update_research_context_vector_store(
+        self,
+        research_context_id: int,
+        vector_store_id: int,
+    ) -> UpdateResearchContextVectorStoreDTO:
+        """
+        Updates the vector store of a research context.
+
+        @param research_context_id: The ID of the research context to update the vector store for.
+        @type research_context_id: int
+        @param vector_store_id: The ID of the vector store to set.
+        @type vector_store_id: int
+        """
+
+        if research_context_id is None:
+            self.logger.error(f"Research Context ID cannot be None")
+            errorDTO = UpdateResearchContextVectorStoreDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Research Context ID cannot be None",
+                errorName="Research Context ID not provided",
+                errorType="ResearchContextIdNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        queried_sqla_research_context: SQLAResearchContext | None = self.session.get(
+            SQLAResearchContext, research_context_id
+        )
+
+        if queried_sqla_research_context is None:
+            self.logger.error(f"Research context with ID {research_context_id} not found.")
+            errorDTO = UpdateResearchContextVectorStoreDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Research Context with ID {research_context_id} not found in the database.",
+                errorName="Research Context not found",
+                errorType="ResearchContextNotFound",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        if vector_store_id is None:
+            self.logger.error(f"Vector Store ID cannot be None")
+            errorDTO = UpdateResearchContextVectorStoreDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Vector Store ID cannot be None",
+                errorName="Vector Store ID not provided",
+                errorType="VectorStoreIdNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        queried_sqla_vector_store: SQLAVectorStore | None = self.session.get(SQLAVectorStore, vector_store_id)
+
+        if queried_sqla_vector_store is None:
+            self.logger.error(f"Vector store with ID {vector_store_id} not found.")
+            errorDTO = UpdateResearchContextVectorStoreDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Vector Store with ID {vector_store_id} not found in the database.",
+                errorName="Vector Store not found",
+                errorType="VectorStoreNotFound",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        try:
+            queried_sqla_research_context.update({"vector_store": queried_sqla_vector_store}, session=self.session)
+            self.session.commit()
+
+            return UpdateResearchContextVectorStoreDTO(
+                status=True,
+                research_context_id=queried_sqla_research_context.id,
+                vector_store_id=queried_sqla_research_context.vector_store.id,
+            )
+
+        except Exception as e:
+            self.logger.error(f"Error while updating vector store of research context: {e}")
+            errorDTO = UpdateResearchContextVectorStoreDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Error while updating vector store of research context: {e}",
+                errorName="Error while updating vector store of research context",
+                errorType="ErrorWhileUpdatingVectorStoreOfResearchContext",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
 
     def get_research_context_user(self, research_context_id: int) -> GetResearchContextUserDTO:
         """
