@@ -70,4 +70,12 @@ features:
     tags: ["client: websat"]
     enabled: true
     auth: false
+
+  new_research_context:
+    name: "Create Research Context"
+    description: "Create a new research context from a subset of the available source data"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: true
   
