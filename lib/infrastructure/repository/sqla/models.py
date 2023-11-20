@@ -262,7 +262,7 @@ class SQLAEmbeddingModel(Base, SoftModelBase):  # type: ignore
     vector_stores: Mapped[List["SQLAVectorStore"]] = relationship("SQLAVectorStore", backref="embedding_model")
 
 
-class SQLALLM(Base, ModelBase):  # type: ignore
+class SQLALLM(Base, SoftModelBase):  # type: ignore
     """
     SQLAlchemy LLM model
 
