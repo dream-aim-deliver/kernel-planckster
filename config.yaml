@@ -78,4 +78,12 @@ features:
     tags: ["client: websat"]
     enabled: true
     auth: true
+
+  new_conversation:
+    name: "Create Conversation"
+    description: "Create a new conversation in a research context"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: true
   

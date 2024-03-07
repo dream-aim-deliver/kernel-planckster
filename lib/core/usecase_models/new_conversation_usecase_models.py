@@ -10,7 +10,9 @@ class NewConversationRequest(BaseRequest):
     @param conversation_title: Title of the conversation to be created.
     """
 
-    research_context_id: int = Field(description="The ID of the research context for which the conversation is to be created.")
+    research_context_id: int = Field(
+        description="The ID of the research context for which the conversation is to be created."
+    )
     conversation_title: str = Field(description="Title of the conversation to be created.")
 
 
