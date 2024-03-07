@@ -1,5 +1,3 @@
-
-
 from lib.core.ports.primary.new_conversation_primary_ports import NewConversationOutputPort
 from lib.core.usecase_models.new_conversation_usecase_models import NewConversationError, NewConversationResponse
 from lib.core.view_model.new_conversation_view_model import NewConversationViewModel

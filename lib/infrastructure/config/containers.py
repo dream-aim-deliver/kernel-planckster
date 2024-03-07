@@ -7,6 +7,7 @@ from lib.infrastructure.config.features.demo_feature_container import DemoFeatur
 from lib.infrastructure.config.features.list_conversations_feature_container import ListConversationsFeatureContainer
 from lib.infrastructure.config.features.create_default_data_feature_container import CreateDefaultDataFeatureContainer
 from lib.infrastructure.config.features.list_source_data_feature_container import ListSourceDataFeatureContainer
+from lib.infrastructure.config.features.new_conversation_feature_container import NewConversationFeatureContainer
 from lib.infrastructure.config.features.new_research_context_feature_container import NewResearchContextFeatureContainer
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
 from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import SQLAKnowledgeSourceRepository
@@ -107,4 +108,10 @@ class ApplicationContainer(containers.DeclarativeContainer):
         user_repository=sqla_user_repository,
         default_user_sid=config.default_data.user_sid,
         default_llm_name=config.default_data.llm_name,
+    )
+
+    new_conversation_feature = providers.Container(
+        NewConversationFeatureContainer,
+        config=config.features.new_conversation,
+        research_context_repository=sqla_research_context_repository,
     )
