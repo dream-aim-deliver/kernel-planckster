@@ -341,6 +341,7 @@ class SQLAResearchContext(Base, SoftModelBase):  # type: ignore
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str] = mapped_column(String, nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     llm_id: Mapped[int] = mapped_column(ForeignKey("llm.id"), nullable=False)
     source_data: Mapped[List["SQLASourceData"]] = relationship(

@@ -59,6 +59,7 @@ def test_empty_list_conversations_in_research_context(
 
     research_context = SQLAResearchContext(
         title=fake.name(),
+        description=fake.text(),
     )
 
     user = fake_user

@@ -15,6 +15,7 @@ class NewResearchContextRequest(BaseRequest):
     """
 
     research_context_title: str = Field(description="Title of the research context to be created.")
+    research_context_description: str = Field(description="Description of the research context to be created.")
     user_sid: str = Field(description="SID of the user for which the research context is to be created.")
     llm_name: str = Field(description="Name of the LLM for which the research context is to be created.")
     source_data_ids: List[int] = Field(

@@ -74,13 +74,20 @@ class SQLAUserRepository(UserRepositoryOutputPort):
         return GetUserDTO(status=True, data=core_user)
 
     def new_research_context(
-        self, research_context_title: str, user_sid: str, llm_name: str, source_data_ids: List[int]
+        self,
+        research_context_title: str,
+        research_context_description: str,
+        user_sid: str,
+        llm_name: str,
+        source_data_ids: List[int],
     ) -> NewResearchContextDTO:
         """
         Creates a new research context for a user.
 
         @param research_context_title: The title of the research context.
         @type research_context_title: str
+        @param research_context_description: The description of the research context.
+        @type research_context_description: str
         @param user_sid: The SID of the user to create the research context for.
         @type user_sid: str
         @param llm_name: The name of the LLM to create the research context for.
@@ -100,6 +107,18 @@ class SQLAUserRepository(UserRepositoryOutputPort):
                 errorMessage="Research context title cannot be None",
                 errorName="Research context title not provided",
                 errorType="ResearchContextTitleNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        if research_context_description is None:
+            self.logger.error("Research context description cannot be None")
+            errorDTO = NewResearchContextDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Research context description cannot be None",
+                errorName="Research context description not provided",
+                errorType="ResearchContextDescriptionNotProvided",
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
@@ -254,6 +273,7 @@ class SQLAUserRepository(UserRepositoryOutputPort):
 
         sqla_new_research_context: SQLAResearchContext = SQLAResearchContext(
             title=research_context_title,
+            description=research_context_description,
             user_id=user_id,
             llm_id=llm_id,
             source_data=sqla_source_data,

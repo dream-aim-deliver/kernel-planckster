@@ -47,6 +47,7 @@ def convert_sqla_research_context_to_core_research_context(
         deleted_at=sqla_research_context.deleted_at,
         id=sqla_research_context.id,
         title=sqla_research_context.title,
+        description=sqla_research_context.description,
     )
 
 

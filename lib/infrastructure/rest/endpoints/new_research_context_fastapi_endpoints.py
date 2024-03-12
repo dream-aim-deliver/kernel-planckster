@@ -42,12 +42,14 @@ class NewResearchContextFastAPIFeature(
         )
         def endpoint(
             research_context_title: str,
+            research_context_description: str,
             source_data_ids: list[int],
             user_sid: str | None = None,
             llm_name: str | None = None,
         ) -> NewResearchContextViewModel | None:
             controller_parameters = NewResearchContextControllerParameters(
                 research_context_title=research_context_title,
+                research_context_description=research_context_description,
                 user_sid=user_sid,
                 llm_name=llm_name,
                 source_data_ids=source_data_ids,
