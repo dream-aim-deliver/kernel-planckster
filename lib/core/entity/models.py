@@ -176,10 +176,12 @@ class ResearchContext(BaseSoftDeleteKernelPlancksterModel):
 
     @param id: the id of the research context
     @param title: the title of the research context
+    @param description: the description of the research context
     """
 
     id: int
     title: str
+    description: str
 
 
 class VectorStore(BaseSoftDeleteKernelPlancksterModel):

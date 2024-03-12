@@ -19,6 +19,7 @@ def test_list_research_contexts_in_user(
     for _ in range(10):
         research_context = SQLAResearchContext(
             title=fake.name(),
+            description=fake.text(),
         )
         research_contexts.append(research_context)
 

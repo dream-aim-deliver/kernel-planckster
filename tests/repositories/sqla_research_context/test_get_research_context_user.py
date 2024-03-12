@@ -27,6 +27,7 @@ def test_get_research_context_user(
     for _ in range(rand_int_2):
         research_context = SQLAResearchContext(
             title=fake.name(),
+            description=fake.text(),
         )
         research_contexts.append(research_context)
 

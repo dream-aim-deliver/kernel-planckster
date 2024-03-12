@@ -20,6 +20,7 @@ def test_get_research_context(
     for _ in range(10):
         research_context = SQLAResearchContext(
             title=fake.name(),
+            description=fake.text(),
         )
         research_contexts.append(research_context)
 
@@ -52,6 +53,7 @@ def test_get_research_context(
         assert get_research_context_DTO.status == True
         assert get_research_context_DTO.data is not None
         assert get_research_context_DTO.data.title == research_context_title
+        assert get_research_context_DTO.data.description == sqla_research_context.description
 
 
 def test_error_get_research_context_id_is_None(

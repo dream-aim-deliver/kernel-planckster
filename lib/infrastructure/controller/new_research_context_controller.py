@@ -16,6 +16,10 @@ class NewResearchContextControllerParameters(BaseControllerParameters):
         name="Research Context Title",
         description="Title of the research context to be created.",
     )
+    research_context_description: str = Field(
+        name="Research Context Description",
+        description="Description of the research context to be created.",
+    )
     user_sid: str | None = Field(
         name="User String ID",
         description="SID of the user for which the research context is to be created.",
@@ -61,12 +65,16 @@ class NewResearchContextController(
             default_llm_name = self.default_llm_name
 
             research_context_title = parameters.research_context_title
+
+            research_context_description = parameters.research_context_description
+
             user_sid = parameters.user_sid if parameters.user_sid is not None else default_user_sid
             llm_name = parameters.llm_name if parameters.llm_name is not None else default_llm_name
             source_data_ids = parameters.source_data_ids
 
             return NewResearchContextRequest(
                 research_context_title=research_context_title,
+                research_context_description=research_context_description,
                 user_sid=user_sid,
                 llm_name=llm_name,
                 source_data_ids=source_data_ids,

@@ -27,6 +27,7 @@ def test_create_new_research_context(
     llm_name = llm.llm_name
 
     research_context_title = fake.name()
+    research_context_description = fake.text()
 
     with db_session() as session:
         session.add(user)
@@ -42,6 +43,7 @@ def test_create_new_research_context(
     with db_session() as session:
         new_research_context_DTO: NewResearchContextDTO = sqla_user_repository.new_research_context(
             research_context_title=research_context_title,
+            research_context_description=research_context_description,
             user_sid=user_sid,
             llm_name=llm_name,
             source_data_ids=source_data_id_list,
@@ -63,6 +65,11 @@ def test_create_new_research_context(
             == new_research_context_DTO.research_context.title
             == research_context_title
         )
+        assert (
+            queried_new_research_context.description
+            == new_research_context_DTO.research_context.description
+            == research_context_description
+        )
         assert queried_new_research_context.llm_id == new_research_context_llm.id
 
         assert new_research_context_llm.llm_name == llm_name
@@ -81,12 +88,14 @@ def test_error_new_research_context_research_context_title_is_None(
     sqla_user_repository = app_initialization_container.sqla_user_repository()
 
     research_context_title = None
+    research_context_description = "Test description"
     user_sid = "test"
     llm_name = "test"
     source_data_ids = [1, 2, 3]
 
     new_research_context_DTO: NewResearchContextDTO = sqla_user_repository.new_research_context(
         research_context_title=research_context_title,  # type: ignore
+        research_context_description=research_context_description,
         user_sid=user_sid,
         llm_name=llm_name,
         source_data_ids=source_data_ids,
@@ -99,18 +108,46 @@ def test_error_new_research_context_research_context_title_is_None(
     assert new_research_context_DTO.errorType == "ResearchContextTitleNotProvided"
 
 
+def test_error_new_research_context_description_is_None(
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
+) -> None:
+    sqla_user_repository = app_initialization_container.sqla_user_repository()
+
+    research_context_title = "test"
+    research_context_description = None
+    user_sid = "test"
+    llm_name = "test"
+    source_data_ids = [1, 2, 3]
+
+    new_research_context_DTO: NewResearchContextDTO = sqla_user_repository.new_research_context(
+        research_context_title=research_context_title,
+        research_context_description=research_context_description,  # type: ignore
+        user_sid=user_sid,
+        llm_name=llm_name,
+        source_data_ids=source_data_ids,
+    )
+
+    assert new_research_context_DTO.status == False
+    assert new_research_context_DTO.errorCode == -1
+    assert new_research_context_DTO.errorMessage == "Research context description cannot be None"
+    assert new_research_context_DTO.errorName == "Research context description not provided"
+    assert new_research_context_DTO.errorType == "ResearchContextDescriptionNotProvided"
+
+
 def test_error_new_research_context_user_sid_is_None(
     app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     sqla_user_repository = app_initialization_container.sqla_user_repository()
 
     research_context_title = "test"
+    research_context_description = "Test description"
     user_sid = None
     llm_name = "test"
     source_data_ids = [1, 2, 3]
 
     new_research_context_DTO: NewResearchContextDTO = sqla_user_repository.new_research_context(
         research_context_title=research_context_title,
+        research_context_description=research_context_description,
         user_sid=user_sid,  # type: ignore
         llm_name=llm_name,
         source_data_ids=source_data_ids,
@@ -129,12 +166,14 @@ def test_error_new_research_context_llm_name_is_None(
     sqla_user_repository = app_initialization_container.sqla_user_repository()
 
     research_context_title = "test"
+    research_context_description = "Test description"
     user_sid = "test"
     llm_name = None
     source_data_ids = [1, 2, 3]
 
     new_research_context_DTO: NewResearchContextDTO = sqla_user_repository.new_research_context(
         research_context_title=research_context_title,
+        research_context_description=research_context_description,
         user_sid=user_sid,
         llm_name=llm_name,  # type: ignore
         source_data_ids=source_data_ids,
@@ -158,6 +197,7 @@ def test_error_new_research_context_user_sid_not_found(
     llm_name = llm.llm_name
 
     research_context_title = "test"
+    research_context_description = "Test description"
     user_sid = "test"
     source_data_ids = [1, 2, 3]
 
@@ -167,6 +207,7 @@ def test_error_new_research_context_user_sid_not_found(
 
         new_research_context_DTO: NewResearchContextDTO = sqla_user_repository.new_research_context(
             research_context_title=research_context_title,
+            research_context_description=research_context_description,
             user_sid=user_sid,
             llm_name=llm_name,
             source_data_ids=source_data_ids,
@@ -190,6 +231,7 @@ def test_error_new_research_context_llm_name_not_found(
     user_sid = user.sid
 
     research_context_title = "test"
+    research_context_description = "Test description"
     llm_name = "test"
     source_data_ids = [1, 2, 3]
 
@@ -199,6 +241,7 @@ def test_error_new_research_context_llm_name_not_found(
 
         new_research_context_DTO: NewResearchContextDTO = sqla_user_repository.new_research_context(
             research_context_title=research_context_title,
+            research_context_description=research_context_description,
             user_sid=user_sid,
             llm_name=llm_name,
             source_data_ids=source_data_ids,
@@ -225,6 +268,7 @@ def test_error_new_research_context_source_data_ids_not_found(
     llm_name = llm.llm_name
 
     research_context_title = "test"
+    research_context_description = "Test description"
     source_data_ids = [999999999]
 
     with db_session() as session:
@@ -234,6 +278,7 @@ def test_error_new_research_context_source_data_ids_not_found(
 
         new_research_context_DTO: NewResearchContextDTO = sqla_user_repository.new_research_context(
             research_context_title=research_context_title,
+            research_context_description=research_context_description,
             user_sid=user_sid,
             llm_name=llm_name,
             source_data_ids=source_data_ids,

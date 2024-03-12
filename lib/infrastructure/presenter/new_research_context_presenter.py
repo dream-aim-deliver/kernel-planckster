@@ -17,6 +17,7 @@ class NewResearchContextPresenter(NewResearchContextOutputPort):
             errorType=response.errorType,
             research_context_id=-1,
             research_context_title="",
+            research_context_description="",
             llm_name="",
         )
 
@@ -30,5 +31,6 @@ class NewResearchContextPresenter(NewResearchContextOutputPort):
             code=200,
             research_context_id=research_context_id,
             research_context_title=research_context_title,
+            research_context_description=response.research_context.description,
             llm_name=llm_name,
         )

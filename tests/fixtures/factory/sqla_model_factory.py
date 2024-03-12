@@ -31,10 +31,12 @@ class SQLATemporaryModelFactory:
         fake = Faker().unique
         user_name = fake.name()
         research_context_name = f"Research Context {user_name} {fake.name()}"
+        research_context_description = fake.text()
         conversation_name = f"Conversation {user_name} {fake.name()}"
         sqla_user = SQLAUser(sid=user_name)
         sqla_research_context = SQLAResearchContext(
             title=research_context_name,
+            description=research_context_description,
             user=sqla_user,
         )
         llm = SQLALLM(
