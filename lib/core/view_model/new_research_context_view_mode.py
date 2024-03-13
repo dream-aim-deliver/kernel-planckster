@@ -18,6 +18,7 @@ class NewResearchContextViewModel(BaseViewModel):
                 {
                     "research_context_id": 1,
                     "research_context_title": "My Super Cool Research Context",
+                    "research_context_description": "This Research Context is particularly cool.",
                     "llm_name": "llama2",
                 }
             ]
