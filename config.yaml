@@ -40,7 +40,7 @@ features:
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true
-    auth: false
+    auth: true
 
   create_default_data:
     name: "Create Default Data"
@@ -56,7 +56,7 @@ features:
     version: "1.0.0"
     tags: ["client: service"]
     enabled: true
-    auth: false
+    auth: true
 
   list_source_data:
     name: "List Source Data"
@@ -69,7 +69,7 @@ features:
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true
-    auth: false
+    auth: true
 
   new_research_context:
     name: "Create Research Context"
@@ -87,3 +87,10 @@ features:
     enabled: true
     auth: true
   
+  list_research_contexts:
+    name: "List Research Contexts"
+    description: "List all research contexts in the database for a given user"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: true
