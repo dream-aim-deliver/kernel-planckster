@@ -1,5 +1,5 @@
 from typing import List
-from lib.core.entity.models import Conversation, ResearchContext, User
+from lib.core.entity.models import Conversation, ResearchContext, SourceData, User
 from lib.core.sdk.dto import BaseDTO
 
 
@@ -43,3 +43,13 @@ class ListResearchContextConversationsDTO(BaseDTO[Conversation]):
     """
 
     data: List[Conversation] | None = None
+
+
+class ListSourceDataDTO(BaseDTO[SourceData]):
+    """
+    A DTO for listing all source data in a research context
+
+    @param data: The source data in the research context
+    """
+
+    data: List[SourceData] | None = None

@@ -3,9 +3,10 @@ from lib.core.dto.research_context_repository_dto import (
     GetResearchContextDTO,
     GetResearchContextUserDTO,
     ListResearchContextConversationsDTO,
+    ListSourceDataDTO,
     NewResearchContextConversationDTO,
 )
-from lib.core.entity.models import Conversation, ResearchContext
+from lib.core.entity.models import Conversation, ResearchContext, SourceData
 from lib.core.ports.secondary.research_context_repository import ResearchContextRepositoryOutputPort
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from sqlalchemy.orm import Session
@@ -14,6 +15,7 @@ from lib.infrastructure.repository.sqla.models import SQLAConversation, SQLARese
 from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_conversation_to_core_conversation,
     convert_sqla_research_context_to_core_research_context,
+    convert_sqla_source_data_to_core_source_data,
     convert_sqla_user_to_core_user,
 )
 
@@ -238,4 +240,51 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
         return ListResearchContextConversationsDTO(
             status=True,
             data=core_conversations,
+        )
+
+    def list_source_data(self, research_context_id: int) -> ListSourceDataDTO:
+        """
+        Lists all source data related to a research context.
+
+        @param research_context_id: The ID of the research context to list source data for.
+        @type research_context_id: int
+        @return: A DTO containing the result of the operation.
+        @rtype: ListSourceDataDTO
+        """
+
+        if research_context_id is None:
+            errorDTO = ListSourceDataDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Research Context ID cannot be None",
+                errorName="Research Context ID not provided",
+                errorType="ResearchContextIdNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_research_context: SQLAResearchContext | None = self.session.get(SQLAResearchContext, research_context_id)
+
+        if sqla_research_context is None:
+            self.logger.error(f"Research context with ID {research_context_id} not found in the database.")
+            errorDTO = ListSourceDataDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Research context with ID {research_context_id} not found in the database.",
+                errorName="Research Context not found",
+                errorType="ResearchContextNotFound",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_source_data = sqla_research_context.source_data
+
+        core_source_data: List[SourceData] = []
+        for sqla_source_datum in sqla_source_data:
+            core_source_datum = convert_sqla_source_data_to_core_source_data(sqla_source_datum)
+            core_source_data.append(core_source_datum)
+
+        return ListSourceDataDTO(
+            status=True,
+            data=core_source_data,
         )
