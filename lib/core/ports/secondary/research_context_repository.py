@@ -5,6 +5,7 @@ from lib.core.dto.research_context_repository_dto import (
     GetResearchContextDTO,
     GetResearchContextUserDTO,
     ListResearchContextConversationsDTO,
+    ListSourceDataDTO,
     NewResearchContextConversationDTO,
 )
 
@@ -71,5 +72,17 @@ class ResearchContextRepositoryOutputPort(ABC):
         @type research_context_id: int
         @return: A DTO containing the result of the operation.
         @rtype: ListResearchContextConversationsDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_source_data(self, research_context_id: int) -> ListSourceDataDTO:
+        """
+        Lists all source data related to a research context.
+
+        @param research_context_id: The ID of the research context to list source data for.
+        @type research_context_id: int
+        @return: A DTO containing the result of the operation.
+        @rtype: ListResearchContextSourceDataDTO
         """
         raise NotImplementedError
