@@ -98,8 +98,10 @@ class ListSourceDataForResearchContextPresenter(ListSourceDataForResearchContext
 
             lfn_vm_list.append(lfn_vm)
 
+        lfn_list = [lfn_vm.model_dump_json() for lfn_vm in lfn_vm_list]
+
         return ListSourceDataForResearchContextViewModel(
             status=True,
             code=200,
-            lfn_list=lfn_vm_list,
+            lfn_list=lfn_list,
         )

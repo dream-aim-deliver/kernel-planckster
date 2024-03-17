@@ -94,3 +94,11 @@ features:
     tags: ["client: websat"]
     enabled: true
     auth: true
+
+  list_source_data_for_research_context:
+    name: "List Source Data for Research Context"
+    description: "List all source data registered in the database for a given research context"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: true

@@ -23,9 +23,7 @@ class ListSourceDataForResearchContextViewModel(BaseViewModel):
     View Model for the List Source Data For Research Context Feature. Represents all source data in the database for a given research context.
     """
 
-    lfn_list: List[MPIScraperLFNViewModel] = Field(
-        description="List of source data in the database for a given research context."
-    )
+    lfn_list: List[str] = Field(description="List of source data in the database for a given research context.")
 
     model_config = {
         "json_schema_extra": {
