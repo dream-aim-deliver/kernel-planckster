@@ -8,7 +8,7 @@ class ListSourceDataForResearchContextRequest(BaseRequest):
     Request Model for the List Source Data For Research Context Use Case.
     """
 
-    research_context_id: int | None = None
+    research_context_id: int
 
 
 class ListSourceDataForResearchContextResponse(BaseResponse):
@@ -24,4 +24,4 @@ class ListSourceDataForResearchContextError(BaseErrorResponse):
     Error Response Model for the List Source Data For Research Context Use Case.
     """
 
-    research_context_id: int | None = None
+    research_context_id: int

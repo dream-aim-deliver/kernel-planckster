@@ -10,6 +10,9 @@ from lib.infrastructure.config.features.list_research_contexts_feature_container
     ListResearchContextsFeatureContainer,
 )
 from lib.infrastructure.config.features.list_source_data_feature_container import ListSourceDataFeatureContainer
+from lib.infrastructure.config.features.list_source_data_for_research_context_feature_container import (
+    ListSourceDataForResearchContextFeatureContainer,
+)
 from lib.infrastructure.config.features.new_conversation_feature_container import NewConversationFeatureContainer
 from lib.infrastructure.config.features.new_research_context_feature_container import NewResearchContextFeatureContainer
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
@@ -123,4 +126,10 @@ class ApplicationContainer(containers.DeclarativeContainer):
         ListResearchContextsFeatureContainer,
         config=config.features.list_research_contexts,
         user_repository=sqla_user_repository,
+    )
+
+    list_source_data_for_research_context_feature = providers.Container(
+        ListSourceDataForResearchContextFeatureContainer,
+        config=config.features.list_source_data_for_research_context,
+        research_context_repository=sqla_research_context_repository,
     )
