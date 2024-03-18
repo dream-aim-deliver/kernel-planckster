@@ -18,6 +18,7 @@ from alembic.config import Config
 from alembic import command
 from sqlalchemy.orm import Session
 
+from lib.infrastructure.repository.minio.object_store import ObjectStore
 from lib.infrastructure.repository.sqla.database import Database, TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
@@ -45,7 +46,7 @@ def start_docker_services(
     request: pytest.FixtureRequest,
     docker_services: pytest.fixture,  # type: ignore
 ) -> None:
-    """Ensure that a postgres container is running before running tests"""
+    """Ensure that a postgres container and a minio container are running before running tests"""
 
     def is_responsive(rdbms: dict[str, str]) -> bool:
         try:
@@ -76,6 +77,40 @@ def start_docker_services(
         docker_services.wait_until_responsive(timeout=60.0, pause=0.1, check=lambda: is_responsive(rdbms))  # type: ignore
     except Exception as e:
         pytest.fail(f"Failed to start postgres container, error: {e}")
+
+    def is_object_store_responsive(object_store_conf: dict[str, str]) -> bool:
+        try:
+            object_store = ObjectStore(
+                host=object_store_conf["host"],
+                port=object_store_conf["port"],
+                access_key=object_store_conf["access_key"],
+                secret_key=object_store_conf["secret_key"],
+                bucket=object_store_conf["bucket"],
+                signed_url_expiry=1,
+            )
+            return object_store.ping()
+        except Exception as e:
+            return False
+
+    try:
+        object_store_config = config["object_store"]
+        signed_url_expiry = int(
+            os.getenv("KP_OBJECT_STORE_SIGNED_URL_EXPIRY", object_store_config["signed_url_expiry"].split(":"[-1][-1]))
+        )
+
+        object_store = {
+            "host": os.getenv("KP_OBJECT_STORE_HOST", object_store_config["host"].split(":"[-1][-1])),
+            "port": os.getenv("KP_OBJECT_STORE_PORT", object_store_config["port"].split(":"[-1][-1])),
+            "access_key": os.getenv("KP_OBJECT_STORE_ACCESS_KEY", object_store_config["access_key"].split(":"[-1][-1])),
+            "secret_key": os.getenv("KP_OBJECT_STORE_SECRET_KEY", object_store_config["secret_key"].split(":"[-1][-1])),
+            "bucket": os.getenv("KP_OBJECT_STORE_BUCKET", object_store_config["bucket"].split(":"[-1][-1])),
+            "signed_url_expiry": signed_url_expiry,
+        }
+        docker_services.wait_until_responsive(  # type: ignore
+            timeout=60.0, pause=0.1, check=lambda: is_object_store_responsive(object_store)  # type: ignore
+        )
+    except Exception as e:
+        pytest.fail(f"Failed to start minio container, error: {e}")
 
 
 # set autouse=True to automatically inject the container into all tests
@@ -127,6 +162,11 @@ def app_container(app_migrated_db: Database) -> ApplicationContainer:
     container = ApplicationContainer()
     container.wire(modules=[lib])
     return container
+
+
+@pytest.fixture(scope="session")
+def app_object_store(app_initialization_container: ApplicationContainer) -> ObjectStore:
+    return app_initialization_container.s3()
 
 
 @pytest.fixture(scope="function")
@@ -446,3 +486,44 @@ def llm() -> SQLALLM:
 @pytest.fixture(scope="function")
 def fake_llm() -> SQLALLM:
     return llm()
+
+
+def get_test_dir_path() -> str:
+    # Hardcoded a test dir path for now
+    relative_path = "tests/data"
+    absolute_path = f"{os.getcwd()}/{relative_path}"
+
+    return absolute_path
+
+
+@pytest.fixture(scope="function")
+def test_dir_path() -> str:
+    return get_test_dir_path()
+
+
+def get_test_file_path() -> str:
+    # Hardcoded a test file path for now
+    name = "test_file.txt"
+    absolute_path = f"{get_test_dir_path()}/{name}"
+
+    return absolute_path
+
+
+@pytest.fixture(scope="function")
+def test_file_path() -> str:
+    return get_test_file_path()
+
+
+def get_test_output_dir_path() -> str:
+    # Hardcoded a test dir path for test outputs
+    path = f"{get_test_dir_path()}/outputs"
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    return path
+
+
+@pytest.fixture(scope="function")
+def test_output_dir_path() -> str:
+    return get_test_output_dir_path()

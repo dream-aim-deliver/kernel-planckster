@@ -16,6 +16,8 @@ from lib.infrastructure.config.features.list_source_data_for_research_context_fe
 from lib.infrastructure.config.features.new_conversation_feature_container import NewConversationFeatureContainer
 from lib.infrastructure.config.features.new_research_context_feature_container import NewResearchContextFeatureContainer
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
+from lib.infrastructure.repository.minio.minio_file_repository import MinIOFileRepository
+from lib.infrastructure.repository.minio.object_store import ObjectStore
 from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import SQLAKnowledgeSourceRepository
 from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
 from lib.infrastructure.repository.sqla.sqla_source_data_repository import SQLASourceDataRepository
@@ -46,6 +48,16 @@ class ApplicationContainer(containers.DeclarativeContainer):
         db_name=config.rdbms.database,
     )
 
+    s3 = providers.Factory(
+        ObjectStore,
+        host=config.object_store.host,
+        port=config.object_store.port.as_int(),
+        access_key=config.object_store.access_key,
+        secret_key=config.object_store.secret_key,
+        bucket=config.object_store.bucket,
+        signed_url_expiry=config.object_store.signed_url_expiry.as_int(),
+    )
+
     # Repositories:
     sqla_user_repository: providers.Factory[SQLAUserRepository] = providers.Factory(
         SQLAUserRepository, session_factory=db.provided.session
@@ -69,6 +81,11 @@ class ApplicationContainer(containers.DeclarativeContainer):
     sqla_source_data_repository: providers.Factory[SQLASourceDataRepository] = providers.Factory(
         SQLASourceDataRepository,
         session_factory=db.provided.session,
+    )
+
+    minio_file_repository: providers.Factory[MinIOFileRepository] = providers.Factory(
+        MinIOFileRepository,
+        object_store=s3.provided,
     )
 
     # Dynamic wiring of fastapi endpoints:

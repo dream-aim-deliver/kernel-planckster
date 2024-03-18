@@ -20,3 +20,16 @@ services:
     restart: always
     ports:
       - 8085:8080
+
+  minio:
+    image: quay.io/minio/minio:latest
+    restart: always
+    container_name: kp-minio-test
+    # IMPORTANT: ensure pytest's environment config matches in pyproject.toml with the environment config here 
+    ports:
+      - "9002:9000"
+      - "9092:9092"
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /data --console-address ":9092"

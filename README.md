@@ -105,7 +105,7 @@ poetry run pytest -s
 
 Or in the [VSCode test explorer UI](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-test-explorer).
 
-In test mode, postgres, fastapi and adminer are all running in docker container and will be automatically removed once the tests are finished. 
+In test mode, postgres, fastapi, adminer, and minio are all running docker containers and will be automatically removed once the tests are finished. 
 
 **DANGLING CONTAINER WARNING**: If you are debugging tests in VSCode and notice that your test is failing, which triggers a breakpoint, then DO NOT STOP the debugger. Just press `F5` and let the tests finish. The containers will be removed automatically once the tests are finished. Otherwise, you will end up with dangling test containers that will have to be removed manually. To remove these containers manually:
 
@@ -120,6 +120,7 @@ In testing mode, you can access the services as follows:
 | FastAPI    | http://localhost:8005 | test |
 | Postgres   | 0.0.0.0:5435          | test |
 | Adminer UI | http://localhost:8085 | test |
+| MinIO      | http://localhost:9002 | test |
 
 In test mode, you can access `Adminer interface` at `http://localhost:8085` to check the database. The credentials are:
 
@@ -130,6 +131,9 @@ Username: postgres
 Password: postgres
 Database: kp-db
 ```
+
+You can also access `MinIO` at `http://localhost:9002` to check the object storage. The credentials are defined in the `pyproject.toml` file, under the pytest `ini_options` section.
+
 
 
 ### Running the production server (FastAPI/Socket.IO)
