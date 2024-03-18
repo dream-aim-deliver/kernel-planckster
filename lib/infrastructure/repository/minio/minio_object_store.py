@@ -5,9 +5,9 @@ from minio import Minio
 from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum
 
 
-class ObjectStore:
+class MinIOObjectStore:
     """
-    A MinIO implementation of the Object Store.
+    A util class to interact with the MinIO S3 Object Store and the MinIO client.
 
     @ivar access_key: The access key for the MinIO S3 Object Store.
     @type access_key: str

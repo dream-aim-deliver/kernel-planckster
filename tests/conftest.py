@@ -3,6 +3,7 @@ import datetime
 from importlib import metadata
 import os
 import random
+import tempfile
 from typing import Annotated, Callable, Generator, List, Protocol, Tuple
 from faker import Faker
 from faker.proxy import UniqueProxy
@@ -18,7 +19,7 @@ from alembic.config import Config
 from alembic import command
 from sqlalchemy.orm import Session
 
-from lib.infrastructure.repository.minio.object_store import ObjectStore
+from lib.infrastructure.repository.minio.minio_object_store import MinIOObjectStore
 from lib.infrastructure.repository.sqla.database import Database, TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
@@ -80,7 +81,7 @@ def start_docker_services(
 
     def is_object_store_responsive(object_store_conf: dict[str, str]) -> bool:
         try:
-            object_store = ObjectStore(
+            object_store = MinIOObjectStore(
                 host=object_store_conf["host"],
                 port=object_store_conf["port"],
                 access_key=object_store_conf["access_key"],
@@ -165,7 +166,7 @@ def app_container(app_migrated_db: Database) -> ApplicationContainer:
 
 
 @pytest.fixture(scope="session")
-def app_object_store(app_initialization_container: ApplicationContainer) -> ObjectStore:
+def app_object_store(app_initialization_container: ApplicationContainer) -> MinIOObjectStore:
     return app_initialization_container.storage()
 
 
@@ -488,42 +489,15 @@ def fake_llm() -> SQLALLM:
     return llm()
 
 
-def get_test_dir_path() -> str:
-    # Hardcoded a test dir path for now
-    relative_path = "tests/data"
-    absolute_path = f"{os.getcwd()}/{relative_path}"
-
-    return absolute_path
-
-
-@pytest.fixture(scope="function")
-def test_dir_path() -> str:
-    return get_test_dir_path()
-
-
-def get_test_file_path() -> str:
-    # Hardcoded a test file path for now
-    name = "test_file.txt"
-    absolute_path = f"{get_test_dir_path()}/{name}"
-
-    return absolute_path
-
-
 @pytest.fixture(scope="function")
 def test_file_path() -> str:
-    return get_test_file_path()
+    test_content = b"test content: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
-
-def get_test_output_dir_path() -> str:
-    # Hardcoded a test dir path for test outputs
-    path = f"{get_test_dir_path()}/outputs"
-
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-    return path
+    with tempfile.NamedTemporaryFile(delete=False) as file:
+        file.write(test_content)
+        return file.name
 
 
 @pytest.fixture(scope="function")
 def test_output_dir_path() -> str:
-    return get_test_output_dir_path()
+    return tempfile.mkdtemp()

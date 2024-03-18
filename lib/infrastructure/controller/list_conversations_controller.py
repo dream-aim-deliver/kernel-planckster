@@ -13,7 +13,7 @@ from lib.infrastructure.presenter.list_conversations_presenter import ListConver
 
 class ListConversationsControllerParameters(BaseControllerParameters):
     research_context_id: int = Field(
-        name="Reseach Context ID", description="Research context id for which the conversations are to be listed."
+        title="Reseach Context ID", description="Research context id for which the conversations are to be listed."
     )
 
 

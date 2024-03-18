@@ -18,7 +18,7 @@ from lib.infrastructure.config.features.new_research_context_feature_container i
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
 from lib.infrastructure.config.features.upload_file_feature_container import UploadFileFeatureContainer
 from lib.infrastructure.repository.minio.minio_file_repository import MinIOFileRepository
-from lib.infrastructure.repository.minio.object_store import ObjectStore
+from lib.infrastructure.repository.minio.minio_object_store import MinIOObjectStore
 from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import SQLAKnowledgeSourceRepository
 from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
 from lib.infrastructure.repository.sqla.sqla_source_data_repository import SQLASourceDataRepository
@@ -50,7 +50,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
     )
 
     storage = providers.Factory(
-        ObjectStore,
+        MinIOObjectStore,
         host=config.object_store.host,
         port=config.object_store.port.as_int(),
         access_key=config.object_store.access_key,

@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import shutil
 import requests
 
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -20,9 +21,9 @@ def test_obtain_working_signed_url_to_upload_file(
 
     assert dto.status == True
     assert dto.lfn
-    assert dto.auth
+    assert dto.credentials
 
-    lfn, signed_url = dto.lfn, dto.auth
+    lfn, signed_url = dto.lfn, dto.credentials
 
     pfn = minio_repo.store.lfn_to_pfn(lfn)
     object_name = minio_repo.store.pfn_to_object_name(pfn)
@@ -59,7 +60,9 @@ def test_obtain_working_signed_url_to_upload_file(
 
     assert downloaded_content == original_content
 
+    os.remove(test_file_path)
     os.remove(downloaded_file_path)
+    shutil.rmtree(test_output_dir_path)
 
 
 def test_error_obtain_signed_url_to_upload_file_none_lfn(

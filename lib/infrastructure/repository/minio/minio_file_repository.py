@@ -4,7 +4,7 @@ from lib.core.dto.file_repository_dto import FilePathToLFNDTO, UploadFileDTO
 from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum
 from lib.core.ports.secondary.file_repository import FileRepositoryOutputPort
 
-from lib.infrastructure.repository.minio.object_store import ObjectStore
+from lib.infrastructure.repository.minio.minio_object_store import MinIOObjectStore
 
 
 class MinIOFileRepository(FileRepositoryOutputPort):
@@ -12,13 +12,13 @@ class MinIOFileRepository(FileRepositoryOutputPort):
     A MinIO implementation of the file repository.
     """
 
-    def __init__(self, object_store: ObjectStore) -> None:
+    def __init__(self, object_store: MinIOObjectStore) -> None:
         super().__init__()
 
         self._store = object_store
 
     @property
-    def store(self) -> ObjectStore:
+    def store(self) -> MinIOObjectStore:
         return self._store
 
     def file_path_to_lfn(self, file_path: str) -> FilePathToLFNDTO:
@@ -126,5 +126,5 @@ class MinIOFileRepository(FileRepositoryOutputPort):
         return UploadFileDTO(
             status=True,
             lfn=lfn,
-            auth=url,
+            credentials=url,
         )

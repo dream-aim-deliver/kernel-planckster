@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import shutil
 import requests
 from lib.core.usecase.upload_file_usecase import UploadFileUsecase
 from lib.core.usecase_models.upload_file_usecase_models import UploadFileRequest, UploadFileResponse
@@ -11,7 +12,7 @@ from lib.infrastructure.presenter.upload_file_presenter import UploadFilePresent
 def test_upload_file_feature_usecase_presenter(
     app_container: ApplicationContainer,
     test_file_path: str,
-    test_dir_path: str,
+    test_output_dir_path: str,
 ) -> None:
     presenter: UploadFilePresenter = app_container.upload_file_feature.presenter()
 
@@ -56,7 +57,7 @@ def test_upload_file_feature_usecase_presenter(
     assert object_name in objects
 
     # Download file and test it's the same
-    test_output_dir_path = test_dir_path
+    test_output_dir_path = test_output_dir_path
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     downloaded_file_path = f"{test_output_dir_path}/minio_downloaded_file-{timestamp}.txt"
 
@@ -75,7 +76,9 @@ def test_upload_file_feature_usecase_presenter(
 
     assert downloaded_content == original_content
 
+    os.remove(test_file_path)
     os.remove(downloaded_file_path)
+    shutil.rmtree(test_output_dir_path)
 
 
 def test_upload_file_feature_controller(
@@ -96,3 +99,5 @@ def test_upload_file_feature_controller(
     assert vm.status is True
     assert vm.lfn
     assert vm.signed_url
+
+    os.remove(test_file_path)

@@ -13,11 +13,11 @@ from lib.infrastructure.presenter.new_conversation_presenter import NewConversat
 
 class NewConversationControllerParameters(BaseControllerParameters):
     research_context_id: int = Field(
-        name="Research Context ID",
+        title="Research Context ID",
         description="The ID of the research context for which the conversation is to be created.",
     )
     conversation_title: str = Field(
-        name="Conversation Title",
+        title="Conversation Title",
         description="Title of the conversation to be created.",
     )
 
