@@ -1,4 +1,7 @@
-from lib.core.dto.file_repository_dto import UploadFileDTO
+from datetime import datetime
+import os
+from lib.core.dto.file_repository_dto import FilePathToLFNDTO, UploadFileDTO
+from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum
 from lib.core.ports.secondary.file_repository import FileRepositoryOutputPort
 
 from lib.infrastructure.repository.minio.object_store import ObjectStore
@@ -18,7 +21,55 @@ class MinIOFileRepository(FileRepositoryOutputPort):
     def store(self) -> ObjectStore:
         return self._store
 
-    def upload_file(self, file_path: str) -> UploadFileDTO:
+    def file_path_to_lfn(self, file_path: str) -> FilePathToLFNDTO:
+        """
+        Converts a local file path to a logical file name.
+
+        @param file_path: The path to the file.
+        @type file_path: str
+        @return: A DTO containing the result of the operation.
+        @rtype: FilePathToLFNDTO
+        """
+
+        if file_path is None:
+            self.logger.error("File path cannot be None")
+            return FilePathToLFNDTO(
+                lfn=None,
+                status=False,
+                errorCode=-1,
+                errorMessage="File path cannot be None",
+                errorName="FilePathNotProvided",
+                errorType="FilePathNotProvided",
+            )
+
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            int_ts = int(timestamp)
+
+            base_name = os.path.basename(file_path)
+
+            lfn = LFN(
+                protocol=ProtocolEnum.S3,
+                tracer_id="user_uploads",
+                source=KnowledgeSourceEnum.USER,
+                job_id=int_ts,
+                relative_path=base_name,
+            )
+
+            return FilePathToLFNDTO(status=True, lfn=lfn)
+
+        except Exception as e:
+            self.logger.error(f"Could not convert file path to LFN: {e}")
+            return FilePathToLFNDTO(
+                lfn=None,
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Could not convert file path to LFN: {e}",
+                errorName="CouldNotConvertFilePathToLFN",
+                errorType="CouldNotConvertFilePathToLFN",
+            )
+
+    def upload_file(self, lfn: LFN) -> UploadFileDTO:
         """
         Uploads a user source data file to a bucket in MinIO S3 Repository.
 
@@ -28,20 +79,17 @@ class MinIOFileRepository(FileRepositoryOutputPort):
         @rtype: UploadSourceDataDTO
         """
 
-        if file_path is None:
-            self.logger.error("File path cannot be None")
-            errorDTO = UploadFileDTO(
+        if lfn is None:
+            self.logger.error("LFN cannot be None")
+            return UploadFileDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage="File path cannot be None",
-                errorName="FilePathNotProvided",
-                errorType="FilePathNotProvided",
+                errorMessage="LFN cannot be None",
+                errorName="LFNNotProvided",
+                errorType="LFNNotProvided",
             )
-            self.logger.error(f"{errorDTO}")
-            return errorDTO
 
         try:
-            lfn = self.store.file_path_to_lfn(file_path)
             pfn = self.store.lfn_to_pfn(lfn)
             object_name = self.store.pfn_to_object_name(pfn)
 

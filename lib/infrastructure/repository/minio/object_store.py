@@ -1,6 +1,5 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 import logging
-import os
 from minio import Minio
 
 from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum
@@ -173,34 +172,6 @@ class ObjectStore:
         Generate a PFN from an object name for MinIO S3 Repository.
         """
         return f"s3://{self.host}:{self.port}/{self.bucket}/{object_name}"
-
-    def file_path_to_object_name(self, file_name: str) -> str:
-        """
-        Generate an object name from a file name for MinIO S3 Repository.
-
-        Note that since the file path contains information specific to the user's machine, we cannot go from object name to file path.
-        """
-        base_name = os.path.basename(file_name)
-
-        return base_name
-
-    def file_path_to_lfn(self, file_path: str) -> LFN:
-        """
-        Generate a LFN from a file path for MinIO S3 Repository.
-        """
-
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        int_ts = int(timestamp)
-
-        lfn = LFN(
-            protocol=ProtocolEnum.S3,
-            tracer_id="user_uploads",
-            source=KnowledgeSourceEnum.USER,
-            job_id=int_ts,
-            relative_path=self.file_path_to_object_name(file_path),
-        )
-
-        return lfn
 
     def get_signed_url_for_file_upload(self, bucket_name: str, object_name: str) -> str:
         """

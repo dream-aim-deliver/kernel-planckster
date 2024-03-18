@@ -13,8 +13,10 @@ def test_obtain_working_signed_url_to_upload_file(
     minio_repo = app_initialization_container.minio_file_repository()
 
     file_path = test_file_path
+    lfn = minio_repo.file_path_to_lfn(file_path=file_path).lfn
+    assert lfn
 
-    dto = minio_repo.upload_file(file_path=file_path)
+    dto = minio_repo.upload_file(lfn=lfn)
 
     assert dto.status == True
     assert dto.lfn
@@ -60,16 +62,16 @@ def test_obtain_working_signed_url_to_upload_file(
     os.remove(downloaded_file_path)
 
 
-def test_error_obtain_signed_url_to_upload_file_none_file_path(
+def test_error_obtain_signed_url_to_upload_file_none_lfn(
     app_initialization_container: ApplicationContainer,
 ) -> None:
     minio_repo = app_initialization_container.minio_file_repository()
 
-    dto = minio_repo.upload_file(file_path=None)  # type: ignore
+    dto = minio_repo.upload_file(lfn=None)  # type: ignore
 
     assert dto.status == False
     assert dto.errorCode == -1
-    assert dto.errorMessage == "File path cannot be None"
-    assert dto.errorName == "FilePathNotProvided"
-    assert dto.errorType == "FilePathNotProvided"
+    assert dto.errorMessage == "LFN cannot be None"
+    assert dto.errorName == "LFNNotProvided"
+    assert dto.errorType == "LFNNotProvided"
     assert dto.data == None
