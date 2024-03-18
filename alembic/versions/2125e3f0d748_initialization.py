@@ -41,7 +41,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column(
             "source",
-            sa.Enum("TELEGRAM", "TWITTER", "AUGMENTED", "SENTINEL", name="knowledgesourceenum"),
+            sa.Enum("TELEGRAM", "TWITTER", "AUGMENTED", "SENTINEL", "USER", name="knowledgesourceenum"),
             nullable=False,
         ),
         sa.Column("content_metadata", sa.String(), nullable=False),
