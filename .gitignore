@@ -1,6 +1,7 @@
 db/
 ./source_docs/*
 tests/mocks/db/*
+tests/data/outputs/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

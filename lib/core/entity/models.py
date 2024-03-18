@@ -1,5 +1,8 @@
 from enum import Enum
-from pydantic import BaseModel
+import random
+import re
+import string
+from pydantic import BaseModel, field_validator
 from typing import Any, TypeVar
 from datetime import datetime
 
@@ -12,12 +15,14 @@ class KnowledgeSourceEnum(Enum):
     TWITTER: the knowledge source is a Twitter account
     AUGMENTED: the knowledge source is a collection of user uploads
     SENTINEL: the knowledge source is a collection of user uploads, and the user wants to be notified when new uploads are available
+    USER: the knowledge source is a collection of user uploads
     """
 
     TELEGRAM = "telegram"
     TWITTER = "twitter"
     AUGMENTED = "augmented"
     SENTINEL = "sentinel"
+    USER = "user"
 
 
 class ProtocolEnum(Enum):
@@ -48,6 +53,32 @@ class SourceDataStatusEnum(Enum):
     UNAVAILABLE = "unavailable"
     AVAILABLE = "available"
     INCONSISTENT_DATASET = "inconsistent_dataset"
+
+
+class LFN(BaseModel):
+    """
+    Represents a Logical File Name, used to store files in a consistent way, regardless of the protocol used
+    """
+
+    protocol: ProtocolEnum
+    tracer_id: str
+    job_id: int
+    source: KnowledgeSourceEnum
+    relative_path: str
+
+    @field_validator("relative_path")
+    def relative_path_must_be_alphanumberic_underscores_backslashes(cls, v: str) -> str:
+        marker = "sdamarker"
+        if marker not in v:
+            v = re.sub(r"[^a-zA-Z0-9_\./-]", "", v)
+            ext = v.split(".")[-1]
+            name = v.split(".")[0]
+            seed = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            v = f"{name}-{seed}-{marker}.{ext}"
+        return v
+
+    def __str__(self) -> str:
+        return f"{self.protocol.value}://{self.tracer_id}/{self.source.value}/{self.job_id}/{self.relative_path}"
 
 
 class BaseKernelPlancksterModel(BaseModel):
