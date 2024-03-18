@@ -1,8 +1,10 @@
+import argparse
 import importlib
 import os
 from pathlib import Path
 import signal
 from typing import Any
+from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI
 
 import uvicorn
@@ -63,6 +65,18 @@ def create_app() -> FastAPI:
 def dev_server() -> None:
     signal.signal(signal.SIGTERM, cleanup_handler)
     signal.signal(signal.SIGINT, cleanup_handler)
+
+    parser = argparse.ArgumentParser(description="Kernel Planchester Development Server")
+    parser.add_argument("--storage", action="store_true", help="Start the server with storage")
+    args = parser.parse_args()
+
+    storage = False
+    if args.storage:
+        # Start the server with storage and load the .env.development file
+        storage = True
+        dev_env_file = "../../../.env.development"
+        load_dotenv(dev_env_file)
+
     start_depdendencies(
         project_root_dir=Path(__file__).parent.parent.parent.parent,
         compose_rel_path=Path("docker-compose.yml"),
@@ -72,6 +86,7 @@ def dev_server() -> None:
         pg_user=os.getenv("KP_PG_USER", "postgres"),
         pg_password=os.getenv("KP_PG_PASSWORD", "postgres"),
         pg_db=os.getenv("KP_PG_DB", "kp-db"),
+        storage=storage,
     )
     app = create_app()
 
