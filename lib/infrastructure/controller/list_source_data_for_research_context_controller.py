@@ -17,7 +17,7 @@ from lib.infrastructure.presenter.list_source_data_for_research_context_presente
 
 class ListSourceDataForResearchContextControllerParameters(BaseControllerParameters):
     research_context_id: int = Field(
-        name="Research Context ID",
+        title="Research Context ID",
         description="Research Context ID for which the source data is to be listed.",
     )
 

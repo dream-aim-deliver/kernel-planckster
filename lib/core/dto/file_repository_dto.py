@@ -19,9 +19,9 @@ class UploadFileDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these
 
     @param lfn: The logical file name of the file that was uploaded.
     @type lfn: LFN
-    @param auth: The authentication string for the file that was uploaded.
-    @type auth: str
+    @param credentials: The credentials to handle the file in question. For example, the signed URL, key, auth token, etc.
+    @type credentials: str
     """
 
     lfn: LFN | None = None
-    auth: str | None = None
+    credentials: str | None = None

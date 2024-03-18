@@ -13,23 +13,23 @@ from lib.infrastructure.presenter.new_research_context_presenter import NewResea
 
 class NewResearchContextControllerParameters(BaseControllerParameters):
     research_context_title: str = Field(
-        name="Research Context Title",
+        title="Research Context Title",
         description="Title of the research context to be created.",
     )
     research_context_description: str = Field(
-        name="Research Context Description",
+        title="Research Context Description",
         description="Description of the research context to be created.",
     )
     user_sid: str | None = Field(
-        name="User String ID",
+        title="User String ID",
         description="SID of the user for which the research context is to be created.",
     )
     llm_name: str | None = Field(
-        name="LLM Name",
+        title="LLM Name",
         description="Name of the LLM for which the research context is to be created.",
     )
     source_data_ids: list[int] = Field(
-        name="Source Data IDs",
+        title="Source Data IDs",
         description="List of source data ids that will be tied to the research context to be created.",
     )
 

@@ -21,5 +21,5 @@ class UploadFilePresenter(UploadFileOutputPort):
             status=True,
             code=200,
             lfn=response.lfn,
-            signed_url=response.auth,
+            signed_url=response.credentials,
         )

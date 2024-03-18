@@ -16,7 +16,7 @@ class UploadFileViewModel(BaseViewModel):
         "json_schema_extra": {
             "examples": [
                 {
-                    "lfn": "s3://localhost:9000/bucket1/tracer_id/user/1/file1.txt",
+                    "lfn": '{"protocol":"s3", "tracer_id":"user_uploads", "job_id":20240318212314, "source":"user", "relative_path":"test_file-22af0b93dcb943d8b7105126ef1b1229-sdamarker.txt"}',
                     "signed_url": "auth1_string",
                 }
             ]

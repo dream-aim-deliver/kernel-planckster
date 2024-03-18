@@ -13,7 +13,7 @@ from lib.infrastructure.presenter.list_source_data_presenter import ListSourceDa
 
 class ListSourceDataControllerParameter(BaseControllerParameters):
     knowledge_source_id: int | None = Field(
-        name="Knowledge Source ID",
+        title="Knowledge Source ID",
         description="Knowledge Source ID for which the source data is to be listed. If None, all source data of the database is listed.",
     )
 

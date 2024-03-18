@@ -21,16 +21,16 @@ class UploadFileUsecase(UploadFileInputPort):
 
         if not lfn:
             return UploadFileError(
-                errorCode="LFN_NOT_FOUND",
-                errorMessage="LFN not found",
-                errorName="LFN_NOT_FOUND",
-                errorType="LFN_NOT_FOUND",
+                errorCode=lfn_dto.errorCode,
+                errorMessage=lfn_dto.errorMessage,
+                errorName=lfn_dto.errorName,
+                errorType=lfn_dto.errorType,
             )
 
         dto: UploadFileDTO = self.file_repository.upload_file(lfn=lfn)
 
         if dto.status:
-            return UploadFileResponse(lfn=dto.lfn, auth=dto.auth)
+            return UploadFileResponse(lfn=dto.lfn, credentials=dto.credentials)
 
         return UploadFileError(
             errorCode=dto.errorCode,

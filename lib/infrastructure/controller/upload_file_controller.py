@@ -9,7 +9,7 @@ from lib.infrastructure.presenter.upload_file_presenter import UploadFilePresent
 
 class UploadFileControllerParameters(BaseControllerParameters):
     file_path: str = Field(
-        name="File Path",
+        title="File Path",
         description="The path to the file to be uploaded.",
     )
 

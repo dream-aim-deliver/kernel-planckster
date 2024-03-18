@@ -15,10 +15,10 @@ from lib.infrastructure.presenter.new_source_data_presenter import NewSourceData
 
 class NewSourceDataControllerParameters(BaseControllerParameters):
     knowledge_source_id: int = Field(
-        name="Knowledge Source ID", description="Research context id for which the source data is to be registered."
+        title="Knowledge Source ID", description="Research context id for which the source data is to be registered."
     )
     source_data_lfn_list: List[str] = Field(
-        name="List of LFNs", description="List of LFNs of the source data to be registered."
+        title="List of LFNs", description="List of LFNs of the source data to be registered."
     )
 
 

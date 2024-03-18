@@ -18,11 +18,13 @@ class UploadFileResponse(BaseResponse):
     Response model for the Upload File Use Case.
 
     @param lfn: The Logical File Name of the uploaded file.
-    @param auth: The authorization string to handle the uploaded file.
+    @param credentials: The credentials to handle the file in question. For example, the signed URL, key, auth token, etc.
     """
 
     lfn: LFN = Field(description="The Logical File Name of the uploaded file.")
-    auth: str = Field(description="The authorization string to handle the uploaded file.")
+    credentials: str = Field(
+        description="The credentials to handle the file in question. For example, the signed URL, key, auth token, etc."
+    )
 
 
 class UploadFileError(BaseErrorResponse):

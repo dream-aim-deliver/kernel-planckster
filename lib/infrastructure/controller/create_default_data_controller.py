@@ -15,9 +15,9 @@ from lib.infrastructure.presenter.create_default_data_presenter import CreateDef
 
 
 class CreateDefaultDataControllerParameters(BaseControllerParameters):
-    user_sid: str | None = Field(name="User String ID", description="SID of the new default user.")
+    user_sid: str | None = Field(title="User String ID", description="SID of the new default user.")
 
-    llm_name: str | None = Field(name="LLM Name", description="Name of the new default llm.")
+    llm_name: str | None = Field(title="LLM Name", description="Name of the new default llm.")
 
 
 class CreateDefaultDataController(
