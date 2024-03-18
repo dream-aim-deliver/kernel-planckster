@@ -1,7 +1,6 @@
 from enum import Enum
-import random
 import re
-import string
+import uuid
 from pydantic import BaseModel, field_validator
 from typing import Any, TypeVar
 from datetime import datetime
@@ -58,6 +57,12 @@ class SourceDataStatusEnum(Enum):
 class LFN(BaseModel):
     """
     Represents a Logical File Name, used to store files in a consistent way, regardless of the protocol used
+
+    @param protocol: the protocol used to store the source_data
+    @param tracer_id: the id of the user that uploaded the source_data
+    @param job_id: the id of the job that created the source_data
+    @param source: the source of the source_data (e.g., Twitter, Telegram, etc.)
+    @param relative_path: the relative path of the source_data
     """
 
     protocol: ProtocolEnum
@@ -72,8 +77,8 @@ class LFN(BaseModel):
         if marker not in v:
             v = re.sub(r"[^a-zA-Z0-9_\./-]", "", v)
             ext = v.split(".")[-1]
-            name = v.split(".")[0]
-            seed = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+            name = v.split(".")[0]  # this completely removes dots
+            seed = f"{uuid.uuid4()}".replace("-", "")
             v = f"{name}-{seed}-{marker}.{ext}"
         return v
 
