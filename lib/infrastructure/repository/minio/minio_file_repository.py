@@ -43,6 +43,8 @@ class MinIOFileRepository(FileRepositoryOutputPort):
             )
 
         try:
+            self.store.initialize_store()
+
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
             int_ts = int(timestamp)
 
@@ -90,6 +92,8 @@ class MinIOFileRepository(FileRepositoryOutputPort):
             )
 
         try:
+            self.store.initialize_store()
+
             pfn = self.store.lfn_to_pfn(lfn)
             object_name = self.store.pfn_to_object_name(pfn)
 

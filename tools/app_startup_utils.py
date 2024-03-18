@@ -78,6 +78,7 @@ def start_depdendencies(
     pg_user: str = "postgres",
     pg_password: str = "postgres",
     pg_db: str = "kp-dev",
+    storage: bool = False,
 ) -> None:
     print("Starting Docker Compose service...")
     compose_file = str(project_root_dir / compose_rel_path)
@@ -85,9 +86,12 @@ def start_depdendencies(
     alembic_ini_path = str(project_root_dir / alemibc_ini_rel_path)
     print(f"Alembic ini file: {alembic_ini_path}")
     alembic_scripts_path = str(project_root_dir / "alembic")
+    docker_compose_cmd = ["docker", "compose", "--profile", "dev", "-f", compose_file, "up", "-d"]
+    if storage:
+        docker_compose_cmd = ["docker", "compose", "--profile", "storage", "-f", compose_file, "up", "-d"]
     # Start Docker Compose service
     process = subprocess.Popen(
-        ["docker", "compose", "-f", compose_file, "up", "-d"],
+        docker_compose_cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -132,7 +136,7 @@ def stop_dependencies(
     print(f"Compose file: {compose_file}")
     # Stop Docker Compose service
     process = subprocess.Popen(
-        ["docker", "compose", "-f", compose_file, "down", "-v", "--remove-orphans"],
+        ["docker", "compose", "--profile", "*", "-f", compose_file, "down", "-v", "--remove-orphans"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,

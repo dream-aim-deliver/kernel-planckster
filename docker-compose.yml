@@ -6,6 +6,7 @@ services:
     image: postgres
     restart: always
     container_name: kp-dev
+    profiles: [dev, storage]
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
@@ -16,6 +17,21 @@ services:
   adminer:
     image: adminer
     container_name: kp-adminer
+    profiles: [dev, storage]
     restart: always
     ports:
       - 8080:8080
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: kp-minio-dev
+    profiles: [storage]
+    restart: always
+    # These should match the .env.development file
+    ports:
+        - "9001:9000"
+        - "9091:9091"
+    environment:
+        MINIO_ACCESS_KEY: minio
+        MINIO_SECRET_KEY: minio123
+    command: server /data --console-address ":9091"

@@ -17,7 +17,7 @@ rdbms:
 
 object_store:
   host: ${KP_OBJECT_STORE_HOST:localhost}
-  port: ${KP_OBJECT_STORE_PORT:9000}
+  port: ${KP_OBJECT_STORE_PORT:9001}
   access_key: ${KP_OBJECT_STORE_ACCESS_KEY:minio}
   secret_key: ${KP_OBJECT_STORE_SECRET_KEY:minio123}
   bucket: ${KP_OBJECT_STORE_BUCKET:default}
@@ -106,6 +106,14 @@ features:
   list_source_data_for_research_context:
     name: "List Source Data for Research Context"
     description: "List all source data registered in the database for a given research context"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: true
+
+  upload_file:
+    name: "Upload File"
+    description: "Upload a file to the object store"
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true

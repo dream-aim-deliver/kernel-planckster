@@ -16,6 +16,7 @@ from lib.infrastructure.config.features.list_source_data_for_research_context_fe
 from lib.infrastructure.config.features.new_conversation_feature_container import NewConversationFeatureContainer
 from lib.infrastructure.config.features.new_research_context_feature_container import NewResearchContextFeatureContainer
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
+from lib.infrastructure.config.features.upload_file_feature_container import UploadFileFeatureContainer
 from lib.infrastructure.repository.minio.minio_file_repository import MinIOFileRepository
 from lib.infrastructure.repository.minio.object_store import ObjectStore
 from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import SQLAKnowledgeSourceRepository
@@ -48,7 +49,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
         db_name=config.rdbms.database,
     )
 
-    s3 = providers.Factory(
+    storage = providers.Factory(
         ObjectStore,
         host=config.object_store.host,
         port=config.object_store.port.as_int(),
@@ -85,7 +86,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     minio_file_repository: providers.Factory[MinIOFileRepository] = providers.Factory(
         MinIOFileRepository,
-        object_store=s3.provided,
+        object_store=storage.provided,
     )
 
     # Dynamic wiring of fastapi endpoints:
@@ -149,4 +150,10 @@ class ApplicationContainer(containers.DeclarativeContainer):
         ListSourceDataForResearchContextFeatureContainer,
         config=config.features.list_source_data_for_research_context,
         research_context_repository=sqla_research_context_repository,
+    )
+
+    upload_file_feature = providers.Container(
+        UploadFileFeatureContainer,
+        config=config.features.upload_file,
+        file_repository=minio_file_repository,
     )

@@ -41,8 +41,6 @@ class ObjectStore:
         self._client = self._get_client()
         self.logger = logging.getLogger(self.__class__.__name__)
 
-        self.create_bucket_if_not_exists(self.bucket)
-
     @property
     def url(self) -> str:
         return f"{self.host}:{self.port}"
@@ -86,6 +84,7 @@ class ObjectStore:
 
     def ping(self) -> bool:
         try:
+            self.create_bucket_if_not_exists(self.bucket)
             bucket_exists = self.client.bucket_exists(self.bucket)
 
             if not bucket_exists:
@@ -172,6 +171,12 @@ class ObjectStore:
         Generate a PFN from an object name for MinIO S3 Repository.
         """
         return f"s3://{self.host}:{self.port}/{self.bucket}/{object_name}"
+
+    def initialize_store(self) -> None:
+        """
+        Initialize the MinIO S3 Repository.
+        """
+        self.create_bucket_if_not_exists(self.bucket)
 
     def get_signed_url_for_file_upload(self, bucket_name: str, object_name: str) -> str:
         """

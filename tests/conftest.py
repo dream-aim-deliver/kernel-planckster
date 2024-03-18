@@ -166,7 +166,7 @@ def app_container(app_migrated_db: Database) -> ApplicationContainer:
 
 @pytest.fixture(scope="session")
 def app_object_store(app_initialization_container: ApplicationContainer) -> ObjectStore:
-    return app_initialization_container.s3()
+    return app_initialization_container.storage()
 
 
 @pytest.fixture(scope="function")

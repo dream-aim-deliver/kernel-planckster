@@ -97,6 +97,27 @@ Password: postgres
 Database: kp-db
 ```
 
+To test the object store in dev mode, you can run:
+
+```bash
+poetry run dev --storage
+```
+
+This will do the same as `poetry run dev` but also start a minio container:
+
+
+| Service    | Host/Port             | Mode        |
+| ---------- | --------------------- | ----------- |
+| MinIO      | http://localhost:9001 | development |
+
+You can access `MinIO` at `http://localhost:9001` to check the object storage. The credentials are:
+
+```
+Access Key: minio
+Secret Key: minio123
+```
+
+
 ## Testing
 You run tests on the command line with
 ```bash
