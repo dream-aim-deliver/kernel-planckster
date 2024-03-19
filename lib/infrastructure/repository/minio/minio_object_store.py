@@ -195,3 +195,20 @@ class MinIOObjectStore:
         assert isinstance(url, str)
 
         return url
+
+    def get_signed_url_for_file_download(self, bucket_name: str, object_name: str) -> str:
+        """
+        Get a signed URL to download a file from a bucket in MinIO S3 Repository.
+
+        :param bucket_name: The name of the bucket.
+        :param object_name: The name of the object.
+        """
+
+        url = self.client.presigned_get_object(
+            bucket_name=bucket_name,
+            object_name=object_name,
+            expires=timedelta(minutes=self.signed_url_expiry),
+        )
+        assert isinstance(url, str)
+
+        return url

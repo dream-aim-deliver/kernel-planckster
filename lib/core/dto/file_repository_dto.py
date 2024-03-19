@@ -25,3 +25,17 @@ class UploadFileDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these
 
     lfn: LFN | None = None
     credentials: str | None = None
+
+
+class DownloadFileDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
+    """
+    A DTO for whenever source data is downloaded by the user.
+
+    @param lfn: The logical file name of the file that was downloaded.
+    @type lfn: LFN
+    @param credentials: The credentials to handle the file in question. For example, the signed URL, key, auth token, etc.
+    @type credentials: str
+    """
+
+    lfn: LFN | None = None
+    credentials: str | None = None
