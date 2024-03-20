@@ -1,6 +1,11 @@
 from datetime import datetime
 import os
-from lib.core.dto.file_repository_dto import DownloadFileDTO, FilePathToLFNDTO, LFNExistsDTO, UploadFileDTO
+from lib.core.dto.file_repository_dto import (
+    GetClientDataForDownloadDTO,
+    FilePathToLFNDTO,
+    LFNExistsDTO,
+    GetClientDataForUploadDTO,
+)
 from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum
 from lib.core.ports.secondary.file_repository import FileRepositoryOutputPort
 
@@ -71,7 +76,7 @@ class MinIOFileRepository(FileRepositoryOutputPort):
                 errorType="CouldNotConvertFilePathToLFN",
             )
 
-    def upload_file(self, lfn: LFN) -> UploadFileDTO:
+    def get_client_data_for_upload(self, lfn: LFN) -> GetClientDataForUploadDTO:
         """
         Uploads a user source data file to a bucket in MinIO S3 Repository.
 
@@ -83,7 +88,7 @@ class MinIOFileRepository(FileRepositoryOutputPort):
 
         if lfn is None:
             self.logger.error("LFN cannot be None")
-            return UploadFileDTO(
+            return GetClientDataForUploadDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="LFN cannot be None",
@@ -101,19 +106,19 @@ class MinIOFileRepository(FileRepositoryOutputPort):
 
         except Exception as e:
             self.logger.error(f"Could not get signed URL to upload the file to MinIO Repository: {e}")
-            errorDTO = UploadFileDTO(
+            errorDTO = GetClientDataForUploadDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage=f"Could not upload the file to MinIO Repository: {e}",
-                errorName="CouldNotUploadFile",
-                errorType="CouldNotUploadFile",
+                errorName="CouldNotGetClientDataForUpload",
+                errorType="CouldNotGetClientDataForUpload",
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
         if url is None:
             self.logger.error("Could not get signed URL to upload the file to MinIO Repository: URL is 'None'")
-            errorDTO = UploadFileDTO(
+            errorDTO = GetClientDataForUploadDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="Could not get signed URL to upload the file to MinIO Repository: URL is 'None'",
@@ -123,13 +128,13 @@ class MinIOFileRepository(FileRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        return UploadFileDTO(
+        return GetClientDataForUploadDTO(
             status=True,
             lfn=lfn,
             credentials=url,
         )
 
-    def download_file(self, lfn: LFN) -> DownloadFileDTO:
+    def get_client_data_for_download(self, lfn: LFN) -> GetClientDataForDownloadDTO:
         """
         Downloads source data.
 
@@ -141,7 +146,7 @@ class MinIOFileRepository(FileRepositoryOutputPort):
 
         if lfn is None:
             self.logger.error("LFN cannot be None")
-            return DownloadFileDTO(
+            return GetClientDataForDownloadDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="LFN cannot be None",
@@ -159,19 +164,19 @@ class MinIOFileRepository(FileRepositoryOutputPort):
 
         except Exception as e:
             self.logger.error(f"Could not get signed URL to download the file from MinIO Repository: {e}")
-            errorDTO = DownloadFileDTO(
+            errorDTO = GetClientDataForDownloadDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage=f"Could not download the file from MinIO Repository: {e}",
-                errorName="CouldNotDownloadFile",
-                errorType="CouldNotDownloadFile",
+                errorName="CouldNotGetClientDataForDownload",
+                errorType="CouldNotGetClientDataForDownload",
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
         if url is None:
             self.logger.error("Could not get signed URL to download the file from MinIO Repository: URL is 'None'")
-            errorDTO = DownloadFileDTO(
+            errorDTO = GetClientDataForDownloadDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="Could not get signed URL to download the file from MinIO Repository: URL is 'None'",
@@ -181,7 +186,7 @@ class MinIOFileRepository(FileRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        return DownloadFileDTO(
+        return GetClientDataForDownloadDTO(
             status=True,
             lfn=lfn,
             credentials=url,

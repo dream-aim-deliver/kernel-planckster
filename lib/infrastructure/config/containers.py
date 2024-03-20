@@ -16,7 +16,9 @@ from lib.infrastructure.config.features.list_source_data_for_research_context_fe
 from lib.infrastructure.config.features.new_conversation_feature_container import NewConversationFeatureContainer
 from lib.infrastructure.config.features.new_research_context_feature_container import NewResearchContextFeatureContainer
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
-from lib.infrastructure.config.features.upload_file_feature_container import UploadFileFeatureContainer
+from lib.infrastructure.config.features.get_client_data_for_upload_feature_container import (
+    GetClientDataForUploadFeatureContainer,
+)
 from lib.infrastructure.repository.minio.minio_file_repository import MinIOFileRepository
 from lib.infrastructure.repository.minio.minio_object_store import MinIOObjectStore
 from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import SQLAKnowledgeSourceRepository
@@ -153,8 +155,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
         research_context_repository=sqla_research_context_repository,
     )
 
-    upload_file_feature = providers.Container(
-        UploadFileFeatureContainer,
-        config=config.features.upload_file,
+    get_client_data_for_upload_feature = providers.Container(
+        GetClientDataForUploadFeatureContainer,
+        config=config.features.get_client_data_for_upload,
         file_repository=minio_file_repository,
     )

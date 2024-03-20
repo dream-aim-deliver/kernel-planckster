@@ -13,9 +13,9 @@ class FilePathToLFNDTO(BaseDTO):  # type: ignore  # TODO: decide how to model th
     lfn: LFN | None = None
 
 
-class UploadFileDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
+class GetClientDataForUploadDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
     """
-    A DTO for whenever source data is uploaded by the user.
+    A DTO for whenever a user wants to upload source data via a public upload.
 
     @param lfn: The logical file name of the file that was uploaded.
     @type lfn: LFN
@@ -27,7 +27,7 @@ class UploadFileDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these
     credentials: str | None = None
 
 
-class DownloadFileDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
+class GetClientDataForDownloadDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
     """
     A DTO for whenever source data is downloaded by the user.
 

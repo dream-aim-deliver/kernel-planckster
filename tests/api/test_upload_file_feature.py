@@ -2,47 +2,60 @@ from datetime import datetime
 import os
 import shutil
 import requests
-from lib.core.usecase.upload_file_usecase import UploadFileUsecase
-from lib.core.usecase_models.upload_file_usecase_models import UploadFileRequest, UploadFileResponse
+from lib.core.usecase.get_client_data_for_upload_usecase import GetClientDataForUploadUsecase
+from lib.core.usecase_models.get_client_data_for_upload_usecase_models import (
+    GetClientDataForUploadRequest,
+    GetClientDataForUploadResponse,
+)
 from lib.infrastructure.config.containers import ApplicationContainer
-from lib.infrastructure.controller.upload_file_controller import UploadFileControllerParameters
-from lib.infrastructure.presenter.upload_file_presenter import UploadFilePresenter
+from lib.infrastructure.controller.get_client_data_for_upload_controller import (
+    GetClientDataForUploadControllerParameters,
+)
+from lib.infrastructure.presenter.get_client_data_for_upload_presenter import GetClientDataForUploadPresenter
 
 
-def test_upload_file_feature_usecase_presenter(
+def test_get_client_data_for_upload_feature_usecase_presenter(
     app_container: ApplicationContainer,
     test_file_path: str,
     test_output_dir_path: str,
 ) -> None:
-    presenter: UploadFilePresenter = app_container.upload_file_feature.presenter()
+    presenter: GetClientDataForUploadPresenter = app_container.get_client_data_for_upload_feature.presenter()
 
-    usecase: UploadFileUsecase = app_container.upload_file_feature.usecase()
+    usecase: GetClientDataForUploadUsecase = app_container.get_client_data_for_upload_feature.usecase()
+
+    minio_file_repo = app_container.minio_file_repository()
 
     assert usecase is not None
 
     file_path = test_file_path
+    fp_to_lfn_dto = minio_file_repo.file_path_to_lfn(file_path=file_path)
 
-    request = UploadFileRequest(file_path=file_path)
+    assert fp_to_lfn_dto.status
+    assert fp_to_lfn_dto.lfn
+
+    lfn_str = fp_to_lfn_dto.lfn.to_json()
+
+    request = GetClientDataForUploadRequest(lfn_str=lfn_str)
     response = usecase.execute(request=request)
 
     assert response is not None
     assert response.status == True
-    assert isinstance(response, UploadFileResponse)
+    assert isinstance(response, GetClientDataForUploadResponse)
 
     view_model = presenter.convert_response_to_view_model(response=response)
 
     assert view_model is not None
     assert view_model.status == True
 
-    lfn, signed_url = view_model.lfn, view_model.signed_url
+    dto_lfn, signed_url = view_model.lfn, view_model.signed_url
 
-    assert lfn
+    assert dto_lfn
     assert signed_url
 
     # Now test that the signed_url actually works
     minio_repo = app_container.minio_file_repository()
 
-    pfn = minio_repo.store.lfn_to_pfn(lfn)
+    pfn = minio_repo.store.lfn_to_pfn(dto_lfn)
     object_name = minio_repo.store.pfn_to_object_name(pfn)
 
     bucket_name = minio_repo.store.bucket
@@ -81,17 +94,26 @@ def test_upload_file_feature_usecase_presenter(
     shutil.rmtree(test_output_dir_path)
 
 
-def test_upload_file_feature_controller(
+def test_get_client_data_for_upload_feature_controller(
     app_container: ApplicationContainer,
     test_file_path: str,
 ) -> None:
-    controller = app_container.upload_file_feature.controller()
+    controller = app_container.get_client_data_for_upload_feature.controller()
 
     assert controller is not None
 
     file_path = test_file_path
-    controller_parameters = UploadFileControllerParameters(
-        file_path=file_path,
+
+    minio_file_repo = app_container.minio_file_repository()
+    fp_to_lfn_dto = minio_file_repo.file_path_to_lfn(file_path=file_path)
+
+    assert fp_to_lfn_dto.status
+    assert fp_to_lfn_dto.lfn
+
+    lfn_str = fp_to_lfn_dto.lfn.to_json()
+
+    controller_parameters = GetClientDataForUploadControllerParameters(
+        lfn_str=lfn_str,
     )
 
     vm = controller.execute(parameters=controller_parameters)
