@@ -5,7 +5,7 @@ import requests
 from lib.infrastructure.config.containers import ApplicationContainer
 
 
-def test_obtain_working_signed_url_to_download_file(
+def test_obtain_working_signed_url_to_get_client_data_for_download(
     app_initialization_container: ApplicationContainer,
     test_file_path: str,
     test_output_dir_path: str,
@@ -22,7 +22,7 @@ def test_obtain_working_signed_url_to_download_file(
 
     minio_repo.store.client.fput_object(bucket_name, object_name, file_path)
 
-    dto = minio_repo.download_file(lfn)
+    dto = minio_repo.get_client_data_for_download(lfn)
 
     assert dto.status == True
     assert dto.lfn
@@ -62,14 +62,14 @@ def test_obtain_working_signed_url_to_download_file(
     shutil.rmtree(test_output_dir_path)
 
 
-def test_obtain_working_signed_url_to_download_file_with_none_lfn(
+def test_obtain_working_signed_url_to_get_client_data_for_download_with_none_lfn(
     app_initialization_container: ApplicationContainer,
 ) -> None:
     minio_repo = app_initialization_container.minio_file_repository()
 
     lfn = None
 
-    dto = minio_repo.download_file(lfn)  # type: ignore
+    dto = minio_repo.get_client_data_for_download(lfn)  # type: ignore
 
     assert dto.status == False
     assert dto.lfn == None

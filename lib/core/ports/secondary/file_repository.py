@@ -1,7 +1,12 @@
 from abc import ABC, abstractmethod
 import logging
 
-from lib.core.dto.file_repository_dto import DownloadFileDTO, FilePathToLFNDTO, LFNExistsDTO, UploadFileDTO
+from lib.core.dto.file_repository_dto import (
+    GetClientDataForDownloadDTO,
+    FilePathToLFNDTO,
+    LFNExistsDTO,
+    GetClientDataForUploadDTO,
+)
 from lib.core.entity.models import LFN
 
 
@@ -33,9 +38,9 @@ class FileRepositoryOutputPort(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def upload_file(self, lfn: LFN) -> UploadFileDTO:
+    def get_client_data_for_upload(self, lfn: LFN) -> GetClientDataForUploadDTO:
         """
-        Uploads source data.
+        Gets client data for uploading a file.
 
         @param lfn: The logical file name of the file to upload.
         @type lfn: LFN
@@ -45,9 +50,9 @@ class FileRepositoryOutputPort(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def download_file(self, lfn: LFN) -> DownloadFileDTO:
+    def get_client_data_for_download(self, lfn: LFN) -> GetClientDataForDownloadDTO:
         """
-        Downloads source data.
+        Gets client data for downloading a file.
 
         @param lfn: The logical file name of the file to download.
         @type lfn: LFN

@@ -6,7 +6,7 @@ import requests
 from lib.infrastructure.config.containers import ApplicationContainer
 
 
-def test_obtain_working_signed_url_to_upload_file(
+def test_obtain_working_signed_url_to_get_client_data_for_upload(
     app_initialization_container: ApplicationContainer,
     test_file_path: str,
     test_output_dir_path: str,
@@ -17,7 +17,7 @@ def test_obtain_working_signed_url_to_upload_file(
     lfn = minio_repo.file_path_to_lfn(file_path=file_path).lfn
     assert lfn
 
-    dto = minio_repo.upload_file(lfn=lfn)
+    dto = minio_repo.get_client_data_for_upload(lfn=lfn)
 
     assert dto.status == True
     assert dto.lfn
@@ -65,12 +65,12 @@ def test_obtain_working_signed_url_to_upload_file(
     shutil.rmtree(test_output_dir_path)
 
 
-def test_error_obtain_signed_url_to_upload_file_none_lfn(
+def test_error_obtain_signed_url_to_get_client_data_for_upload_none_lfn(
     app_initialization_container: ApplicationContainer,
 ) -> None:
     minio_repo = app_initialization_container.minio_file_repository()
 
-    dto = minio_repo.upload_file(lfn=None)  # type: ignore
+    dto = minio_repo.get_client_data_for_upload(lfn=None)  # type: ignore
 
     assert dto.status == False
     assert dto.errorCode == -1

@@ -4,12 +4,12 @@ from lib.core.entity.models import LFN
 from lib.core.sdk.viewmodel import BaseViewModel
 
 
-class UploadFileViewModel(BaseViewModel):
+class GetClientDataForUploadViewModel(BaseViewModel):
     """
-    View Model for the Upload File Feature.
+    View Model for the Get Client Data For Upload Feature.
     """
 
-    lfn: Optional[LFN] = Field(description="The Logical File Name of the uploaded file.")
+    lfn: Optional[LFN] = Field(description="The Logical File Name of the file that can be uploaded.")
     signed_url: str = Field(description="The signed URL to upload the file.")
 
     model_config = {

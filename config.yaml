@@ -111,9 +111,9 @@ features:
     enabled: true
     auth: true
 
-  upload_file:
-    name: "Upload File"
-    description: "Upload a file to the object store"
+  get_client_data_for_upload:
+    name: "Get Client Data for Upload"
+    description: "Get the data required to upload a file to one of the storage services"
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true

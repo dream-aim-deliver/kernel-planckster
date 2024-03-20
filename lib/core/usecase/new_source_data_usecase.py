@@ -25,7 +25,7 @@ class NewSourceDataUseCase(NewSourceDataInputPort):
             return NewSourceDataError(
                 errorType="Invalid LFN",
                 errorCode=400,
-                errorMessage=f"The lfn '{req_lfn}' is invalid. Please provide a valid lfn. It should be a JSON object with the following fields: 'protocol', 'tracer_id', 'source', 'job_id', 'relative_path'. Example: {{'protocol': 's3', 'tracer_id': 'user_uploads', 'source': 'user', 'job_id': 1234567890, 'relative_path': 'path/to/file'}}. Ideally, it should be one provided by Kernel Planckster, for example when asking to upload a file. Error: {e}",
+                errorMessage=f"The lfn '{req_lfn}' is invalid. Please provide a valid lfn. It should be a JSON object with the following fields: 'protocol', 'tracer_id', 'source', 'job_id', 'relative_path'. Example: {{'protocol': 's3', 'tracer_id': 'user_uploads', 'source': 'user', 'job_id': 1234567890, 'relative_path': 'path/to/file'}}. Ideally, it should be one provided by Kernel Planckster, for example when asking to upload a file. Error:\n{e}",
                 errorName="InvalidLFN",
             )
 
