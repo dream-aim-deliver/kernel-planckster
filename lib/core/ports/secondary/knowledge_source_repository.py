@@ -22,14 +22,14 @@ class KnowledgeSourceRepositoryOutputPort(ABC):
         return self._logger
 
     @abstractmethod
-    def new_source_data(self, knowledge_source_id: int, source_data_list: List[SourceData]) -> NewSourceDataDTO:
+    def new_source_data(self, knowledge_source_id: int, source_data: SourceData) -> NewSourceDataDTO:
         """
-        Creates a new source data.
+        Registers a new source data in the database.
 
         @param knowledge_source_id: The ID of the knowledge source to create the source data for.
         @type knowledge_source_id: int
-        @param source_data_list: The list of source data to create.
-        @type source_data_list: List[SourceData]
+        @param source_data: The source data to register.
+        @type source_data: SourceData
         @return: A DTO containing the result of the operation.
         @rtype: NewSourceDataDTO
         """

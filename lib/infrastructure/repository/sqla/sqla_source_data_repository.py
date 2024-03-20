@@ -1,6 +1,6 @@
 from typing import List
 from lib.core.dto.source_data_repository_dto import ListSourceDataDTO
-from lib.core.entity.models import SourceData
+from lib.core.entity.models import LFN, SourceData
 from lib.core.ports.secondary.source_data_repository import SourceDataRepositoryOutputPort
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 

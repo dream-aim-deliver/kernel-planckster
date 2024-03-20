@@ -129,7 +129,6 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("type", sa.String(), nullable=False),
         sa.Column("lfn", sa.String(), nullable=False),
-        sa.Column("protocol", sa.Enum("S3", "NAS", "LOCAL", name="protocolenum"), nullable=False),
         sa.Column(
             "status",
             sa.Enum("CREATED", "UNAVAILABLE", "AVAILABLE", "INCONSISTENT_DATASET", name="sourcedatastatusenum"),
@@ -188,7 +187,6 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("lfn", sa.String(), nullable=False),
-        sa.Column("protocol", sa.Enum("S3", "NAS", "LOCAL", name="protocolenum"), nullable=False),
         sa.Column("research_context_id", sa.Integer(), nullable=True),
         sa.Column("embedding_model_id", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
@@ -295,8 +293,6 @@ def downgrade() -> None:
     # We need to manually drop the enums created in the upgrade
     sa_enum_knowledgesourceenum = sa.Enum(name="knowledgesourceenum")
     sa_enum_knowledgesourceenum.drop(op.get_bind(), checkfirst=True)  # type: ignore
-    sa_enum_protocolenum = sa.Enum(name="protocolenum")
-    sa_enum_protocolenum.drop(op.get_bind(), checkfirst=True)  # type: ignore
     sa_enum_sourcedatastatusenum = sa.Enum(name="sourcedatastatusenum")
     sa_enum_sourcedatastatusenum.drop(op.get_bind(), checkfirst=True)  # type: ignore
     # ### end Alembic commands ###

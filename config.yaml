@@ -60,7 +60,7 @@ features:
 
   new_source_data:
     name: "Register Source Data"
-    description: "Register a new source data in the database by passing a list of lfns"
+    description: "Register a new source data in the database by passing an lfn"
     version: "1.0.0"
     tags: ["client: service"]
     enabled: true

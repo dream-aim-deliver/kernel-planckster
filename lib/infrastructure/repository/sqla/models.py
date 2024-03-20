@@ -12,6 +12,7 @@ from sqlalchemy import (
     ForeignKey,
     Table,
     Text,
+    TypeDecorator,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy import Enum as SAEnum
@@ -20,7 +21,7 @@ from sqlalchemy.orm import mapped_column, object_mapper, relationship, Mapped, M
 from sqlalchemy.orm.session import Session
 
 from lib.infrastructure.repository.sqla.database import Base
-from lib.core.entity.models import KnowledgeSourceEnum, ProtocolEnum, SourceDataStatusEnum
+from lib.core.entity.models import LFN, KnowledgeSourceEnum, SourceDataStatusEnum
 
 
 class ModelBase(object):
@@ -208,10 +209,8 @@ class SQLASourceData(Base, SoftModelBase):  # type: ignore
     @type name: str
     @param type: The type of the source data
     @type type: str
-    @param lfn: The LFN of the source data
+    @param lfn: The LFN of the source data. Must be a valid serialized LFN
     @type lfn: str
-    @param protocol: The protocol of the source data
-    @type protocol: ProtocolEnum
     @param status: The status of the source data
     @type status: SourceDataStatusEnum
     @param knowledge_source_id: The ID of the knowledge source of the source data
@@ -226,7 +225,6 @@ class SQLASourceData(Base, SoftModelBase):  # type: ignore
     name: Mapped[str] = mapped_column(String, nullable=False)
     type: Mapped[str] = mapped_column(String, nullable=False)
     lfn: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    protocol: Mapped[ProtocolEnum] = mapped_column(SAEnum(ProtocolEnum), nullable=False)
     status: Mapped[SourceDataStatusEnum] = mapped_column(SAEnum(SourceDataStatusEnum), nullable=False)
     knowledge_source_id: Mapped[int] = mapped_column(ForeignKey("knowledge_source.id"), nullable=False)
     citations: Mapped[List["SQLACitation"]] = relationship("SQLACitation", backref="source_data")
@@ -294,10 +292,8 @@ class SQLAVectorStore(Base, ModelBase):  # type: ignore
     @type id: int
     @param name: The name of the vector store
     @type name: str
-    @param lfn: The LFN of the vector store
+    @param lfn: The LFN of the vector store. Must be a valid serialized LFN
     @type lfn: str
-    @param protocol: The protocol of the vector store
-    @type protocol: ProtocolEnum
     @param research_context_id: The ID of the research context of the vector store
     @type research_context_id: int
     @param research_context: The research context of the vector store
@@ -311,7 +307,6 @@ class SQLAVectorStore(Base, ModelBase):  # type: ignore
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     lfn: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    protocol: Mapped[ProtocolEnum] = mapped_column(SAEnum(ProtocolEnum), nullable=False)
     research_context_id: Mapped[int] = mapped_column(ForeignKey("research_context.id"), nullable=True)
     research_context: Mapped["SQLAResearchContext"] = relationship("SQLAResearchContext", back_populates="vector_store")
     embedding_model_id: Mapped[int] = mapped_column(ForeignKey("embedding_model.id"), nullable=False)

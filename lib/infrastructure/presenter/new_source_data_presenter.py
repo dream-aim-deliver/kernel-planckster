@@ -12,10 +12,12 @@ class NewSourceDataPresenter(NewSourceDataOutputPort):
             errorMessage=error.errorMessage,
             errorName=error.errorName,
             errorType=error.errorType,
+            source_data=None,
         )
 
     def convert_response_to_view_model(self, response: NewSourceDataResponse) -> NewSourceDataViewModel:
         return NewSourceDataViewModel(
             status=True,
             code=200,
+            source_data=response.source_data,
         )

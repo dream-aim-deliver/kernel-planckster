@@ -9,8 +9,10 @@ class NewSourceDataRequest(BaseRequest):
     Request Model for the New Source Data Use Case.
     """
 
-    knowledge_source_id: int = Field(description="Research context id for which the source data is to be created.")
-    source_data_lfn_list: List[str] = Field(description="List of LFNs of the source data to be created.")
+    knowledge_source_id: int = Field(description="Research context id for which the source data is to be registered.")
+    lfn: str = Field(
+        description="LFN of the source data to be registered. Must be already present as a file in the file storage."
+    )
 
 
 class NewSourceDataResponse(BaseResponse):
@@ -18,7 +20,7 @@ class NewSourceDataResponse(BaseResponse):
     Response Model for the New Source Data Use Case.
     """
 
-    pass
+    source_data: SourceData = Field(description="The source data registered in the database.")
 
 
 class NewSourceDataError(BaseErrorResponse):

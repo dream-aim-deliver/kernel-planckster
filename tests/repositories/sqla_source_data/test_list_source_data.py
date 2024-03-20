@@ -2,7 +2,6 @@ import random
 from typing import List
 from faker import Faker
 from lib.core.dto.source_data_repository_dto import ListSourceDataDTO
-from lib.core.entity.models import SourceData
 from lib.infrastructure.config.containers import ApplicationContainer
 
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
@@ -19,11 +18,11 @@ def test_list_source_data_all(
 
     knowledge_sources = fake_knowledge_source_with_source_data_list
 
-    source_data_list: List[SQLASourceData] = []
+    sqla_source_data_list: List[SQLASourceData] = []
     for ks in knowledge_sources:
-        source_data_list.extend(ks.source_data)
+        sqla_source_data_list.extend(ks.source_data)
 
-    source_data_lfns_list = [sd.lfn for sd in source_data_list]
+    sqla_source_data_lfns_list = [sd.lfn for sd in sqla_source_data_list]
 
     with db_session() as session:
         for ks in knowledge_sources:
@@ -31,17 +30,17 @@ def test_list_source_data_all(
         session.commit()
 
     with db_session() as session:
-        list_source_data_DTO = sqla_source_data_repository.list_source_data()
+        dto_source_data_list = sqla_source_data_repository.list_source_data()
 
-        assert list_source_data_DTO is not None
-        assert list_source_data_DTO.status == True
-        assert list_source_data_DTO.data is not None
-        assert list_source_data_DTO.data != []
+        assert dto_source_data_list is not None
+        assert dto_source_data_list.status == True
+        assert dto_source_data_list.data is not None
+        assert dto_source_data_list.data != []
 
-        sqla_source_data_lfns_list = [sd.lfn for sd in list_source_data_DTO.data]
+        dto_source_data_lfns_list = [sd.lfn.to_json() for sd in dto_source_data_list.data]
 
-        for sd_lfn in source_data_lfns_list:
-            assert sd_lfn in sqla_source_data_lfns_list
+        for sd_lfn in sqla_source_data_lfns_list:
+            assert sd_lfn in dto_source_data_lfns_list
 
 
 # TODO: this test works individually, but not when the whole test suit is run with pytest, as we have dangling source data from other tests
@@ -81,8 +80,8 @@ def test_list_source_data_by_knowledge_source_id(
         all_other_source_data_list.extend(ks.source_data)
     all_other_source_data_lfn_list = [sd.lfn for sd in all_other_source_data_list]
 
-    source_data_list = knowledge_source.source_data
-    source_data_lfns_list = [sd.lfn for sd in source_data_list]
+    sqla_source_data_list = knowledge_source.source_data
+    sqla_source_data_lfns_list = [sd.lfn for sd in sqla_source_data_list]
 
     with db_session() as session:
         knowledge_source.save(session=session, flush=True)
@@ -92,21 +91,21 @@ def test_list_source_data_by_knowledge_source_id(
         knowledge_source_id = knowledge_source.id
 
     with db_session() as session:
-        list_source_data_DTO = sqla_source_data_repository.list_source_data(knowledge_source_id=knowledge_source_id)
+        dto_source_data_list = sqla_source_data_repository.list_source_data(knowledge_source_id=knowledge_source_id)
 
-        assert list_source_data_DTO is not None
-        assert list_source_data_DTO.status == True
-        assert list_source_data_DTO.data is not None
-        assert list_source_data_DTO.data != []
+        assert dto_source_data_list is not None
+        assert dto_source_data_list.status == True
+        assert dto_source_data_list.data is not None
+        assert dto_source_data_list.data != []
 
-        queried_sqla_source_data_lfns_list = [sd.lfn for sd in list_source_data_DTO.data]
+        dto_lfn_list = [sd.lfn.to_json() for sd in dto_source_data_list.data]
 
-        for sd_lfn in source_data_lfns_list:
-            assert sd_lfn in queried_sqla_source_data_lfns_list
+        for sd_lfn in sqla_source_data_lfns_list:
+            assert sd_lfn in dto_lfn_list
 
         for sd_lfn in all_other_source_data_lfn_list:
             # We don't want the source data from other knowledge sources to be listed in the DTO
-            assert sd_lfn not in queried_sqla_source_data_lfns_list
+            assert sd_lfn not in dto_lfn_list
 
 
 def test_list_source_data_by_knowledge_source_id_empty_source_data(

@@ -212,3 +212,14 @@ class MinIOObjectStore:
         assert isinstance(url, str)
 
         return url
+
+    def object_exists(self, object_name: str) -> bool:
+        """
+        Check if an object exists in a bucket in MinIO S3 Repository.
+
+        :param bucket_name: The name of the bucket.
+        :param object_name: The name of the object.
+        """
+        object_list = self.list_objects(self.bucket)
+        existence = object_name in object_list
+        return existence

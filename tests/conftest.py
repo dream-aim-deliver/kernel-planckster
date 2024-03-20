@@ -1,10 +1,9 @@
 from contextlib import _GeneratorContextManager
 import datetime
-from importlib import metadata
 import os
 import random
 import tempfile
-from typing import Annotated, Callable, Generator, List, Protocol, Tuple
+from typing import Annotated, Callable, Generator, List, Tuple
 from faker import Faker
 from faker.proxy import UniqueProxy
 from fastapi import FastAPI
@@ -13,7 +12,7 @@ import psycopg2
 import pytest
 import yaml
 import lib
-from lib.core.entity.models import KnowledgeSourceEnum, ProtocolEnum, SourceDataStatusEnum
+from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum, SourceDataStatusEnum
 from lib.infrastructure.config.containers import ApplicationContainer
 from alembic.config import Config
 from alembic import command
@@ -383,21 +382,26 @@ def source_data() -> SQLASourceData:
         if not attr_name.__str__().startswith("_")
     ]
 
-    sd_protocol_choice: str = random.choice(protocols)
-    sd_protocol = ProtocolEnum(sd_protocol_choice)
-    sd_host = fake.domain_name()
-    sd_port = fake.port_number()
-    sd_minio_bucket = fake.name()
-    sd_tracer_id = random.randint(1, 1000000000)
-    sd_knowledge_source_choice: str = random.choice(knowledge_sources)
-    sd_job_id = random.randint(1, 1000000000)
+    protocol_choice: str = random.choice(protocols)
+    protocol = ProtocolEnum(protocol_choice)
+    tracer_id = f"{random.randint(1, 1000000000)}"
+    knowledge_source_choice: str = random.choice(knowledge_sources)
+    job_id = random.randint(1, 1000000000)
 
     sd_filename = fake.file_name()
     sd_name = sd_filename.split(".")[0]
     sd_type = sd_filename.split(".")[1]
     sd_relative_path = fake.file_path(depth=3).split(".")[0] + "/" + sd_filename
 
-    sd_lfn = f"{sd_protocol_choice}://{sd_host}:{sd_port}/{sd_minio_bucket}/{sd_tracer_id}/{sd_knowledge_source_choice}/{sd_job_id}{sd_relative_path}"
+    sd_lfn = LFN(
+        protocol=protocol,
+        tracer_id=tracer_id,
+        job_id=job_id,
+        source=KnowledgeSourceEnum(knowledge_source_choice),
+        relative_path=sd_relative_path,
+    )
+
+    sd_lfn_str = sd_lfn.to_json()
 
     statuses = [
         attr_name.__str__().lower()
@@ -407,7 +411,7 @@ def source_data() -> SQLASourceData:
     sd_status_choice: str = random.choice(statuses)
     sd_status = SourceDataStatusEnum(sd_status_choice)
 
-    return SQLASourceData(name=sd_name, type=sd_type, lfn=sd_lfn, protocol=sd_protocol, status=sd_status)
+    return SQLASourceData(name=sd_name, type=sd_type, lfn=sd_lfn_str, status=sd_status)
 
 
 @pytest.fixture(scope="function")

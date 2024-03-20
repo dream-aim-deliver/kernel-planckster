@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from lib.core.dto.file_repository_dto import DownloadFileDTO, FilePathToLFNDTO, UploadFileDTO
+from lib.core.dto.file_repository_dto import DownloadFileDTO, FilePathToLFNDTO, LFNExistsDTO, UploadFileDTO
 from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum
 from lib.core.ports.secondary.file_repository import FileRepositoryOutputPort
 
@@ -185,4 +185,53 @@ class MinIOFileRepository(FileRepositoryOutputPort):
             status=True,
             lfn=lfn,
             credentials=url,
+        )
+
+    def lfn_exists(self, lfn: LFN) -> LFNExistsDTO:
+        """
+        Asserts the existence of an LFN as an actual file.
+
+        @param lfn: The logical file name to assert the existence of.
+        @type lfn: LFN
+        @return: A DTO containing the result of the operation.
+        @rtype: LFNExistsDTO
+        """
+
+        if lfn is None:
+            self.logger.error("LFN cannot be None")
+            return LFNExistsDTO(
+                lfn=None,
+                existence=None,
+                status=False,
+                errorCode=-1,
+                errorMessage="LFN cannot be None",
+                errorName="LFNNotProvided",
+                errorType="LFNNotProvided",
+            )
+
+        try:
+            self.store.initialize_store()
+
+            # Turn lfn to object_name
+            pfn = self.store.lfn_to_pfn(lfn)
+            object_name = self.store.pfn_to_object_name(pfn)
+
+            existence = self.store.object_exists(object_name)
+
+        except Exception as e:
+            self.logger.error(f"Could not assert the existence of the file in MinIO Repository: {e}")
+            return LFNExistsDTO(
+                lfn=lfn,
+                existence=None,
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Could not assert the existence of the file in MinIO Repository: {e}",
+                errorName="CouldNotAssertExistence",
+                errorType="CouldNotAssertExistence",
+            )
+
+        return LFNExistsDTO(
+            lfn=lfn,
+            existence=existence,
+            status=True,
         )

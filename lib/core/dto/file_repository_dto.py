@@ -39,3 +39,15 @@ class DownloadFileDTO(BaseDTO):  # type: ignore  # TODO: decide how to model the
 
     lfn: LFN | None = None
     credentials: str | None = None
+
+
+class LFNExistsDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
+    """
+    A DTO for whenever the existence of an LFN as an actual file is asserted.
+
+    @param lfn: The logical file name to assert the existence of.
+    @type lfn: LFN
+    """
+
+    lfn: LFN | None = None
+    existence: bool | None = None

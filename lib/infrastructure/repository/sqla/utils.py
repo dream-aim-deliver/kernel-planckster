@@ -1,4 +1,13 @@
-from lib.core.entity.models import LLM, Conversation, MessageQuery, MessageResponse, ResearchContext, SourceData, User
+from lib.core.entity.models import (
+    LFN,
+    LLM,
+    Conversation,
+    MessageQuery,
+    MessageResponse,
+    ResearchContext,
+    SourceData,
+    User,
+)
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
@@ -112,6 +121,18 @@ def convert_sqla_message_response_to_core_message_response(
     )
 
 
+def convert_sqla_lfn_to_core_lfn(sqla_lfn: str) -> LFN:
+    """
+    Converts a SQLALFN to a (core) LFN
+
+    @param sqla_lfn: The SQLALFN to convert
+    @type sqla_lfn: SQLALFN
+    @return: The converted LFN
+    @rtype: LFN
+    """
+    return LFN.from_json(sqla_lfn)
+
+
 def convert_sqla_source_data_to_core_source_data(sqla_source_data: SQLASourceData) -> SourceData:
     """
     Converts a SQLASourceData to a (core) SourceData
@@ -121,6 +142,7 @@ def convert_sqla_source_data_to_core_source_data(sqla_source_data: SQLASourceDat
     @return: The converted SourceData
     @rtype: SourceData
     """
+    core_lfn = convert_sqla_lfn_to_core_lfn(sqla_source_data.lfn)
     return SourceData(
         created_at=sqla_source_data.created_at,
         updated_at=sqla_source_data.updated_at,
@@ -129,10 +151,21 @@ def convert_sqla_source_data_to_core_source_data(sqla_source_data: SQLASourceDat
         id=sqla_source_data.id,
         name=sqla_source_data.name,
         type=sqla_source_data.type,
-        lfn=sqla_source_data.lfn,
-        protocol=sqla_source_data.protocol,
+        lfn=core_lfn,
         status=sqla_source_data.status,
     )
+
+
+def convert_core_lfn_to_sqla_lfn(core_lfn: LFN) -> str:
+    """
+    Converts a (core) LFN to a SQLALFN
+
+    @param core_lfn: The LFN to convert
+    @type core_lfn: LFN
+    @return: The converted SQLALFN
+    @rtype: SQLALFN
+    """
+    return core_lfn.to_json()
 
 
 def convert_core_source_data_to_sqla_source_data(core_source_data: SourceData) -> SQLASourceData:
@@ -144,11 +177,11 @@ def convert_core_source_data_to_sqla_source_data(core_source_data: SourceData) -
     @return: The converted SQLASourceData
     @rtype: SQLASourceData
     """
+    sqla_lfn = convert_core_lfn_to_sqla_lfn(core_source_data.lfn)
     return SQLASourceData(
         name=core_source_data.name,
         type=core_source_data.type,
-        lfn=core_source_data.lfn,
-        protocol=core_source_data.protocol,
+        lfn=sqla_lfn,
         status=core_source_data.status,
     )
 

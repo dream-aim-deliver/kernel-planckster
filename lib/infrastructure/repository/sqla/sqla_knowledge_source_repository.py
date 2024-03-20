@@ -6,6 +6,10 @@ from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from sqlalchemy.orm import Session
 
 from lib.infrastructure.repository.sqla.models import SQLAKnowledgeSource, SQLASourceData
+from lib.infrastructure.repository.sqla.utils import (
+    convert_core_source_data_to_sqla_source_data,
+    convert_sqla_source_data_to_core_source_data,
+)
 
 
 class SQLAKnowledgeSourceRepository(KnowledgeSourceRepositoryOutputPort):
@@ -22,14 +26,14 @@ class SQLAKnowledgeSourceRepository(KnowledgeSourceRepositoryOutputPort):
     def session(self) -> Session:
         return self._session
 
-    def new_source_data(self, knowledge_source_id: int, source_data_list: List[SourceData]) -> NewSourceDataDTO:
+    def new_source_data(self, knowledge_source_id: int, source_data: SourceData) -> NewSourceDataDTO:
         """
         Creates a new source data.
 
         @param knowledge_source_id: The ID of the knowledge source to create the source data for.
         @type knowledge_source_id: int
-        @param source_data_list: The list of source data to create.
-        @type source_data_list: List[SourceData]
+        @param source_data: The source data to register.
+        @type source_data: SourceData
         @return: A DTO containing the result of the operation.
         @rtype: NewSourceDataDTO
         """
@@ -46,7 +50,7 @@ class SQLAKnowledgeSourceRepository(KnowledgeSourceRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        if source_data_list is None:
+        if source_data is None:
             self.logger.error("Source data cannot be None")
             errorDTO = NewSourceDataDTO(
                 status=False,
@@ -58,112 +62,108 @@ class SQLAKnowledgeSourceRepository(KnowledgeSourceRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        if len(source_data_list) == 0:
-            self.logger.error("Source data list cannot be empty")
+        sqla_source_data = convert_core_source_data_to_sqla_source_data(source_data)
+
+        try:
+            # 1. First check if the lfn of the source data passed is already in the db
+            sqla_lfn = sqla_source_data.lfn
+
+            queried_source_data = self.session.query(SQLASourceData).filter_by(lfn=sqla_lfn).first()
+
+            if queried_source_data:
+                if isinstance(queried_source_data, SQLASourceData):
+                    if sqla_source_data.lfn == queried_source_data.lfn:
+                        self.logger.error(
+                            f"Source Data with lfn\n'{sqla_lfn}'\nalready exists in the database. LFNs must be unique. Aborting."
+                        )
+                        errorDTO = NewSourceDataDTO(
+                            status=False,
+                            errorCode=-1,
+                            errorMessage=f"Source Data with lfn\n'{sqla_lfn}'\nalready exists in the database. LFNs must be unique. Aborting.",
+                            errorName="Source Data Already Registered",
+                            errorType="SourceDataAlreadyRegistered",
+                        )
+                        return errorDTO
+
+        except Exception as e:
+            self.logger.error(f"Couldn't assert uniqueness of lfn in the database. Error:\n{e}")
             errorDTO = NewSourceDataDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage="Source data list cannot be empty",
-                errorName="SourceDataListEmpty",
-                errorType="SourceDataListEmpty",
+                errorMessage=f"Couldn't assert uniqueness of lfn in the database. Error:\n{e}",
+                errorName="Couldn't Assert LFN uniqueness",
+                errorType="Couldn'tAssertLFNUniqueness",
             )
-            self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_source_data_list: List[SQLASourceData] = []
+        try:
+            # 2. If LFN is unique, then SD is unique, so we can commit it
+            sqla_knowledge_source: SQLAKnowledgeSource | None = self.session.get(
+                SQLAKnowledgeSource, knowledge_source_id
+            )
 
-        for source_data in source_data_list:
-            if not isinstance(source_data, SourceData):
-                self.logger.error(f"Source data {source_data} is not a valid SourceData object")
+            if sqla_knowledge_source is None:
+                self.logger.error(
+                    f"Knowledge source with ID {knowledge_source_id} not found in the database, for source data '{source_data}'."
+                )
                 errorDTO = NewSourceDataDTO(
                     status=False,
                     errorCode=-1,
-                    errorMessage=f"Source data {source_data} is not a valid SourceData object",
-                    errorName="SourceDataNotValid",
-                    errorType="SourceDataNotValid",
+                    errorMessage=f"Knowledge source with ID {knowledge_source_id} not found in the database, for source data '{source_data}.",
+                    errorName="KnowledgeSourceNotFound",
+                    errorType="KnowledgeSourceNotFound",
                 )
                 self.logger.error(f"{errorDTO}")
                 return errorDTO
 
-            sqla_source_data = SQLASourceData(
-                name=source_data.name,
-                type=source_data.type,
-                lfn=source_data.lfn,
-                protocol=source_data.protocol,
-                status=source_data.status,
-            )
+            sqla_knowledge_source.source_data.append(sqla_source_data)
+            self.session.commit()
 
-            sqla_source_data_list.append(sqla_source_data)
+            sqla_sd_queried: SQLASourceData | None = self.session.get(SQLASourceData, sqla_source_data.id)
 
-        sqla_knowledge_source: SQLAKnowledgeSource | None = self.session.get(SQLAKnowledgeSource, knowledge_source_id)
+            if not sqla_sd_queried:
+                self.logger.error(
+                    f"Error while creating source data '{source_data}': not present in the Database after commiting changes."
+                )
+                errorDTO = NewSourceDataDTO(
+                    status=False,
+                    errorCode=-1,
+                    errorMessage=f"Error while creating source data '{source_data}': not present in the Database after commiting changes.",
+                    errorName="Source Data creation error",
+                    errorType="SourceDataCreationError",
+                )
+                self.logger.error(f"{errorDTO}")
+                return errorDTO
 
-        if sqla_knowledge_source is None:
-            self.logger.error(f"Knowledge source with ID {knowledge_source_id} not found in the database")
-            errorDTO = NewSourceDataDTO(
-                status=False,
-                errorCode=-1,
-                errorMessage=f"Knowledge source with ID {knowledge_source_id} not found in the database",
-                errorName="KnowledgeSourceNotFound",
-                errorType="KnowledgeSourceNotFound",
-            )
-            self.logger.error(f"{errorDTO}")
-            return errorDTO
-
-        success_source_data_lfn_list: List[str] = []
-        error_source_data_lfn_list: List[str] = []
-        error_source_data_dict: Dict[str, str] = {}
-
-        for sqla_source_datum in sqla_source_data_list:
-            # TODO: fix this: if the second element of the input list is a duplicate of the first one, the first one will be added (correct), the second one catched in the duplicates list (correct), but from the third one onwards everything will fail because SQLA had an error in the session
             try:
-                sqla_knowledge_source = self.session.get(SQLAKnowledgeSource, knowledge_source_id)
-                sqla_knowledge_source.source_data.append(sqla_source_datum)  # type: ignore
-                self.session.commit()
-                success_source_data_lfn_list.append(sqla_source_datum.lfn)
+                new_source_data = convert_sqla_source_data_to_core_source_data(sqla_sd_queried)
 
             except Exception as e:
-                error_source_data_lfn_list.append(sqla_source_datum.lfn)
-                error_str = str(e).split("SQL:", 1)[0]
-                error_source_data_dict[sqla_source_datum.lfn] = error_str
-                continue
-
-        if success_source_data_lfn_list != []:
-            if error_source_data_lfn_list != []:
                 self.logger.error(
-                    f"Success for the following lfns: {success_source_data_lfn_list},\n\nbut error while creating source data for the following lfns: {error_source_data_dict}"
+                    f"Error while creating source data '{source_data}': {e}. The source data was created in the database, but could not be retrieved."
                 )
-
-                halfErrorDTO = NewSourceDataDTO(
-                    status=True,
+                errorDTO = NewSourceDataDTO(
+                    status=False,
                     errorCode=-1,
-                    errorMessage=f"Success for the following lfns: {success_source_data_lfn_list},\n\nbut error while creating source data for the following lfns: {error_source_data_dict}",
-                    errorName="Success but Source Data creation error for some source data",
-                    errorType="SuccesButSourceDataCreationError",
+                    errorMessage=f"Error while creating source data '{source_data}': {e}. The source data was created in the database, but could not be retrieved.",
+                    errorName="Source Data creation error",
+                    errorType="SourceDataCreationError",
                 )
-                self.logger.error(f"{halfErrorDTO}")
-                return halfErrorDTO
+                self.logger.error(f"{errorDTO}")
+                return errorDTO
 
-            else:
-                return NewSourceDataDTO(
-                    status=True,
-                )
+            return NewSourceDataDTO(status=True, data=new_source_data)
 
-        else:
-            self.logger.error(f"Error while creating source data for the following lfns: {error_source_data_dict}")
+        except Exception as e:
+            self.logger.error(f"Error while creating source data '{source_data}': {e}")
             errorDTO = NewSourceDataDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage=f"Error while creating source data for the following lfns: {error_source_data_dict}",
+                errorMessage=f"Error while creating source data '{source_data}': {e}",
                 errorName="Source Data creation error",
                 errorType="SourceDataCreationError",
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-            ##with self.session.begin():
-            # sqla_knowledge_source.update(
-            # {"source_data": updated_sqla_source_data_list},
-            # session=self.session,
-            # )
-            # sqla_knowledge_source.save(session=self.session)
-            # self.session.commit()
+            # TODO OLD: In the previous version (allowing for a list for source data, instead of just one): fix this: if the second element of the input list is a duplicate of the first one, the first one will be added (correct), the second one catched in the duplicates list (correct), but from the third one onwards everything will fail because SQLA had an error in the session

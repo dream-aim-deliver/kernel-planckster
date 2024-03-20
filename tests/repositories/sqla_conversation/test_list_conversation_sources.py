@@ -77,7 +77,7 @@ def test_list_conversation_sources(
     assert list_conv_srcs_DTO.data is not None
 
     sql_srcs_names = tuple(source.name for source in list_conv_srcs_DTO.data)
-    sql_srcs_lfns = tuple(source.lfn for source in list_conv_srcs_DTO.data)
+    sql_srcs_lfns = tuple(source.lfn.to_json() for source in list_conv_srcs_DTO.data)
 
     assert list_conv_srcs_DTO.status == True
     assert list_conv_srcs_DTO.errorCode == None
