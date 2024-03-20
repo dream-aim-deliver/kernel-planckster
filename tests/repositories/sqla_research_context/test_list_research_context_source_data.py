@@ -44,7 +44,7 @@ def test_list_source_data_of_research_context(
     assert dto.data is not None
     assert len(dto.data) == len(source_data)
 
-    dto_lfns = [source_datum.lfn for source_datum in dto.data]
+    dto_lfns = [source_datum.lfn.to_json() for source_datum in dto.data]
 
     for dto_lfn in dto_lfns:
         assert dto_lfn in lfns

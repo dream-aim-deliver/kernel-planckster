@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 
-from lib.core.dto.file_repository_dto import DownloadFileDTO, FilePathToLFNDTO, UploadFileDTO
+from lib.core.dto.file_repository_dto import DownloadFileDTO, FilePathToLFNDTO, LFNExistsDTO, UploadFileDTO
 from lib.core.entity.models import LFN
 
 
@@ -53,5 +53,17 @@ class FileRepositoryOutputPort(ABC):
         @type lfn: LFN
         @return: A DTO containing the result of the operation.
         @rtype: DownloadSourceDataDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def lfn_exists(self, lfn: LFN) -> LFNExistsDTO:
+        """
+        Asserts the existence of an LFN as an actual file.
+
+        @param lfn: The logical file name to assert the existence of.
+        @type lfn: LFN
+        @return: A DTO containing the result of the operation.
+        @rtype: LFNExistsDTO
         """
         raise NotImplementedError

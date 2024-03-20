@@ -118,6 +118,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
         NewSourceDataFeatureContainer,
         config=config.features.new_source_data,
         knowledge_source_repository=sqla_knowledge_source_repository,
+        file_repository=minio_file_repository,
     )
 
     list_source_data_feature = providers.Container(

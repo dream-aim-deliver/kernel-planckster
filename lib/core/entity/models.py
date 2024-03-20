@@ -82,8 +82,21 @@ class LFN(BaseModel):
             v = f"{name}-{seed}-{marker}.{ext}"
         return v
 
+    def to_json(cls) -> str:
+        """
+        Dumps the model to a json formatted string. Wrapper around pydantic's model_dump_json method: in case they decide to deprecate it, we only refactor here.
+        """
+        return cls.model_dump_json()
+
     def __str__(self) -> str:
-        return f"{self.protocol.value}://{self.tracer_id}/{self.source.value}/{self.job_id}/{self.relative_path}"
+        return self.to_json()
+
+    @classmethod
+    def from_json(cls, json_str: str) -> "LFN":
+        """
+        Loads the model from a json formatted string. Wrapper around pydantic's model_validate_json method: in case they decide to deprecate it, we only refactor here.
+        """
+        return cls.model_validate_json(json_data=json_str)
 
 
 class BaseKernelPlancksterModel(BaseModel):
@@ -169,16 +182,24 @@ class SourceData(BaseSoftDeleteKernelPlancksterModel):
     id: int
     name: str
     type: str
-    lfn: str
-    protocol: ProtocolEnum
+    lfn: LFN
     status: SourceDataStatusEnum
 
+    def to_json(cls) -> str:
+        """
+        Dumps the model to a json formatted string. Wrapper around pydantic's model_dump_json method: in case they decide to deprecate it, we only refactor here.
+        """
+        return cls.model_dump_json()
+
     def __str__(self) -> str:
-        return (
-            "SourceData: "
-            + super().__str__()
-            + f", id: {self.id}, name: {self.name}, lfn: {self.lfn}, protocol: {self.protocol}"
-        )
+        return self.to_json()
+
+    @classmethod
+    def from_json(cls, json_str: str) -> "SourceData":
+        """
+        Loads the model from a json formatted string. Wrapper around pydantic's model_validate_json method: in case they decide to deprecate it, we only refactor here.
+        """
+        return cls.model_validate_json(json_data=json_str)
 
 
 class EmbeddingModel(BaseSoftDeleteKernelPlancksterModel):
@@ -232,8 +253,7 @@ class VectorStore(BaseSoftDeleteKernelPlancksterModel):
 
     id: int
     name: str
-    lfn: str
-    protocol: ProtocolEnum
+    lfn: LFN
 
 
 class Conversation(BaseSoftDeleteKernelPlancksterModel):

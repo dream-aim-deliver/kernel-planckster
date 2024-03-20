@@ -1,7 +1,6 @@
-from typing import Dict, List
+from typing import List
 
-from pydantic import BaseModel
-from lib.core.entity.models import KnowledgeSourceEnum, ProtocolEnum, SourceData
+from lib.core.entity.models import SourceData
 from lib.core.sdk.usecase_models import BaseErrorResponse, BaseRequest, BaseResponse
 
 
