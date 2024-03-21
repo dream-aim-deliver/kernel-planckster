@@ -4,12 +4,13 @@ from lib.core.entity.models import LFN
 from lib.core.sdk.viewmodel import BaseViewModel
 
 
-class DownloadFileViewModel(BaseViewModel):
+class GetClientDataForDownloadViewModel(BaseViewModel):
     """
     View Model for the Download File Feature.
     """
 
     lfn: Optional[LFN] = Field(description="The Logical File Name of the file to be downloaded.")
+
     signed_url: str = Field(description="The signed URL to download the file.")
 
     model_config = {
