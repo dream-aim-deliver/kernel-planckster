@@ -1,4 +1,5 @@
 from enum import Enum
+import os
 import re
 import uuid
 from pydantic import BaseModel, field_validator
@@ -75,6 +76,7 @@ class LFN(BaseModel):
     def relative_path_must_be_alphanumberic_underscores_backslashes(cls, v: str) -> str:
         marker = "sdamarker"
         if marker not in v:
+            v = os.path.basename(v)  # Take just the basename, saner for the object stores
             v = re.sub(r"[^a-zA-Z0-9_\./-]", "", v)
             ext = v.split(".")[-1]
             name = v.split(".")[0]  # this completely removes dots
