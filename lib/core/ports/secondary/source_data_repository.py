@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 import logging
 
-from lib.core.dto.source_data_repository_dto import ListSourceDataDTO
+from lib.core.dto.source_data_repository_dto import GetSourceDataByLFNDTO, ListSourceDataDTO
+from lib.core.entity.models import LFN
 
 
 class SourceDataRepositoryOutputPort(ABC):
@@ -28,5 +29,17 @@ class SourceDataRepositoryOutputPort(ABC):
         @type knowledge_source_id: int
         @return: A DTO containing the result of the operation.
         @rtype: ListSourceDataDTO
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_source_data_by_lfn(self, lfn: LFN) -> GetSourceDataByLFNDTO:
+        """
+        Gets source data by LFN.
+
+        @param lfn: The logical file name of the source data to get.
+        @type lfn: LFN
+        @return: A DTO containing the result of the operation.
+        @rtype: GetSourceDataByLFNDTO
         """
         raise NotImplementedError

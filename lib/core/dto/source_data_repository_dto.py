@@ -10,3 +10,11 @@ class ListSourceDataDTO(BaseDTO[SourceData]):
     """
 
     data: List[SourceData] = []
+
+
+class GetSourceDataByLFNDTO(BaseDTO[SourceData]):
+    """
+    A DTO for whenever source data is retrieved by LFN
+    """
+
+    data: SourceData | None = None

@@ -1,5 +1,5 @@
 from typing import List
-from lib.core.dto.source_data_repository_dto import ListSourceDataDTO
+from lib.core.dto.source_data_repository_dto import GetSourceDataByLFNDTO, ListSourceDataDTO
 from lib.core.entity.models import LFN, SourceData
 from lib.core.ports.secondary.source_data_repository import SourceDataRepositoryOutputPort
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
@@ -105,3 +105,70 @@ class SQLASourceDataRepository(SourceDataRepositoryOutputPort):
                 status=True,
                 data=core_source_data_list,
             )
+
+    def get_source_data_by_lfn(self, lfn: LFN) -> GetSourceDataByLFNDTO:
+        """
+        Gets source data by LFN.
+
+        @param lfn: The logical file name of the source data to get.
+        @type lfn: LFN
+        @return: A DTO containing the result of the operation.
+        @rtype: GetSourceDataByLFNDTO
+        """
+
+        try:
+            if not lfn:
+                self.logger.error("LFN cannot be None")
+                return GetSourceDataByLFNDTO(
+                    status=False,
+                    errorCode=-1,
+                    errorMessage="LFN cannot be None",
+                    errorName="LFNNotProvided",
+                    errorType="LFNNotProvided",
+                )
+
+            sqla_lfn = lfn.to_json()
+
+            try:
+                queried_source_data = self.session.query(SQLASourceData).filter_by(lfn=sqla_lfn).first()
+
+                if not queried_source_data:
+                    self.logger.error(f"Source Data with LFN {lfn.to_json()} not found in the database")
+                    return GetSourceDataByLFNDTO(
+                        status=False,
+                        errorCode=-1,
+                        errorMessage=f"Source Data with LFN {lfn.to_json()} not found in the database",
+                        errorName="SourceDataNotFound",
+                        errorType="SourceDataNotFound",
+                    )
+
+                core_source_data = convert_sqla_source_data_to_core_source_data(queried_source_data)
+
+                return GetSourceDataByLFNDTO(
+                    status=True,
+                    data=core_source_data,
+                )
+
+            except Exception as e:
+                self.logger.error(f"Could not query the database for source data with LFN {lfn.to_json()}: {e}")
+                errorDTO = GetSourceDataByLFNDTO(
+                    status=False,
+                    errorCode=-1,
+                    errorMessage=f"Could not query the database for source data with LFN {lfn.to_json()}: {e}",
+                    errorName="CouldNotGetSourceDataByLFN",
+                    errorType="CouldNotGetSourceDataByLFN",
+                )
+                self.logger.error(f"{errorDTO}")
+                return errorDTO
+
+        except Exception as e:
+            self.logger.error(f"Could not query the database for source data with LFN {lfn.to_json()}: {e}")
+            errorDTO = GetSourceDataByLFNDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Could not query the database for source data with LFN {lfn.to_json()}: {e}",
+                errorName="CouldNotGetSourceDataByLFN",
+                errorType="CouldNotGetSourceDataByLFN",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
