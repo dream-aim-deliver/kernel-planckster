@@ -4,6 +4,7 @@ import os
 import random
 import tempfile
 from typing import Annotated, Callable, Generator, List, Tuple
+import uuid
 from faker import Faker
 from faker.proxy import UniqueProxy
 from fastapi import FastAPI
@@ -338,7 +339,7 @@ def fake_research_context() -> SQLAResearchContext:
 def user() -> SQLAUser:
     fake = Faker().unique
 
-    fake_sid = fake.name()
+    fake_sid = f"{fake.name()}-{uuid.uuid4()}"
 
     return SQLAUser(
         sid=fake_sid,
