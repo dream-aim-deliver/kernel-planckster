@@ -160,6 +160,18 @@ class MinIOFileRepository(FileRepositoryOutputPort):
             pfn = self.store.lfn_to_pfn(lfn)
             object_name = self.store.pfn_to_object_name(pfn)
 
+            existence = self.store.object_exists(object_name)
+
+            if not existence:
+                self.logger.error(f"Object {object_name} does not exist in MinIO")
+                return GetClientDataForDownloadDTO(
+                    status=False,
+                    errorCode=-1,
+                    errorMessage=f"Object {object_name} does not exist in MinIO",
+                    errorName="ObjectDoesNotExist",
+                    errorType="ObjectDoesNotExist",
+                )
+
             url = self.store.get_signed_url_for_file_download(self.store.bucket, object_name)
 
         except Exception as e:
