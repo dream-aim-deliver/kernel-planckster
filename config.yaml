@@ -118,3 +118,11 @@ features:
     tags: ["client: websat"]
     enabled: true
     auth: true
+
+  get_client_data_for_download:
+    name: "Get Client Data for Download"
+    description: "Get the data required to download a file from one of the storage services"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: true
