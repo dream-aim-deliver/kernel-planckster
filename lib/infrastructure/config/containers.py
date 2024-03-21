@@ -4,6 +4,9 @@ from typing import List
 from dependency_injector import containers, providers
 from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.features.demo_feature_container import DemoFeatureContainer
+from lib.infrastructure.config.features.get_client_data_for_download_featur_container import (
+    GetClientDataForDownloadFeatureContainer,
+)
 from lib.infrastructure.config.features.list_conversations_feature_container import ListConversationsFeatureContainer
 from lib.infrastructure.config.features.create_default_data_feature_container import CreateDefaultDataFeatureContainer
 from lib.infrastructure.config.features.list_research_contexts_feature_container import (
@@ -159,4 +162,11 @@ class ApplicationContainer(containers.DeclarativeContainer):
         GetClientDataForUploadFeatureContainer,
         config=config.features.get_client_data_for_upload,
         file_repository=minio_file_repository,
+    )
+
+    get_client_data_for_download_feature = providers.Container(
+        GetClientDataForDownloadFeatureContainer,
+        config=config.features.get_client_data_for_download,
+        file_repository=minio_file_repository,
+        source_data_repository=sqla_source_data_repository,
     )
