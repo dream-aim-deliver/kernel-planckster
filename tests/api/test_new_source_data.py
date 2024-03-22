@@ -18,7 +18,9 @@ def test_new_source_data_feature_is_successful(
     fake_sd = fake_source_data
     fake_lfn = fake_sd.lfn
 
-    controller_parameters = NewSourceDataControllerParameters(knowledge_source_id=1, lfn=fake_lfn)
+    controller_parameters = NewSourceDataControllerParameters(
+        knowledge_source_id=1, lfn=fake_lfn, source_data_name="test_source_data"
+    )
 
     view_model: NewSourceDataViewModel = controller.execute(parameters=controller_parameters)
 

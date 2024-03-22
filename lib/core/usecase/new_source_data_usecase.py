@@ -17,6 +17,7 @@ class NewSourceDataUseCase(NewSourceDataInputPort):
 
         knowledge_source_id = request.knowledge_source_id
         req_lfn = request.lfn
+        req_source_data_name = request.source_data_name
 
         # 1. First check if the lfn passed is valid
         try:
@@ -50,10 +51,9 @@ class NewSourceDataUseCase(NewSourceDataInputPort):
 
         # 3. Populate a core source data object
         status = SourceDataStatusEnum.AVAILABLE
-        name = core_lfn.relative_path.rsplit("/", 1)[-1]
 
         core_source_data = SourceData(
-            name=name,
+            name=req_source_data_name,
             type="default",
             lfn=core_lfn,
             status=status,
