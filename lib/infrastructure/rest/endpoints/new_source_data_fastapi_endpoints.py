@@ -42,8 +42,11 @@ class NewSourceDataFastAPIFeature(FastAPIEndpoint[NewSourceDataControllerParamet
         def endpoint(
             id: int,
             lfn: str,
+            source_data_name: str,
         ) -> NewSourceDataViewModel | None:
-            controller_parameters = NewSourceDataControllerParameters(knowledge_source_id=id, lfn=lfn)
+            controller_parameters = NewSourceDataControllerParameters(
+                knowledge_source_id=id, lfn=lfn, source_data_name=source_data_name
+            )
             view_model: NewSourceDataViewModel = self.execute(
                 controller_parameters=controller_parameters,
             )

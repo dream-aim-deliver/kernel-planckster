@@ -21,6 +21,10 @@ class NewSourceDataControllerParameters(BaseControllerParameters):
         title="LFN",
         description="LFN of the source data to be registered. Must be already present as a file in the file storage.",
     )
+    source_data_name: str = Field(
+        title="Source Data Name",
+        description="Name of the source data to be registered. Should be something meaningful that can be shown to end users.",
+    )
 
 
 class NewSourceDataController(
@@ -39,4 +43,8 @@ class NewSourceDataController(
         if parameters is None:
             raise HTTPException(status_code=400, detail="Invalid request parameters.")
         else:
-            return NewSourceDataRequest(knowledge_source_id=parameters.knowledge_source_id, lfn=parameters.lfn)
+            return NewSourceDataRequest(
+                knowledge_source_id=parameters.knowledge_source_id,
+                lfn=parameters.lfn,
+                source_data_name=parameters.source_data_name,
+            )
