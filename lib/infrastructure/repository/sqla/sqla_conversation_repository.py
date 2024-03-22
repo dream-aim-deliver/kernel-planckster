@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Set
 
+
 from lib.core.dto.conversation_repository_dto import (
     GetConversationDTO,
     GetConversationResearchContextDTO,
@@ -24,6 +25,8 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAResearchContext,
     SQLASourceData,
 )
+from sqlalchemy.orm import Session
+
 from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_conversation_to_core_conversation,
     convert_sqla_message_query_to_core_message_query,
@@ -36,9 +39,12 @@ from lib.infrastructure.repository.sqla.utils import (
 class SQLAConversationRepository(ConversationRepository):
     def __init__(self, session_factory: TDatabaseFactory) -> None:
         super().__init__()
-
         with session_factory() as session:
-            self.session = session
+            self._session = session
+
+    @property
+    def session(self) -> Session:
+        return self._session
 
     def get_conversation(self, conversation_id: int) -> GetConversationDTO:
         """
@@ -61,9 +67,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = (
-            self.session.query(SQLAConversation).filter_by(id=conversation_id).first()
-        )
+        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -105,9 +109,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = (
-            self.session.query(SQLAConversation).filter_by(id=conversation_id).first()
-        )
+        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -121,9 +123,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_research_context: SQLAResearchContext | None = (
-            self.session.query(SQLAResearchContext).filter_by(id=sqla_conversation.research_context_id).first()
-        )
+        sqla_research_context: SQLAResearchContext | None = sqla_conversation.research_context
 
         if sqla_research_context is None:
             self.logger.error(
@@ -165,9 +165,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = (
-            self.session.query(SQLAConversation).filter_by(id=conversation_id).first()
-        )
+        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -230,9 +228,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = (
-            self.session.query(SQLAConversation).filter_by(id=conversation_id).first()
-        )
+        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -284,9 +280,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = (
-            self.session.query(SQLAConversation).filter_by(id=conversation_id).first()
-        )
+        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -390,9 +384,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = (
-            self.session.query(SQLAConversation).filter_by(id=conversation_id).first()
-        )
+        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")

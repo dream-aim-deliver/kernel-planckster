@@ -157,9 +157,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_research_context: SQLAResearchContext | None = (
-            self.session.query(SQLAResearchContext).filter_by(id=research_context_id).first()
-        )
+        sqla_research_context: SQLAResearchContext | None = self.session.get(SQLAResearchContext, research_context_id)
 
         if sqla_research_context is None:
             self.logger.error(f"Research Context with ID {research_context_id} not found in the database.")

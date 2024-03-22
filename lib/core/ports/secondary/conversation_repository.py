@@ -21,7 +21,11 @@ class ConversationRepository(ABC):
     """
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
 
     @abstractmethod
     def get_conversation(self, conversation_id: int) -> GetConversationDTO:
