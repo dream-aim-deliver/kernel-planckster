@@ -126,3 +126,11 @@ features:
     tags: ["client: websat"]
     enabled: true
     auth: true
+
+  list_messages:
+    name: "List Messages"
+    description: "List all messages in a conversation"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: true
