@@ -320,6 +320,8 @@ class SQLAResearchContext(Base, SoftModelBase):  # type: ignore
     @type id: int
     @param title: The title of the research context
     @type title: str
+    @param description: The description of the research context
+    @type description: str
     @param user_id: The ID of the user of the research context
     @type user_id: str
     @param llm_id: The ID of the llm of the research context
