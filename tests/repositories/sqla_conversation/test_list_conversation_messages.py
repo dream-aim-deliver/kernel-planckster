@@ -1,4 +1,5 @@
 import random
+import uuid
 from faker import Faker
 from lib.core.dto.conversation_repository_dto import (
     ListConversationMessagesDTO,
@@ -33,7 +34,9 @@ def test_list_conversation_messages(
 
     rand_int_2 = random.randint(0, len(researchContext.conversations) - 1)
     conversation = researchContext.conversations[rand_int_2]
-    conversation_title = conversation.title
+    # Make it unique to query it later
+    conversation_title = f"{conversation.title}-{uuid.uuid4()}"
+    conversation.title = conversation_title
 
     messages = conversation.messages
     message_contents = tuple([message.content for message in messages])

@@ -9,6 +9,7 @@ from lib.infrastructure.config.features.get_client_data_for_download_featur_cont
 )
 from lib.infrastructure.config.features.list_conversations_feature_container import ListConversationsFeatureContainer
 from lib.infrastructure.config.features.create_default_data_feature_container import CreateDefaultDataFeatureContainer
+from lib.infrastructure.config.features.list_messages_feature_container import ListMessagesFeatureContainer
 from lib.infrastructure.config.features.list_research_contexts_feature_container import (
     ListResearchContextsFeatureContainer,
 )
@@ -169,4 +170,10 @@ class ApplicationContainer(containers.DeclarativeContainer):
         config=config.features.get_client_data_for_download,
         file_repository=minio_file_repository,
         source_data_repository=sqla_source_data_repository,
+    )
+
+    list_messages_feature = providers.Container(
+        ListMessagesFeatureContainer,
+        config=config.features.list_messages,
+        conversation_repository=sqla_conversation_repository,
     )
