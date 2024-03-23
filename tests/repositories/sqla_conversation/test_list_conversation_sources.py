@@ -49,7 +49,7 @@ def test_list_conversation_sources(
     source_data_names_used = []
     source_data_lfns_used = []
     for message in conversation.messages:
-        if message.type == "message_response":
+        if message.type == "agent_message":
             citation = random.choice(citations)
             random_source_datum = random.choice(source_data)
             random_source_datum.citations.append(citation)
@@ -152,8 +152,8 @@ def test_error_list_conversation_sources_research_context_no_source_data(
 
         conv_id = conv_sqla_query.id
         messages = conv_sqla_query.messages
-        message_responses = [message for message in messages if message.type == "message_response"]
-        message_responses_ids = [message.id for message in message_responses]
+        agent_messages = [message for message in messages if message.type == "agent_message"]
+        agent_messages_ids = [message.id for message in agent_messages]
 
         list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(
             conversation_id=conv_id
@@ -161,6 +161,6 @@ def test_error_list_conversation_sources_research_context_no_source_data(
 
     assert list_conv_srcs_DTO.status == False
     assert list_conv_srcs_DTO.errorCode == -1
-    assert list_conv_srcs_DTO.errorMessage == f"Message Responses with ID {message_responses_ids} have no source data."
+    assert list_conv_srcs_DTO.errorMessage == f"Message Responses with ID {agent_messages_ids} have no source data."
     assert list_conv_srcs_DTO.errorName == "Message Responses have no source data"
-    assert list_conv_srcs_DTO.errorType == "MessageResponsesHaveNoSourceData"
+    assert list_conv_srcs_DTO.errorType == "AgentMessagesHaveNoSourceData"

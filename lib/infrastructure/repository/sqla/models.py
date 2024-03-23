@@ -380,8 +380,8 @@ class SQLACitation(Base, SoftModelBase):  # type: ignore
     @type source_data_id: int
     @param citation_metadata: The metadata of the citation
     @type citation_metadata: str
-    @param message_response_id: The ID of the message response of the citation
-    @type message_response_id: int
+    @param agent_message_id: The ID of the message response of the citation
+    @type agent_message_id: int
     """
 
     __tablename__ = "citation"
@@ -389,7 +389,7 @@ class SQLACitation(Base, SoftModelBase):  # type: ignore
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     source_data_id: Mapped[int] = mapped_column(ForeignKey("source_data.id"), nullable=False)
     citation_metadata: Mapped[str] = mapped_column(String, nullable=False)
-    message_response_id: Mapped[int] = mapped_column(ForeignKey("message_response.id"), nullable=False)
+    agent_message_id: Mapped[int] = mapped_column(ForeignKey("agent_message.id"), nullable=False)
 
 
 class SQLAMessageBase(Base, SoftModelBase):  # type: ignore
@@ -422,7 +422,7 @@ class SQLAMessageBase(Base, SoftModelBase):  # type: ignore
     }
 
 
-class SQLAMessageQuery(SQLAMessageBase):
+class SQLAUserMessage(SQLAMessageBase):
     """
     SQLAlchemy Message Query model
 
@@ -438,16 +438,16 @@ class SQLAMessageQuery(SQLAMessageBase):
     @type conversation_id: int
     """
 
-    __tablename__ = "message_query"
+    __tablename__ = "user_message"
 
     id: Mapped[int] = mapped_column(ForeignKey("message_base.id"), primary_key=True)
 
     __mapper_args__ = {
-        "polymorphic_identity": "message_query",
+        "polymorphic_identity": "user_message",
     }
 
 
-class SQLAMessageResponse(SQLAMessageBase):
+class SQLAAgentMessage(SQLAMessageBase):
     """
     SQLAlchemy Message Response model
 
@@ -463,16 +463,18 @@ class SQLAMessageResponse(SQLAMessageBase):
     @type conversation_id: int
     @param citations: The citations from source data used to produce the message
     @type citations: List[SQLACitation]
+    @param source_data: The source data used to produce the message
+    @type source_data: List[SQLASourceData]
     """
 
-    __tablename__ = "message_response"
+    __tablename__ = "agent_message"
 
     id: Mapped[int] = mapped_column(ForeignKey("message_base.id"), primary_key=True)
-    citations: Mapped[List["SQLACitation"]] = relationship("SQLACitation", backref="message_response")
+    citations: Mapped[List["SQLACitation"]] = relationship("SQLACitation", backref="agent_message")
     source_data: Mapped[List["SQLASourceData"]] = relationship(
-        "SQLASourceData", secondary=SQLACitation.__tablename__, backref="message_response"
+        "SQLASourceData", secondary=SQLACitation.__tablename__, backref="agent_message"
     )
 
     __mapper_args__ = {
-        "polymorphic_identity": "message_response",
+        "polymorphic_identity": "agent_message",
     }

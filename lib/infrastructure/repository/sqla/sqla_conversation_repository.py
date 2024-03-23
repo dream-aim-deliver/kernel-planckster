@@ -20,8 +20,8 @@ from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
     SQLAConversation,
     SQLAMessageBase,
-    SQLAMessageQuery,
-    SQLAMessageResponse,
+    SQLAUserMessage,
+    SQLAAgentMessage,
     SQLAResearchContext,
     SQLASourceData,
 )
@@ -29,8 +29,8 @@ from sqlalchemy.orm import Session
 
 from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_conversation_to_core_conversation,
-    convert_sqla_message_query_to_core_message_query,
-    convert_sqla_message_response_to_core_message_response,
+    convert_sqla_user_message_to_core_user_message,
+    convert_sqla_agent_message_to_core_agent_message,
     convert_sqla_research_context_to_core_research_context,
     convert_sqla_source_data_to_core_source_data,
 )
@@ -165,7 +165,19 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+        try:
+            sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+        except Exception as e:
+            self.logger.error(f"Error while querying the database for conversation with ID {conversation_id}: {e}")
+            errorDTO = ListConversationMessagesDTO[TMessageBase](
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Error while querying the database for conversation with ID {conversation_id}: {e}",
+                errorName="Error while querying the database",
+                errorType="ErrorWhileQueryingDatabase",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -182,13 +194,13 @@ class SQLAConversationRepository(ConversationRepository):
         core_messages: List[MessageBase] = []
 
         for sqla_message in sqla_conversation.messages:
-            if isinstance(sqla_message, SQLAMessageQuery):
-                core_message_query = convert_sqla_message_query_to_core_message_query(sqla_message)
-                core_messages.append(core_message_query)
+            if isinstance(sqla_message, SQLAUserMessage):
+                core_user_message = convert_sqla_user_message_to_core_user_message(sqla_message)
+                core_messages.append(core_user_message)
 
-            if isinstance(sqla_message, SQLAMessageResponse):
-                core_message_response = convert_sqla_message_response_to_core_message_response(sqla_message)
-                core_messages.append(core_message_response)
+            if isinstance(sqla_message, SQLAAgentMessage):
+                core_agent_message = convert_sqla_agent_message_to_core_agent_message(sqla_message)
+                core_messages.append(core_agent_message)
 
         return ListConversationMessagesDTO[TMessageBase](
             status=True,
@@ -296,33 +308,33 @@ class SQLAConversationRepository(ConversationRepository):
 
         sqlamessages: List[SQLAMessageBase] = sqla_conversation.messages
         sqlasourcedata_set: Set[SQLASourceData] = set()
-        error_message_response_ids: List[int] = []
+        error_agent_message_ids: List[int] = []
 
         for sqlamessage in sqlamessages:
-            if isinstance(sqlamessage, SQLAMessageResponse):
+            if isinstance(sqlamessage, SQLAAgentMessage):
                 queried_sqla_source_data_list = (
                     self.session.query(SQLASourceData)
-                    .join(SQLASourceData.message_response)
+                    .join(SQLASourceData.agent_message)
                     .filter_by(id=sqlamessage.id)
                     .all()
                 )
 
                 if queried_sqla_source_data_list == []:
-                    error_message_response_ids.append(sqlamessage.id)
+                    error_agent_message_ids.append(sqlamessage.id)
 
                 queried_sqla_source_data_set = set(queried_sqla_source_data_list)
                 sqlasourcedata_set.update(queried_sqla_source_data_set)
 
         sqlasourcedata = list(sqlasourcedata_set)
 
-        if error_message_response_ids != []:
-            self.logger.error(f"Message Responses with IDs {error_message_response_ids} have no source data.")
+        if error_agent_message_ids != []:
+            self.logger.error(f"Message Responses with IDs {error_agent_message_ids} have no source data.")
             errorDTO = ListConversationSourcesDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage=f"Message Responses with ID {error_message_response_ids} have no source data.",
+                errorMessage=f"Message Responses with ID {error_agent_message_ids} have no source data.",
                 errorName="Message Responses have no source data",
-                errorType="MessageResponsesHaveNoSourceData",
+                errorType="AgentMessagesHaveNoSourceData",
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
@@ -398,19 +410,19 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_message_query: SQLAMessageQuery = SQLAMessageQuery(
+        sqla_user_message: SQLAUserMessage = SQLAUserMessage(
             content=message_content,
             timestamp=datetime.now(),
             conversation_id=conversation_id,
         )
 
         try:
-            sqla_message_query.save(session=self.session)
+            sqla_user_message.save(session=self.session)
             self.session.commit()
 
-            core_message_query = convert_sqla_message_query_to_core_message_query(sqla_message_query)
+            core_user_message = convert_sqla_user_message_to_core_user_message(sqla_user_message)
 
-            return SendMessageToConversationDTO(status=True, data=core_message_query)
+            return SendMessageToConversationDTO(status=True, data=core_user_message)
 
         except Exception as e:
             self.logger.error(f"Error while sending message to conversation: {e}")

@@ -2,8 +2,8 @@ from lib.core.entity.models import (
     LFN,
     LLM,
     Conversation,
-    MessageQuery,
-    MessageResponse,
+    UserMessage,
+    AgentMessage,
     ResearchContext,
     SourceData,
     User,
@@ -11,8 +11,8 @@ from lib.core.entity.models import (
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
-    SQLAMessageQuery,
-    SQLAMessageResponse,
+    SQLAUserMessage,
+    SQLAAgentMessage,
     SQLAResearchContext,
     SQLASourceData,
     SQLAUser,
@@ -79,45 +79,45 @@ def convert_sqla_conversation_to_core_conversation(sqla_conversation: SQLAConver
     )
 
 
-def convert_sqla_message_query_to_core_message_query(sqla_message_query: SQLAMessageQuery) -> MessageQuery:
+def convert_sqla_user_message_to_core_user_message(sqla_user_message: SQLAUserMessage) -> UserMessage:
     """
-    Converts a SQLAMessageQuery to a (core) MessageQuery
+    Converts a SQLAUserMessage to a (core) UserMessage
 
-    @param sqla_message_query: The SQLAMessageQuery to convert
-    @type sqla_message_query: SQLAMessageQuery
-    @return: The converted MessageQuery
-    @rtype: MessageQuery
+    @param sqla_user_message: The SQLAUserMessage to convert
+    @type sqla_user_message: SQLAUserMessage
+    @return: The converted UserMessage
+    @rtype: UserMessage
     """
-    return MessageQuery(
-        created_at=sqla_message_query.created_at,
-        updated_at=sqla_message_query.updated_at,
-        deleted=sqla_message_query.deleted,
-        deleted_at=sqla_message_query.deleted_at,
-        id=sqla_message_query.id,
-        content=sqla_message_query.content,
-        timestamp=sqla_message_query.timestamp,
+    return UserMessage(
+        created_at=sqla_user_message.created_at,
+        updated_at=sqla_user_message.updated_at,
+        deleted=sqla_user_message.deleted,
+        deleted_at=sqla_user_message.deleted_at,
+        id=sqla_user_message.id,
+        content=sqla_user_message.content,
+        timestamp=sqla_user_message.timestamp,
     )
 
 
-def convert_sqla_message_response_to_core_message_response(
-    sqla_message_response: SQLAMessageResponse,
-) -> MessageResponse:
+def convert_sqla_agent_message_to_core_agent_message(
+    sqla_agent_message: SQLAAgentMessage,
+) -> AgentMessage:
     """
-    Converts a SQLAMessageResponse to a (core) MessageResponse
+    Converts a SQLAAgentMessage to a (core) AgentMessage
 
-    @param sqla_message_response: The SQLAMessageResponse to convert
-    @type sqla_message_response: SQLAMessageResponse
-    @return: The converted MessageResponse
-    @rtype: MessageResponse
+    @param sqla_agent_message: The SQLAAgentMessage to convert
+    @type sqla_agent_message: SQLAAgentMessage
+    @return: The converted AgentMessage
+    @rtype: AgentMessage
     """
-    return MessageResponse(
-        created_at=sqla_message_response.created_at,
-        updated_at=sqla_message_response.updated_at,
-        deleted=sqla_message_response.deleted,
-        deleted_at=sqla_message_response.deleted_at,
-        id=sqla_message_response.id,
-        content=sqla_message_response.content,
-        timestamp=sqla_message_response.timestamp,
+    return AgentMessage(
+        created_at=sqla_agent_message.created_at,
+        updated_at=sqla_agent_message.updated_at,
+        deleted=sqla_agent_message.deleted,
+        deleted_at=sqla_agent_message.deleted_at,
+        id=sqla_agent_message.id,
+        content=sqla_agent_message.content,
+        timestamp=sqla_agent_message.timestamp,
     )
 
 

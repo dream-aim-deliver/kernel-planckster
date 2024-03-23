@@ -112,8 +112,14 @@ class BaseKernelPlancksterModel(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    def to_json(cls) -> str:
+        """
+        Dumps the model to a json formatted string. Wrapper around pydantic's model_dump_json method: in case they decide to deprecate it, we only refactor here.
+        """
+        return cls.model_dump_json()
+
     def __str__(self) -> str:
-        return f"created_at: {self.created_at}, updated_at: {self.updated_at}"
+        return self.to_json()
 
 
 class BaseSoftDeleteKernelPlancksterModel(BaseKernelPlancksterModel):
@@ -126,9 +132,6 @@ class BaseSoftDeleteKernelPlancksterModel(BaseKernelPlancksterModel):
 
     deleted: bool
     deleted_at: datetime | None
-
-    def __str__(self) -> str:
-        return super().__str__() + f", deleted: {self.deleted}, deleted_at: {self.deleted_at}"
 
 
 class User(BaseSoftDeleteKernelPlancksterModel):
@@ -144,9 +147,6 @@ class User(BaseSoftDeleteKernelPlancksterModel):
     id: int
     sid: str
 
-    def __str__(self) -> str:
-        return "User: " + super().__str__() + f", id: {self.id}, sid: {self.sid}"
-
 
 class KnowledgeSource(BaseSoftDeleteKernelPlancksterModel):
     """
@@ -160,13 +160,6 @@ class KnowledgeSource(BaseSoftDeleteKernelPlancksterModel):
     id: int
     source: KnowledgeSourceEnum
     content_metadata: str
-
-    def __str__(self) -> str:
-        return (
-            "KnowledgeSource: "
-            + super().__str__()
-            + f", id: {self.id}, source: {self.source}, content_metadata: {self.content_metadata}"
-        )
 
 
 class SourceData(BaseSoftDeleteKernelPlancksterModel):
@@ -186,15 +179,6 @@ class SourceData(BaseSoftDeleteKernelPlancksterModel):
     type: str
     lfn: LFN
     status: SourceDataStatusEnum
-
-    def to_json(cls) -> str:
-        """
-        Dumps the model to a json formatted string. Wrapper around pydantic's model_dump_json method: in case they decide to deprecate it, we only refactor here.
-        """
-        return cls.model_dump_json()
-
-    def __str__(self) -> str:
-        return self.to_json()
 
     @classmethod
     def from_json(cls, json_str: str) -> "SourceData":
@@ -250,7 +234,6 @@ class VectorStore(BaseSoftDeleteKernelPlancksterModel):
     @param id: the id of the vector store
     @param name: the name of the vector store
     @param lfn: the logical file name of the vector store
-    @param protocol: the protocol used to store the vector store
     """
 
     id: int
@@ -271,6 +254,18 @@ class Conversation(BaseSoftDeleteKernelPlancksterModel):
     title: str
 
 
+class MessageSenderTypeEnum(Enum):
+    """
+    Enum for the different types of sender of messages
+
+    USER: the sender is a user
+    AGENT: the sender is an agent
+    """
+
+    USER = "user"
+    AGENT = "agent"
+
+
 class MessageBase(BaseSoftDeleteKernelPlancksterModel):
     """
     Base class for user queries and agent responses
@@ -288,7 +283,7 @@ class MessageBase(BaseSoftDeleteKernelPlancksterModel):
 TMessageBase = TypeVar("TMessageBase", bound=MessageBase)
 
 
-class MessageQuery(MessageBase):
+class UserMessage(MessageBase):
     """
     Represents the query of a user to an agent
     """
@@ -296,10 +291,10 @@ class MessageQuery(MessageBase):
     pass
 
 
-class MessageResponse(MessageBase):
+class AgentMessage(MessageBase):
     """
     Represents the response to a user query
-    It will be tied to citations that the LLM made to generate the response
+    It will be tied to citations that the LLM made to generate the response, and to an LLM directly
     """
 
     pass
@@ -310,9 +305,7 @@ class Citation(BaseSoftDeleteKernelPlancksterModel):
     Represents a citation for a part of a source_data, in an agent's response to a user query
 
     @param id: the id of the citation
-    @param source_data_id: the id of the source_data where the citation is
     @param citation_metadata: the position of the citation in the source_data; TODO: meant to be a json formatted string
-    @param message_response: the agent's response this citation is associated with
     """
 
     id: int

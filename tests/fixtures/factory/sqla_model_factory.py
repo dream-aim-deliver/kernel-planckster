@@ -6,7 +6,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     ModelBase,
     SQLAConversation,
-    SQLAMessageQuery,
+    SQLAUserMessage,
     SQLAResearchContext,
     SQLAUser,
 )
@@ -50,12 +50,12 @@ class SQLATemporaryModelFactory:
         )
         for x in range(n_messages):
             dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
-            sqla_message_query = SQLAMessageQuery(
+            sqla_user_message = SQLAUserMessage(
                 content=fake.text(max_nb_chars=70)[:-1] + "?",
                 timestamp=dt1,
                 conversation=sqla_conversation,
             )
-            self.session.add(sqla_message_query)
+            self.session.add(sqla_user_message)
             self.session.commit()
-            self.managed_sqla_model_objects.add(sqla_message_query)
+            self.managed_sqla_model_objects.add(sqla_user_message)
         return sqla_conversation
