@@ -27,8 +27,8 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAConversation,
     SQLAKnowledgeSource,
     SQLAMessageBase,
-    SQLAMessageQuery,
-    SQLAMessageResponse,
+    SQLAUserMessage,
+    SQLAAgentMessage,
     SQLAResearchContext,
     SQLASourceData,
     SQLAUser,
@@ -220,69 +220,69 @@ def fake_kp_datetimes() -> Tuple[str, str, bool, str]:
     return created_at, updated_at, deleted, deleted_at
 
 
-def message_query() -> SQLAMessageQuery:
+def user_message() -> SQLAUserMessage:
     fake = Faker().unique
 
     dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
 
-    return SQLAMessageQuery(
+    return SQLAUserMessage(
         content=fake.text(max_nb_chars=70)[:-1] + "?",
         timestamp=dt1,
     )
 
 
 @pytest.fixture(scope="function")
-def fake_message_query() -> SQLAMessageQuery:
-    return message_query()
+def fake_user_message() -> SQLAUserMessage:
+    return user_message()
 
 
-def message_response() -> SQLAMessageResponse:
+def agent_message() -> SQLAAgentMessage:
     fake = Faker().unique
 
     dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
 
-    return SQLAMessageResponse(
+    return SQLAAgentMessage(
         content=fake.text(max_nb_chars=70)[:-1],
         timestamp=dt1,
     )
 
 
 @pytest.fixture(scope="function")
-def fake_message_response() -> SQLAMessageResponse:
-    return message_response()
+def fake_agent_message() -> SQLAAgentMessage:
+    return agent_message()
 
 
-def message_pair() -> Tuple[SQLAMessageQuery, SQLAMessageResponse]:
+def message_pair() -> Tuple[SQLAUserMessage, SQLAAgentMessage]:
     fake = Faker().unique
 
     dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
 
     dt2 = fake.date_time_between_dates(datetime_start=dt1, datetime_end=datetime.datetime.now())
 
-    message_query = SQLAMessageQuery(
+    user_message = SQLAUserMessage(
         content=fake.text(max_nb_chars=70)[:-1] + "?",
         timestamp=dt1,
     )
-    message_response = SQLAMessageResponse(
+    agent_message = SQLAAgentMessage(
         content=fake.text(max_nb_chars=70)[:-1],
         timestamp=dt2,
     )
 
-    return message_query, message_response
+    return user_message, agent_message
 
 
 @pytest.fixture(scope="function")
-def fake_message_pair() -> Tuple[SQLAMessageQuery, SQLAMessageResponse]:
+def fake_message_pair() -> Tuple[SQLAUserMessage, SQLAAgentMessage]:
     return message_pair()
 
 
-TMessagePair = Tuple[SQLAMessageQuery, SQLAMessageResponse]
+TMessagePair = Tuple[SQLAUserMessage, SQLAAgentMessage]
 
 
 def conversation(number_of_message_pairs: int = 1) -> SQLAConversation:
     """
     Creates a conversation with a title and a list of messages
-    The messages are created by calling message_pair() number_of_message_pairs times, which will create a list alternating a SQLAMessageQuery and a SQLAMessageResponse
+    The messages are created by calling message_pair() number_of_message_pairs times, which will create a list alternating a SQLAUserMessage and a SQLAAgentMessage
     """
 
     fake = Faker().unique

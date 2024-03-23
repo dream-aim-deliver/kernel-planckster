@@ -10,7 +10,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
     SQLAKnowledgeSource,
-    SQLAMessageQuery,
+    SQLAUserMessage,
     SQLAUser,
 )
 
@@ -62,19 +62,19 @@ def test_send_message_to_conversation(
 
         assert send_msg_to_conv_DTO.data is not None
 
-        dto_message_query_id = send_msg_to_conv_DTO.data.id
+        dto_user_message_id = send_msg_to_conv_DTO.data.id
 
-        sqla_message_query = session.query(SQLAMessageQuery).filter_by(id=dto_message_query_id).first()
+        sqla_user_message = session.query(SQLAUserMessage).filter_by(id=dto_user_message_id).first()
 
-        assert sqla_message_query is not None
+        assert sqla_user_message is not None
 
-        sqla_message_query_id = sqla_message_query.id
+        sqla_user_message_id = sqla_user_message.id
 
     assert send_msg_to_conv_DTO.data is not None
 
     assert send_msg_to_conv_DTO.status == True
     assert send_msg_to_conv_DTO.errorCode == None
-    assert send_msg_to_conv_DTO.data.id == sqla_message_query_id
+    assert send_msg_to_conv_DTO.data.id == sqla_user_message_id
     assert send_msg_to_conv_DTO.data.content == new_message_content
 
 
