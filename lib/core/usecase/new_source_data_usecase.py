@@ -1,4 +1,5 @@
 import datetime
+import os
 from typing import List
 from lib.core.dto.knowledge_source_repository_dto import NewSourceDataDTO
 from lib.core.entity.models import LFN, ProtocolEnum, SourceData, SourceDataStatusEnum
@@ -51,10 +52,11 @@ class NewSourceDataUseCase(NewSourceDataInputPort):
 
         # 3. Populate a core source data object
         status = SourceDataStatusEnum.AVAILABLE
+        type = os.path.splitext(core_lfn.relative_path)[1].replace(".", "")
 
         core_source_data = SourceData(
             name=req_source_data_name,
-            type="default",
+            type=type,
             lfn=core_lfn,
             status=status,
             # The fields below will be ignored by the repository
