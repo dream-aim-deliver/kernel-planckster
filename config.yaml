@@ -134,3 +134,11 @@ features:
     tags: ["client: websat"]
     enabled: true
     auth: true
+
+  new_message:
+    name: "Create Message"
+    description: "Create a new message in a conversation"
+    version: "1.0.0"
+    tags: ["client: websat"]
+    enabled: true
+    auth: true
