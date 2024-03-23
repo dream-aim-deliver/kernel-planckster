@@ -27,12 +27,9 @@ def test_get_research_context_from_conversation(
         research_contexts=user_with_conv.research_contexts,
     )
 
-    rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
-    researchContext = user_with_conv.research_contexts[rand_int_1]
+    researchContext = random.choice(user_with_conv.research_contexts)
     researchContext_title = researchContext.title
-
-    rand_int_2 = random.randint(0, len(researchContext.conversations) - 1)
-    conversation = researchContext.conversations[rand_int_2]
+    conversation = random.choice(researchContext.conversations)
     conversation_title = conversation.title
 
     with db_session() as session:

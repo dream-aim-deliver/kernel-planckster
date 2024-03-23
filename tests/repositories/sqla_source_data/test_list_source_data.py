@@ -71,8 +71,7 @@ def test_list_source_data_by_knowledge_source_id(
 
     knowledge_sources = fake_knowledge_source_with_source_data_list
 
-    rand_int_1 = random.randint(0, len(knowledge_sources) - 1)
-    knowledge_source = knowledge_sources[rand_int_1]
+    knowledge_source = random.choice(knowledge_sources)
 
     knowledge_sources.remove(knowledge_source)
     all_other_source_data_list: List[SQLASourceData] = []
@@ -116,8 +115,7 @@ def test_list_source_data_by_knowledge_source_id_empty_source_data(
     sqla_source_data_repository = app_initialization_container.sqla_source_data_repository()
 
     knowledge_sources = fake_knowledge_source_with_source_data_list
-    rand_int_1 = random.randint(0, len(knowledge_sources) - 1)
-    knowledge_source = knowledge_sources[rand_int_1]
+    knowledge_source = random.choice(knowledge_sources)
     knowledge_source.source_data = []
 
     with db_session() as session:

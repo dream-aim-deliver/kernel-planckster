@@ -29,11 +29,8 @@ def test_list_messages_usecase(
         research_contexts=user_with_conv.research_contexts,
     )
 
-    rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
-    researchContext = user_with_conv.research_contexts[rand_int_1]
-
-    rand_int_2 = random.randint(0, len(researchContext.conversations) - 1)
-    conversation = researchContext.conversations[rand_int_2]
+    researchContext = random.choice(user_with_conv.research_contexts)
+    conversation = random.choice(researchContext.conversations)
     # Make it unique to query it later
     conversation_title = f"{conversation.title}-{uuid.uuid4()}"
     conversation.title = conversation_title
@@ -79,11 +76,8 @@ def test_list_messages_controller(
         research_contexts=user_with_conv.research_contexts,
     )
 
-    rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
-    researchContext = user_with_conv.research_contexts[rand_int_1]
-
-    rand_int_2 = random.randint(0, len(researchContext.conversations) - 1)
-    conversation = researchContext.conversations[rand_int_2]
+    researchContext = random.choice(user_with_conv.research_contexts)
+    conversation = random.choice(researchContext.conversations)
     conversation_title = conversation.title
 
     with db_session() as session:

@@ -27,8 +27,7 @@ def test_create_new_conversation(
         research_contexts=user_with_conv.research_contexts,
     )
 
-    rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
-    researchContext = user_with_conv.research_contexts[rand_int_1]
+    researchContext = random.choice(user_with_conv.research_contexts)
 
     conversation = fake_conversation
     conversation_title = conversation.title
