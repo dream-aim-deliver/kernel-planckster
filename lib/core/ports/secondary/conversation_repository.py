@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 import logging
 
 from lib.core.dto.conversation_repository_dto import (
@@ -9,7 +10,7 @@ from lib.core.dto.conversation_repository_dto import (
     SendMessageToConversationDTO,
     UpdateConversationDTO,
 )
-from lib.core.entity.models import TMessageBase
+from lib.core.entity.models import MessageSenderTypeEnum, TMessageBase
 
 
 class ConversationRepository(ABC):
@@ -89,7 +90,9 @@ class ConversationRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def send_message_to_conversation(self, conversation_id: int, message_content: str) -> SendMessageToConversationDTO:
+    def new_message(
+        self, conversation_id: int, message_content: str, sender_type: MessageSenderTypeEnum, timestamp: datetime
+    ) -> SendMessageToConversationDTO:
         """
         Sends a message to a conversation.
 
@@ -97,6 +100,10 @@ class ConversationRepository(ABC):
         @type conversation_id: int
         @param message_content: The content of the message.
         @type message_content: str
+        @param sender_type: The type of the sender of the message.
+        @type sender_type: MessageSenderTypeEnum
+        @param unix_timestamp: The timestamp of the message.
+        @type unix_timestamp: int
         @return: A DTO containing the result of the operation.
         @rtype: SendMessageToConversationDTO
         """

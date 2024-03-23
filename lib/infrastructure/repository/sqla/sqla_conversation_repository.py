@@ -11,9 +11,12 @@ from lib.core.dto.conversation_repository_dto import (
     UpdateConversationDTO,
 )
 from lib.core.entity.models import (
+    AgentMessage,
     MessageBase,
+    MessageSenderTypeEnum,
     SourceData,
     TMessageBase,
+    UserMessage,
 )
 from lib.core.ports.secondary.conversation_repository import ConversationRepository
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
@@ -363,7 +366,9 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_source_data,
         )
 
-    def send_message_to_conversation(self, conversation_id: int, message_content: str) -> SendMessageToConversationDTO:
+    def new_message(
+        self, conversation_id: int, message_content: str, sender_type: MessageSenderTypeEnum, timestamp: datetime
+    ) -> SendMessageToConversationDTO:
         """
         Sends a message to a conversation.
 
@@ -397,7 +402,32 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+        if sender_type is None:
+            errorDTO = ListConversationSourcesDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Sender type cannot be None",
+                errorName="Sender type not provided",
+                errorType="SenderTypeNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        # 1. Obtain the conversation and check if it exists
+        try:
+            sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+
+        except Exception as e:
+            self.logger.error(f"Error while querying the database for conversation with ID {conversation_id}: {e}")
+            errorDTO = SendMessageToConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage=f"Error while querying the database for conversation with ID {conversation_id}: {e}",
+                errorName="ErrorWhileQueryingDatabase",
+                errorType="ErrorWhileQueryingDatabase",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -411,19 +441,47 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_user_message: SQLAUserMessage = SQLAUserMessage(
-            content=message_content,
-            timestamp=datetime.now(),
-            conversation_id=conversation_id,
-        )
+        sqla_message: SQLAAgentMessage | SQLAUserMessage
+
+        # 2. Create the message object based on its type
+        if sender_type == MessageSenderTypeEnum.AGENT:
+            sqla_message = SQLAAgentMessage(
+                content=message_content,
+                timestamp=timestamp,
+                conversation_id=conversation_id,
+            )
+
+        elif sender_type == MessageSenderTypeEnum.USER:
+            sqla_message = SQLAUserMessage(
+                content=message_content,
+                timestamp=timestamp,
+                conversation_id=conversation_id,
+            )
+
+        else:
+            errorDTO = SendMessageToConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Invalid sender type provided",
+                errorName="Invalid sender type",
+                errorType="InvalidSenderType",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
 
         try:
-            sqla_user_message.save(session=self.session)
+            sqla_message.save(session=self.session)
             self.session.commit()
 
-            core_user_message = convert_sqla_user_message_to_core_user_message(sqla_user_message)
+            core_message: UserMessage | AgentMessage
 
-            return SendMessageToConversationDTO(status=True, data=core_user_message)
+            if isinstance(sqla_message, SQLAUserMessage):
+                core_message = convert_sqla_user_message_to_core_user_message(sqla_message)
+
+            elif isinstance(sqla_message, SQLAAgentMessage):
+                core_message = convert_sqla_agent_message_to_core_agent_message(sqla_message)
+
+            return SendMessageToConversationDTO(status=True, data=core_message)
 
         except Exception as e:
             self.logger.error(f"Error while sending message to conversation: {e}")
