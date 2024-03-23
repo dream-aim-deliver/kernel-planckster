@@ -69,7 +69,7 @@ class ListConversationSourcesDTO(BaseDTO[SourceData]):
     data: List[SourceData] | None = None
 
 
-class SendMessageToConversationDTO(BaseDTO[MessageBase]):
+class NewMessageDTO(BaseDTO[MessageBase]):
     """
     A DTO for sending a message to a conversation
 
