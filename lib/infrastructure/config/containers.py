@@ -18,6 +18,7 @@ from lib.infrastructure.config.features.list_source_data_for_research_context_fe
     ListSourceDataForResearchContextFeatureContainer,
 )
 from lib.infrastructure.config.features.new_conversation_feature_container import NewConversationFeatureContainer
+from lib.infrastructure.config.features.new_message_feature_container import NewMessageFeatureContainer
 from lib.infrastructure.config.features.new_research_context_feature_container import NewResearchContextFeatureContainer
 from lib.infrastructure.config.features.new_source_data_feature_container import NewSourceDataFeatureContainer
 from lib.infrastructure.config.features.get_client_data_for_upload_feature_container import (
@@ -175,5 +176,11 @@ class ApplicationContainer(containers.DeclarativeContainer):
     list_messages_feature = providers.Container(
         ListMessagesFeatureContainer,
         config=config.features.list_messages,
+        conversation_repository=sqla_conversation_repository,
+    )
+
+    new_message_feature = providers.Container(
+        NewMessageFeatureContainer,
+        config=config.features.new_message,
         conversation_repository=sqla_conversation_repository,
     )

@@ -2,7 +2,7 @@ from datetime import datetime
 from faker import Faker
 from lib.core.dto.conversation_repository_dto import (
     ListConversationSourcesDTO,
-    SendMessageToConversationDTO,
+    NewMessageDTO,
 )
 from lib.core.entity.models import MessageSenderTypeEnum
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -17,7 +17,7 @@ from lib.infrastructure.repository.sqla.models import (
 )
 
 
-def test_send_message_to_conversation(
+def test_new_message_repository_function(
     app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
@@ -58,7 +58,7 @@ def test_send_message_to_conversation(
 
         id = result.id
 
-        send_msg_to_conv_DTO: SendMessageToConversationDTO = conversation_repository.new_message(
+        send_msg_to_conv_DTO: NewMessageDTO = conversation_repository.new_message(
             conversation_id=id,
             message_content=new_message_content,
             sender_type=MessageSenderTypeEnum.USER,
@@ -83,7 +83,7 @@ def test_send_message_to_conversation(
     assert send_msg_to_conv_DTO.data.content == new_message_content
 
 
-def test_error_send_message_to_conversation_no_conversation_id(
+def test_error_new_message_no_conversation_id(
     app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
@@ -99,7 +99,7 @@ def test_error_send_message_to_conversation_no_conversation_id(
     assert list_conv_srcs_DTO.errorType == "ConversationIdNotProvided"
 
 
-def test_error_send_message_to_conversation_no_message_content(
+def test_error_new_message_no_message_content(
     app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
@@ -115,7 +115,7 @@ def test_error_send_message_to_conversation_no_message_content(
     assert list_conv_srcs_DTO.errorType == "MessageContentNotProvided"
 
 
-def test_error_send_message_to_conversation_no_sqla_conversation(
+def test_error_new_message_no_sqla_conversation(
     app_container: ApplicationContainer, db_session: TDatabaseFactory
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
