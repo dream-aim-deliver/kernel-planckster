@@ -20,8 +20,7 @@ def test_list_conversations_in_research_context(
         research_contexts=user_with_conv.research_contexts,
     )
 
-    rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
-    research_context = user_with_conv.research_contexts[rand_int_1]
+    research_context = random.choice(user_with_conv.research_contexts)
     research_context_title = research_context.title
 
     conversations = research_context.conversations

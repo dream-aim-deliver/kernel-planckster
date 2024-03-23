@@ -33,8 +33,7 @@ def test_get_research_context(
 
     research_context_titles = [research_context.title for research_context in user.research_contexts]
 
-    rand_int = random.randint(0, len(research_context_titles) - 1)
-    research_context_title = research_context_titles[rand_int]
+    research_context_title = random.choice(research_context_titles)
 
     with db_session() as session:
         llm.save(session=session, flush=True)

@@ -33,11 +33,8 @@ def test_update_conversation(
         user_with_conv.save(session=session, flush=True)
         session.commit()
 
-        rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
-        researchContext = user_with_conv.research_contexts[rand_int_1]
-
-        rand_int_2 = random.randint(0, len(researchContext.conversations) - 1)
-        conversation = researchContext.conversations[rand_int_2]
+        researchContext = random.choice(user_with_conv.research_contexts)
+        conversation = random.choice(researchContext.conversations)
         conversation_id = conversation.id
         conversation_title = conversation.title
 

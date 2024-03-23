@@ -39,8 +39,7 @@ def test_list_source_data_for_research_context_presenter(
     user = fake_user_with_conversation
     ks_list = fake_knowledge_source_with_source_data_list
 
-    rand_int_1 = random.randint(0, len(user.research_contexts) - 1)
-    research_context = user.research_contexts[rand_int_1]
+    research_context = random.choice(user.research_contexts)
 
     for ks in ks_list:
         for source_datum in ks.source_data:

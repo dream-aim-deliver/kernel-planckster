@@ -22,8 +22,7 @@ def test_get_source_data_by_lfn(
 
     sqla_source_data_lfns_list = [sd.lfn for sd in sqla_source_data_list]
 
-    rand_i = random.randint(0, len(sqla_source_data_lfns_list))
-    sqla_lfn = sqla_source_data_lfns_list[rand_i]
+    sqla_lfn = random.choice(sqla_source_data_lfns_list)
     core_lfn = convert_sqla_lfn_to_core_lfn(sqla_lfn)
 
     with db_session() as session:

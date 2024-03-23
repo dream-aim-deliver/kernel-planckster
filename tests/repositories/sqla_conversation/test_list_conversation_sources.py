@@ -32,16 +32,14 @@ def test_list_conversation_sources(
         research_contexts=user_with_conv.research_contexts,
     )
 
-    rand_int_1 = random.randint(0, len(user_with_conv.research_contexts) - 1)
-    researchContext = user_with_conv.research_contexts[rand_int_1]
+    researchContext = random.choice(user_with_conv.research_contexts)
 
     ks_with_sd = fake_knowledge_source_with_source_data
     source_data = ks_with_sd.source_data
 
     researchContext.source_data = source_data
 
-    rand_int_2 = random.randint(0, len(researchContext.conversations) - 1)
-    conversation = researchContext.conversations[rand_int_2]
+    conversation = random.choice(researchContext.conversations)
     conversation_title = conversation.title
 
     citations = fake_citations

@@ -41,8 +41,7 @@ def test_get_research_context_user(
 
     research_context_titles = [research_context.title for research_context in user.research_contexts]
 
-    rand_int_3 = random.randint(0, len(research_context_titles) - 1)
-    research_context_title = research_context_titles[rand_int_3]
+    research_context_title = random.choice(research_context_titles)
 
     with db_session() as session:
         for fake_user in fake_users:

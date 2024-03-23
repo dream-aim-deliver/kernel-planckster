@@ -20,8 +20,7 @@ def test_create_new_research_context(
     user = fake_user
     llm = fake_llm
     knowledge_source_list = fake_knowledge_source_with_source_data_list
-    rand_int_1 = random.randint(0, len(knowledge_source_list) - 1)
-    knowledge_source = knowledge_source_list[rand_int_1]
+    knowledge_source = random.choice(knowledge_source_list)
 
     user_sid = user.sid
     llm_name = llm.llm_name
