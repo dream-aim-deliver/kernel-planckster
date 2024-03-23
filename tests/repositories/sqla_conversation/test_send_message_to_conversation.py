@@ -1,8 +1,10 @@
+from datetime import datetime
 from faker import Faker
 from lib.core.dto.conversation_repository_dto import (
     ListConversationSourcesDTO,
     SendMessageToConversationDTO,
 )
+from lib.core.entity.models import MessageSenderTypeEnum
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
@@ -56,8 +58,11 @@ def test_send_message_to_conversation(
 
         id = result.id
 
-        send_msg_to_conv_DTO: SendMessageToConversationDTO = conversation_repository.send_message_to_conversation(
-            conversation_id=id, message_content=new_message_content
+        send_msg_to_conv_DTO: SendMessageToConversationDTO = conversation_repository.new_message(
+            conversation_id=id,
+            message_content=new_message_content,
+            sender_type=MessageSenderTypeEnum.USER,
+            timestamp=datetime.now(),
         )
 
         assert send_msg_to_conv_DTO.data is not None
@@ -83,7 +88,9 @@ def test_error_send_message_to_conversation_no_conversation_id(
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
-    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.send_message_to_conversation(conversation_id=None, message_content="abc")  # type: ignore
+    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
+        conversation_id=None, message_content="abc", sender_type=MessageSenderTypeEnum.USER, timestamp=datetime.now()  # type: ignore
+    )
 
     assert list_conv_srcs_DTO.status == False
     assert list_conv_srcs_DTO.errorCode == -1
@@ -97,7 +104,9 @@ def test_error_send_message_to_conversation_no_message_content(
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
-    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.send_message_to_conversation(conversation_id=1, message_content=None)  # type: ignore
+    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
+        conversation_id=1, message_content=None, sender_type=MessageSenderTypeEnum.USER, timestamp=datetime.now()  # type: ignore
+    )
 
     assert list_conv_srcs_DTO.status == False
     assert list_conv_srcs_DTO.errorCode == -1
@@ -112,7 +121,12 @@ def test_error_send_message_to_conversation_no_sqla_conversation(
     conversation_repository = app_container.sqla_conversation_repository()
 
     irrealistic_ID = 99999999
-    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.send_message_to_conversation(conversation_id=irrealistic_ID, message_content="abc")  # type: ignore
+    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
+        conversation_id=irrealistic_ID,
+        message_content="abc",
+        sender_type=MessageSenderTypeEnum.USER,
+        timestamp=datetime.now(),
+    )  # type: ignore
 
     assert list_conv_srcs_DTO.status == False
     assert list_conv_srcs_DTO.errorCode == -1
