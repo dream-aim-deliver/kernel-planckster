@@ -7,7 +7,7 @@ from lib.core.dto.conversation_repository_dto import (
     GetConversationResearchContextDTO,
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
-    SendMessageToConversationDTO,
+    NewMessageDTO,
     UpdateConversationDTO,
 )
 from lib.core.entity.models import MessageSenderTypeEnum, TMessageBase
@@ -92,7 +92,7 @@ class ConversationRepository(ABC):
     @abstractmethod
     def new_message(
         self, conversation_id: int, message_content: str, sender_type: MessageSenderTypeEnum, timestamp: datetime
-    ) -> SendMessageToConversationDTO:
+    ) -> NewMessageDTO:
         """
         Sends a message to a conversation.
 
