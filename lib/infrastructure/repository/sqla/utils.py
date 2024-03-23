@@ -88,6 +88,8 @@ def convert_sqla_user_message_to_core_user_message(sqla_user_message: SQLAUserMe
     @return: The converted UserMessage
     @rtype: UserMessage
     """
+    sender = sqla_user_message.conversation.research_context.user.sid
+
     return UserMessage(
         created_at=sqla_user_message.created_at,
         updated_at=sqla_user_message.updated_at,
@@ -96,6 +98,7 @@ def convert_sqla_user_message_to_core_user_message(sqla_user_message: SQLAUserMe
         id=sqla_user_message.id,
         content=sqla_user_message.content,
         timestamp=sqla_user_message.timestamp,
+        sender=sender,
     )
 
 
@@ -110,6 +113,8 @@ def convert_sqla_agent_message_to_core_agent_message(
     @return: The converted AgentMessage
     @rtype: AgentMessage
     """
+    sender = sqla_agent_message.conversation.research_context.llm.llm_name
+
     return AgentMessage(
         created_at=sqla_agent_message.created_at,
         updated_at=sqla_agent_message.updated_at,
@@ -118,6 +123,7 @@ def convert_sqla_agent_message_to_core_agent_message(
         id=sqla_agent_message.id,
         content=sqla_agent_message.content,
         timestamp=sqla_agent_message.timestamp,
+        sender=sender,
     )
 
 

@@ -34,7 +34,7 @@ class ListConversationMessagesDTO(BaseDTO[TMessageBase]):
     @type data: List[TMessageBase] | List[None] | None
     """
 
-    data: List[TMessageBase] | List[None] | None = None
+    data: List[TMessageBase] | None = None
 
 
 class UpdateConversationDTO(BaseDTO[Conversation]):

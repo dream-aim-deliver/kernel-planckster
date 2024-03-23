@@ -271,13 +271,22 @@ class MessageBase(BaseSoftDeleteKernelPlancksterModel):
     Base class for user queries and agent responses
 
     @param id: the id of the message
+    @type id: int
     @param content: the content of the message
+    @type content: str
     @param timestamp: the datetime when the message was sent
+    @type timestamp: datetime
+    @param sender: the name of the sender of the message
+    @type sender: str
+    @param sender_type: the type of the sender of the message
+    @type sender_type: MessageSenderTypeEnum
     """
 
     id: int
     content: str
     timestamp: datetime
+    sender: str
+    sender_type: MessageSenderTypeEnum
 
 
 TMessageBase = TypeVar("TMessageBase", bound=MessageBase)
@@ -288,7 +297,7 @@ class UserMessage(MessageBase):
     Represents the query of a user to an agent
     """
 
-    pass
+    sender_type: MessageSenderTypeEnum = MessageSenderTypeEnum.USER
 
 
 class AgentMessage(MessageBase):
@@ -297,7 +306,7 @@ class AgentMessage(MessageBase):
     It will be tied to citations that the LLM made to generate the response, and to an LLM directly
     """
 
-    pass
+    sender_type: MessageSenderTypeEnum = MessageSenderTypeEnum.AGENT
 
 
 class Citation(BaseSoftDeleteKernelPlancksterModel):

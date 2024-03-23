@@ -167,6 +167,7 @@ class SQLAConversationRepository(ConversationRepository):
 
         try:
             sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+
         except Exception as e:
             self.logger.error(f"Error while querying the database for conversation with ID {conversation_id}: {e}")
             errorDTO = ListConversationMessagesDTO[TMessageBase](
