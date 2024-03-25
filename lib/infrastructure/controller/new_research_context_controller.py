@@ -20,11 +20,11 @@ class NewResearchContextControllerParameters(BaseControllerParameters):
         title="Research Context Description",
         description="Description of the research context to be created.",
     )
-    user_sid: str | None = Field(
-        title="User String ID",
-        description="SID of the user for which the research context is to be created.",
+    client_sub: str = Field(
+        title="Client SUB",
+        description="SUB of the client for which the research context is to be created.",
     )
-    llm_name: str | None = Field(
+    llm_name: str = Field(
         title="LLM Name",
         description="Name of the LLM for which the research context is to be created.",
     )
@@ -47,35 +47,17 @@ class NewResearchContextController(
         self,
         usecase: NewResearchContextUseCase,
         presenter: NewResearchContextPresenter,
-        default_user_sid: str | None = None,
-        default_llm_name: str | None = None,
     ) -> None:
         super().__init__(usecase=usecase, presenter=presenter)
-
-        # NOTE: this are put here for the sake of the demo
-        self.default_user_sid = default_user_sid if default_user_sid is not None else "admin"
-
-        self.default_llm_name = default_llm_name if default_llm_name is not None else "gpt4"
 
     def create_request(self, parameters: NewResearchContextControllerParameters | None) -> NewResearchContextRequest:
         if parameters is None:
             raise HTTPException(status_code=400, detail="Invalid request parameters.")
         else:
-            default_user_sid = self.default_user_sid
-            default_llm_name = self.default_llm_name
-
-            research_context_title = parameters.research_context_title
-
-            research_context_description = parameters.research_context_description
-
-            user_sid = parameters.user_sid if parameters.user_sid is not None else default_user_sid
-            llm_name = parameters.llm_name if parameters.llm_name is not None else default_llm_name
-            source_data_ids = parameters.source_data_ids
-
             return NewResearchContextRequest(
-                research_context_title=research_context_title,
-                research_context_description=research_context_description,
-                user_sid=user_sid,
-                llm_name=llm_name,
-                source_data_ids=source_data_ids,
+                research_context_title=parameters.research_context_title,
+                research_context_description=parameters.research_context_description,
+                client_sub=parameters.client_sub,
+                llm_name=parameters.llm_name,
+                source_data_ids=parameters.source_data_ids,
             )

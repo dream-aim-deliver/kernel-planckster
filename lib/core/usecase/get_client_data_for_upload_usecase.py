@@ -1,5 +1,5 @@
-from lib.core.dto.file_repository_dto import FilePathToLFNDTO, GetClientDataForUploadDTO
-from lib.core.entity.models import LFN
+from lib.core.dto.file_repository_dto import GetClientDataForUploadDTO
+from lib.core.entity.models import ProtocolEnum, SourceData
 from lib.core.ports.primary.get_client_data_for_upload_primary_ports import GetClientDataForUploadInputPort
 from lib.core.usecase_models.get_client_data_for_upload_usecase_models import (
     GetClientDataForUploadError,
@@ -12,26 +12,82 @@ class GetClientDataForUploadUsecase(GetClientDataForUploadInputPort):
     def execute(
         self, request: GetClientDataForUploadRequest
     ) -> GetClientDataForUploadResponse | GetClientDataForUploadError:
-        lfn_str = request.lfn_str
-
         try:
-            core_lfn = LFN.from_json(lfn_str)
-        except Exception as e:
-            return GetClientDataForUploadError(
-                errorType="Invalid LFN",
-                errorCode=400,
-                errorMessage=f"The lfn '{lfn_str}' is invalid. Please provide a valid lfn. It should be a JSON object with the following fields: 'protocol', 'tracer_id', 'source', 'job_id', 'relative_path'. Example: {{'protocol': 's3', 'tracer_id': 'user_uploads', 'source': 'user', 'job_id': 1234567890, 'relative_path': 'path/to/file'}}. Ideally, it should be one provided by Kernel Planckster, for example when asking to upload a file. Error:\n{e}",
-                errorName="InvalidLFN",
+            client_repository = self.client_repository
+            file_repository = self.file_repository
+
+            client_id = request.client_id
+
+            # 1. Validate the relative path and protocol
+            try:
+                relative_path = SourceData.relative_path_validation(request.relative_path)
+            except ValueError as e:
+                return GetClientDataForUploadError(
+                    errorCode=400,
+                    errorMessage=f"Couldn't validate relative path: {e}",
+                    errorName="Relative Path Validation Error",
+                    errorType="RelativePathValidationError",
+                )
+            try:
+                protocol = SourceData.protocol_validation(request.protocol)
+            except ValueError as e:
+                return GetClientDataForUploadError(
+                    errorCode=400,
+                    errorMessage=f"Couldn't validate protocol: {e}",
+                    errorName="Protocol Validation Error",
+                    errorType="ProtocolValidationError",
+                )
+
+            # 2. Check if the client exists in the database
+            client_query_dto = client_repository.get_client(client_id)
+
+            if not client_query_dto.status:
+                return GetClientDataForUploadError(
+                    errorCode=client_query_dto.errorCode,
+                    errorMessage=client_query_dto.errorMessage,
+                    errorName=client_query_dto.errorName,
+                    errorType=client_query_dto.errorType,
+                )
+
+            if not client_query_dto.data:
+                return GetClientDataForUploadError(
+                    errorCode=404,
+                    errorMessage=f"Client with id {client_id} not found.",
+                    errorName="ClientNotFound",
+                    errorType="ClientNotFound",
+                )
+
+            client = client_query_dto.data
+
+            # 3. Get the credentials for upload
+            dto: GetClientDataForUploadDTO = file_repository.get_client_data_for_upload(
+                client=client,
+                protocol=protocol,
+                relative_path=relative_path,
             )
 
-        dto: GetClientDataForUploadDTO = self.file_repository.get_client_data_for_upload(lfn=core_lfn)
+            if not dto.status:
+                return GetClientDataForUploadError(
+                    errorCode=dto.errorCode,
+                    errorMessage=dto.errorMessage,
+                    errorName=dto.errorName,
+                    errorType=dto.errorType,
+                )
 
-        if dto.status:
-            return GetClientDataForUploadResponse(lfn=dto.lfn, credentials=dto.credentials)
+            if not dto.credentials:
+                return GetClientDataForUploadError(
+                    errorCode=404,
+                    errorMessage=f"Credentials not found for client with id {client_id}.",
+                    errorName="CredentialsNotFound",
+                    errorType="CredentialsNotFound",
+                )
 
-        return GetClientDataForUploadError(
-            errorCode=dto.errorCode,
-            errorMessage=dto.errorMessage,
-            errorName=dto.errorName,
-            errorType=dto.errorType,
-        )
+            return GetClientDataForUploadResponse(credentials=dto.credentials)
+
+        except Exception as e:
+            return GetClientDataForUploadError(
+                errorCode=500,
+                errorMessage=f"Internal Server Error: {e}",
+                errorName="InternalServerError",
+                errorType="InternalServerError",
+            )

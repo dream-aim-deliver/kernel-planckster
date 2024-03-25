@@ -12,10 +12,11 @@ from lib.infrastructure.presenter.get_client_data_for_upload_presenter import Ge
 
 
 class GetClientDataForUploadControllerParameters(BaseControllerParameters):
-    lfn_str: str = Field(
-        title="LFN",
-        description="The LFN of the file to be uploaded in JSON format.",
-    )
+    client_id: int = Field(title="Client ID", description="The ID of the client requesting the upload.")
+
+    protocol: str = Field(title="Protocol", description="The protocol of the file to be uploaded.")
+
+    relative_path: str = Field(title="Relative Path", description="The relative path of the file to be uploaded.")
 
 
 class GetClientDataForUploadController(
@@ -41,4 +42,8 @@ class GetClientDataForUploadController(
             raise HTTPException(status_code=400, detail="Invalid request parameters.")
 
         else:
-            return GetClientDataForUploadRequest(lfn_str=parameters.lfn_str)
+            return GetClientDataForUploadRequest(
+                client_id=parameters.client_id,
+                protocol=parameters.protocol,
+                relative_path=parameters.relative_path,
+            )

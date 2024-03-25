@@ -1,6 +1,5 @@
 from fastapi import HTTPException
 from pydantic import Field
-from lib.core.entity.models import LFN
 from lib.core.sdk.controller import BaseController, BaseControllerParameters
 from lib.core.usecase.get_client_data_for_download_usecase import GetClientDataForDownloadUseCase
 from lib.core.usecase_models.get_client_data_for_download_usecase_models import (
@@ -13,10 +12,11 @@ from lib.infrastructure.presenter.get_client_data_for_download_presenter import 
 
 
 class GetClientDataForDownloadControllerParameters(BaseControllerParameters):
-    lfn_str: str = Field(
-        title="Logical File Name",
-        description="The Logical File Name of the file to be downloaded, in JSON format.",
-    )
+    client_id: str = Field(title="Client ID", description="The ID of the client requesting the download.")
+
+    protocol: str = Field(title="Protocol", description="The protocol of the file to be downloaded.")
+
+    relative_path: str = Field(title="Relative Path", description="The relative path of the file to be downloaded.")
 
 
 class GetClientDataForDownloadController(
@@ -42,4 +42,8 @@ class GetClientDataForDownloadController(
             raise HTTPException(status_code=400, detail="Invalid request parameters.")
 
         else:
-            return GetClientDataForDownloadRequest(lfn_str=parameters.lfn_str)
+            return GetClientDataForDownloadRequest(
+                client_id=parameters.client_id,
+                protocol=parameters.protocol,
+                relative_path=parameters.relative_path,
+            )

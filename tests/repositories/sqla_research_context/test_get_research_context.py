@@ -3,18 +3,18 @@ from faker import Faker
 from lib.core.dto.research_context_repository_dto import GetResearchContextDTO
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
-from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAResearchContext, SQLAUser
+from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAResearchContext, SQLAClient
 
 
 def test_get_research_context(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user: SQLAUser,
+    fake_client: SQLAClient,
 ) -> None:
     sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    user = fake_user
+    client = fake_client
 
     research_contexts = []
     for _ in range(10):
@@ -24,14 +24,14 @@ def test_get_research_context(
         )
         research_contexts.append(research_context)
 
-    user.research_contexts = research_contexts
+    client.research_contexts = research_contexts
 
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user.research_contexts,
+        research_contexts=client.research_contexts,
     )
 
-    research_context_titles = [research_context.title for research_context in user.research_contexts]
+    research_context_titles = [research_context.title for research_context in client.research_contexts]
 
     research_context_title = random.choice(research_context_titles)
 

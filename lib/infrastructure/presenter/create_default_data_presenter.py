@@ -7,8 +7,7 @@ class CreateDefaultDataPresenter(CreateDefaultDataOutputPort):
     def convert_error_response_to_view_model(self, response: CreateDefaultDataError) -> CreateDefaultDataViewModel:
         return CreateDefaultDataViewModel(
             status=False,
-            knowledge_sources_dict={"null": -1},
-            user_id=-1,
+            client_id=-1,
             llm_id=-1,
             code=response.errorCode,
             errorCode=response.errorCode,
@@ -20,8 +19,7 @@ class CreateDefaultDataPresenter(CreateDefaultDataOutputPort):
     def convert_response_to_view_model(self, response: CreateDefaultDataResponse) -> CreateDefaultDataViewModel:
         return CreateDefaultDataViewModel(
             status=True,
-            knowledge_sources_dict=response.knowledge_sources_dict,
-            user_id=response.user_id,
+            client_id=response.client_id,
             llm_id=response.llm_id,
             code=200,
         )

@@ -20,9 +20,9 @@ class NewMessageUseCase(NewMessageInputPort):
             except Exception as e:
                 return NewMessageError(
                     errorCode=-1,
-                    errorMessage="The sender type provided is invalid.",
-                    errorName="InvalidSenderType",
-                    errorType="InvalidInput",
+                    errorMessage=f"Couldn't validate the sender type provided. Error: {e}",
+                    errorName="Sender Type Validation Error",
+                    errorType="SenderTypeValidationError",
                 )
 
             try:
@@ -31,9 +31,9 @@ class NewMessageUseCase(NewMessageInputPort):
             except Exception as e:
                 return NewMessageError(
                     errorCode=-1,
-                    errorMessage="The timestamp provided is invalid.",
-                    errorName="InvalidTimestamp",
-                    errorType="InvalidInput",
+                    errorMessage=f"Couldn't validate the timestamp provided. Error: {e}",
+                    errorName="Timestamp Validation Error",
+                    errorType="TimestampValidationError",
                 )
 
             dto: NewMessageDTO = self.conversation_repository.new_message(

@@ -7,14 +7,18 @@ from lib.core.sdk.usecase_models import BaseErrorResponse, BaseRequest, BaseResp
 class ListSourceDataRequest(BaseRequest):
     """
     Request Model for the List Source Data Use Case.
+
+    @param client_id: The ID of the client requesting the list of source data.
     """
 
-    knowledge_source_id: int | None = None
+    client_id: int
 
 
 class ListSourceDataResponse(BaseResponse):
     """
     Response Model for the List Source Data Use Case.
+
+    @param source_data_list: The list of source data.
     """
 
     source_data_list: List[SourceData]
@@ -23,6 +27,8 @@ class ListSourceDataResponse(BaseResponse):
 class ListSourceDataError(BaseErrorResponse):
     """
     Error Response Model for the List Source Data Use Case.
+
+    @param client_id: The ID of the client requesting the list of source data.
     """
 
-    knowledge_source_id: int | None = None
+    client_id: int | None = None

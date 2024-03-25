@@ -4,17 +4,17 @@ from lib.infrastructure.config.containers import ApplicationContainer
 
 
 def test_new_message_fastapi_post_endpoint_returns_view_model(
-    client: TestClient, app_container: ApplicationContainer
+    httpx_client: TestClient, app_container: ApplicationContainer
 ) -> None:
     headers = {
         "x-auth-token": "test123",
     }
 
-    response = client.post(
-        "/conversations/1/new_message",
+    response = httpx_client.post(
+        "/conversation/1/message",
         params={
             "message_content": "Hello, World!",
-            "sender_type": "user",
+            "sender_type": "client",
             "unix_timestamp": 1633096800,
         },
         headers=headers,

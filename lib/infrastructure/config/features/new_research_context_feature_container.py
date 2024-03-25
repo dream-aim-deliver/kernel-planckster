@@ -13,18 +13,16 @@ from lib.infrastructure.presenter.new_research_context_presenter import NewResea
 
 
 class NewResearchContextFeatureContainer(BaseFeatureContainer):
-    user_repository: Any = providers.Dependency()
-    default_user_sid: Any = providers.Dependency()
-    default_llm_name: Any = providers.Dependency()
+    client_repository: Any = providers.Dependency()
 
     presenter = providers.Factory[NewResearchContextOutputPort](NewResearchContextPresenter)
 
-    usecase = providers.Factory[NewResearchContextInputPort](NewResearchContextUseCase, user_repository=user_repository)
+    usecase = providers.Factory[NewResearchContextInputPort](
+        NewResearchContextUseCase, client_repository=client_repository
+    )
 
     controller = providers.Factory(
         NewResearchContextController,
         usecase=usecase,
         presenter=presenter,
-        default_user_sid=default_user_sid,
-        default_llm_name=default_llm_name,
     )

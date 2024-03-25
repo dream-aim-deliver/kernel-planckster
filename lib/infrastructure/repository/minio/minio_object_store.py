@@ -1,8 +1,10 @@
 from datetime import timedelta
 import logging
+from typing import Tuple
 from minio import Minio
 
-from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum
+from lib.core.entity.models import ProtocolEnum
+from lib.infrastructure.repository.minio.models import MinIOObject, MinIOPFN
 
 
 class MinIOObjectStore:
@@ -13,8 +15,6 @@ class MinIOObjectStore:
     @type access_key: str
     @ivar secret_key: The secret key for the MinIO S3 Object Store.
     @type secret_key: str
-    @ivar bucket: The name of the bucket for the MinIO S3 Object Store.
-    @type bucket: str
     @ivar host: The host of the MinIO S3 Object Store.
     @type host: str
     @ivar port: The port of the MinIO S3 Object Store.
@@ -29,12 +29,10 @@ class MinIOObjectStore:
         port: str,
         access_key: str,
         secret_key: str,
-        bucket: str = "default",
         signed_url_expiry: int = 60,
     ) -> None:
         self._access_key = access_key
         self._secret_key = secret_key
-        self._bucket = bucket
         self._host = host
         self._port = port
         self._signed_url_expiry = signed_url_expiry
@@ -54,10 +52,6 @@ class MinIOObjectStore:
         return self._port
 
     @property
-    def bucket(self) -> str:
-        return self._bucket
-
-    @property
     def signed_url_expiry(self) -> int:
         return self._signed_url_expiry
 
@@ -74,152 +68,173 @@ class MinIOObjectStore:
         )
         return client
 
-    def create_bucket_if_not_exists(self, bucket_name: str) -> None:
-        if bucket_name in self.list_buckets():
-            self.logger.info(f"MinIO Repository: Bucket {bucket_name} already exists.")
-
-            return
-        self.client.make_bucket(bucket_name)
-        self.logger.info(f'MinIO Repository: Created bucket "{bucket_name}".')
+    def list_buckets(self) -> list[str]:
+        buckets = self.client.list_buckets()
+        return [bucket.name for bucket in buckets]
 
     def ping(self) -> bool:
+        """
+        Ping the MinIO S3 Object Store to check if it is reachable.
+        """
         try:
-            self.create_bucket_if_not_exists(self.bucket)
-            bucket_exists = self.client.bucket_exists(self.bucket)
-
-            if not bucket_exists:
-                self.logger.error(f'MinIO: ping successful, but bucket "{self.bucket}" does not exist.')
-                return False
-
+            self.client.list_buckets()
             return True
 
         except Exception as e:
             self.logger.exception(f"Failed to ping MinIO with error: {e}")
             return False
 
-    def list_buckets(self) -> list[str]:
-        buckets = self.client.list_buckets()
-        return [bucket.name for bucket in buckets]
+    def process_bucket_name(self, bucket_name_raw: str) -> str:
+        """
+        Process the bucket name by converting it to lowercase, stripping whitespaces, and truncating it to 62 characters, as per MinIO's bucket naming conventions.
+        """
+        bucket_name = MinIOPFN.process_bucket_name(bucket_name_raw)
+        return bucket_name
 
-    def bucket_exists(self, bucket_name: str) -> bool:
+    def bucket_exists(self, bucket_name_raw: str) -> bool:
+        bucket_name = self.process_bucket_name(bucket_name_raw)
         found = self.client.bucket_exists(bucket_name)
         assert isinstance(found, bool)
         return found
 
-    def list_objects(self, bucket_name: str) -> list[str]:
+    def create_bucket_if_not_exists(self, bucket_name_raw: str) -> None:
+        """
+        Create a bucket in the MinIO S3 Object Store if it does not exist. The bucket name is converted to lowercase, stripped of whitespaces, and truncated to 62 characters.
+
+        :param bucket_name_raw: The name of the bucket.
+        :type bucket_name_raw: str
+        """
+        bucket_name = self.process_bucket_name(bucket_name_raw)
+        if self.bucket_exists(bucket_name):
+            self.logger.info(f"MinIO Repository: Bucket '{bucket_name}' already exists.")
+            return
+
+        self.client.make_bucket(bucket_name)
+        self.logger.info(f"MinIO Repository: Created bucket '{bucket_name}'.")
+
+    def initialize_store(self, bucket_name: str) -> None:
+        """
+        Initialize the MinIO S3 Repository with a bucket.
+        """
+        self.create_bucket_if_not_exists(bucket_name)
+
+    def list_objects(self, bucket_name_raw: str) -> list[MinIOObject]:
+        bucket_name = self.process_bucket_name(bucket_name_raw)
         objects = self.client.list_objects(bucket_name, recursive=True)
         objects = list(objects)
-        return [obj.object_name for obj in objects]
 
-    def lfn_to_pfn(self, lfn: LFN) -> str:
+        minio_objects = [MinIOObject(bucket_name=bucket_name, object_name=obj.object_name) for obj in objects]
+
+        return minio_objects
+
+    def protocol_and_relative_path_to_pfn(
+        self, protocol: ProtocolEnum, relative_path: str, bucket_name: str
+    ) -> MinIOPFN:
         """
-        Generate a PFN for MinIO S3 Repository from a LFN.
-        **NOTE**: Underscores are not allowed anywhere in the relative path of the LFN.
+        Generate a PFN for MinIO S3 Repository from a SourceData object.
+        **NOTE**: Underscores are not allowed anywhere in the relative path of the Sourc.
 
-        :param lfn: The LFN to generate a PFN for.
-        :type lfn: LFN
-        :raises ValueError: If the LFN protocol is S3.
+        :param protocol: The protocol of the SourceData.
+        :type protocol: ProtocolEnum
+        :param relative_path: The relative path of the SourceData.
+        :type relative_path: str
+        :param bucket_name: The name of the bucket.
+        :type bucket_name: str
+        :raises ValueError: If the protocol is not S3.
         :return: The PFN.
         """
-        if lfn.protocol == ProtocolEnum.S3:
-            return f"s3://{self.host}:{self.port}/{self.bucket}/{lfn.tracer_id}/{lfn.source.value}/{lfn.job_id}/{lfn.relative_path}"
-        raise ValueError(
-            f"Protocol {lfn.protocol} is not supported by MinIO Repository. Cannot create a PFN for LFN {lfn}."
-        )
 
-    def pfn_to_lfn(self, pfn: str) -> LFN:
-        """
-        Generate a LFN from a PFN for MinIO S3 Repository.
-
-        :param pfn: The PFN to generate a LFN for.
-        :type pfn: str
-        :raises ValueError: If the PFN protocol is S3.
-        :return: The LFN.
-        """
-        if pfn.startswith(f"s3://{self.host}:{self.port}/{self.bucket}"):
-            without_protocol = pfn.split("://")[1]
-            path_components = without_protocol.split("/")[1:]
-            bucket = path_components[0]
-            if bucket != self.bucket:
-                raise ValueError(
-                    f"Bucket {bucket} does not match the bucket of this MinIO Repository at {self.url}. Cannot create a LFN for PFN {pfn}."
-                )
-            tracer_id = path_components[1]
-            source = KnowledgeSourceEnum(path_components[2])
-            job_id = int(path_components[3])
-            relative_path = "/".join(path_components[4:])
-            lfn: LFN = LFN(
-                protocol=ProtocolEnum.S3,
-                tracer_id=tracer_id,
-                source=source,
-                job_id=job_id,
+        if protocol == ProtocolEnum.S3:
+            return MinIOPFN(
+                protocol=protocol,
+                host=self.host,
+                port=self.port,
                 relative_path=relative_path,
+                bucket_name=bucket_name,
             )
-            return lfn
+
         raise ValueError(
-            f"Path {pfn} is not supported by this MinIO Repository at {self.url}. Cannot create a LFN for PFN {pfn}."
+            f"Protocol {protocol} is not supported by MinIO Repository. Cannot create a PFN for path '{relative_path}'."
         )
 
-    def pfn_to_object_name(self, pfn: str) -> str:
+    def pfn_to_source_data_composite_index(self, pfn: MinIOPFN) -> Tuple[ProtocolEnum, str]:
         """
-        Generate an object name from a PFN for MinIO S3 Repository.
-        """
-        return "/".join(pfn.split("://")[1].split("/")[2:])
+        Generate a composite index from a PFN that uniquely identifies a SourceData object.
 
-    def object_name_to_pfn(self, object_name: str) -> str:
+        :raises ValueError: If the PFN protocol is not S3.
+        :return: The composite index. It is a tuple of the protocol and the relative path.
         """
-        Generate a PFN from an object name for MinIO S3 Repository.
-        """
-        return f"s3://{self.host}:{self.port}/{self.bucket}/{object_name}"
+        if pfn.protocol != ProtocolEnum.S3:
+            raise ValueError(
+                f"Path '{pfn}' is not supported by this MinIO Repository at {self.url}. Cannot create a SourceData for PFN {pfn}."
+            )
 
-    def initialize_store(self) -> None:
-        """
-        Initialize the MinIO S3 Repository.
-        """
-        self.create_bucket_if_not_exists(self.bucket)
+        return pfn.protocol, pfn.relative_path
 
-    def get_signed_url_for_file_upload(self, bucket_name: str, object_name: str) -> str:
+    def pfn_to_object_name(self, pfn: MinIOPFN) -> MinIOObject:
+        """
+        Generate an object from a PFN for MinIO S3 Repository.
+        """
+        return MinIOObject(
+            bucket_name=pfn.bucket_name,
+            object_name=pfn.relative_path,
+        )
+
+    def object_to_pfn(self, minio_object: MinIOObject) -> MinIOPFN:
+        """
+        Generate a PFN from an object for MinIO S3 Repository.
+        """
+        return MinIOPFN(
+            protocol=ProtocolEnum.S3,
+            host=self.host,
+            port=self.port,
+            relative_path=minio_object.object_name,
+            bucket_name=minio_object.bucket_name,
+        )
+
+    def get_signed_url_for_file_upload(self, minio_object: MinIOObject) -> str:
         """
         Get a signed URL to upload a file to a bucket in MinIO S3 Repository.
-
-        :param bucket_name: The name of the bucket.
-        :param object_name: The name of the object.
-        :param file_path: The path to the file to upload.
         """
 
+        self.create_bucket_if_not_exists(minio_object.bucket_name)
+
         url = self.client.presigned_put_object(
-            bucket_name=bucket_name,
-            object_name=object_name,
+            bucket_name=minio_object.bucket_name,
+            object_name=minio_object.object_name,
             expires=timedelta(minutes=self.signed_url_expiry),
         )
         assert isinstance(url, str)
 
         return url
 
-    def get_signed_url_for_file_download(self, bucket_name: str, object_name: str) -> str:
+    def object_exists(self, minio_object: MinIOObject) -> bool:
+        """
+        Check if an object exists in a bucket in MinIO S3 Repository.
+        """
+        object_list = self.list_objects(minio_object.bucket_name)
+        existence = minio_object in object_list
+        return existence
+
+    def get_signed_url_for_file_download(self, minio_object: MinIOObject) -> str:
         """
         Get a signed URL to download a file from a bucket in MinIO S3 Repository.
 
-        :param bucket_name: The name of the bucket.
-        :param object_name: The name of the object.
+        :raises ValueError: If the object does not exist in MinIO.
         """
 
+        existence = self.object_exists(minio_object)
+
+        if not existence or existence == False:
+            self.logger.error(f"Object '{minio_object}' does not exist in MinIO")
+            errorMessage = f"Object '{minio_object}' does not exist in MinIO"
+            raise ValueError(errorMessage)
+
         url = self.client.presigned_get_object(
-            bucket_name=bucket_name,
-            object_name=object_name,
+            bucket_name=minio_object.bucket_name,
+            object_name=minio_object.object_name,
             expires=timedelta(minutes=self.signed_url_expiry),
         )
         assert isinstance(url, str)
 
         return url
-
-    def object_exists(self, object_name: str) -> bool:
-        """
-        Check if an object exists in a bucket in MinIO S3 Repository.
-
-        :param bucket_name: The name of the bucket.
-        :param object_name: The name of the object.
-        """
-        object_list = self.list_objects(self.bucket)
-        existence = object_name in object_list
-        return existence

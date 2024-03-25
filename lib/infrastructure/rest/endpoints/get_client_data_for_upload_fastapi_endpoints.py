@@ -40,13 +40,19 @@ class GetClientDataForUploadFastAPIFeature(
         @self.router.get(
             name=self.name,
             description=self.descriptor.description,
-            path="/get_client_data_for_upload",
+            path="/client/{id}/upload-credentials",
             responses=self.responses,
         )
         def endpoint(
-            lfn: str,
+            id: int,
+            protocol: str,
+            relative_path: str,
         ) -> GetClientDataForUploadViewModel | None:
-            controller_parameters = GetClientDataForUploadControllerParameters(lfn_str=lfn)
+            controller_parameters = GetClientDataForUploadControllerParameters(
+                client_id=id,
+                protocol=protocol,
+                relative_path=relative_path,
+            )
 
             view_model: GetClientDataForUploadViewModel = self.execute(
                 controller_parameters=controller_parameters,

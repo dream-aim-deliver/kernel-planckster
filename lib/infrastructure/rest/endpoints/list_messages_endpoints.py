@@ -35,14 +35,14 @@ class ListMessagesFastAPIFeature(FastAPIEndpoint[ListMessagesControllerParameter
         @self.router.get(
             name=self.name,
             description=self.descriptor.description,
-            path="/conversations/{conversation_id}/messages",
+            path="/conversations/{id}/message",
             responses=self.responses,
         )
         def endpoint(
-            conversation_id: int,
+            id: int,
         ) -> ListMessagesViewModel | None:
             controller_parameters = ListMessagesControllerParameters(
-                conversation_id=conversation_id,
+                conversation_id=id,
             )
 
             view_model: ListMessagesViewModel = self.execute(

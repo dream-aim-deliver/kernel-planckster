@@ -10,26 +10,26 @@ from lib.infrastructure.controller.list_messages_controller import (
     ListMessagesControllerParameters,
 )
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
-from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAConversation, SQLAResearchContext, SQLAUser
+from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAConversation, SQLAResearchContext, SQLAClient
 
 
 def test_list_messages_usecase(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user_with_conversation: SQLAUser,
+    fake_client_with_conversation: SQLAClient,
 ) -> None:
     usecase: ListMessagesUseCase = app_initialization_container.list_messages_feature.usecase()
 
     assert usecase is not None
 
-    user_with_conv = fake_user_with_conversation
+    client_with_conv = fake_client_with_conversation
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user_with_conv.research_contexts,
+        research_contexts=client_with_conv.research_contexts,
     )
 
-    researchContext = random.choice(user_with_conv.research_contexts)
+    researchContext = random.choice(client_with_conv.research_contexts)
     conversation = random.choice(researchContext.conversations)
     # Make it unique to query it later
     conversation_title = f"{conversation.title}-{uuid.uuid4()}"
@@ -39,7 +39,7 @@ def test_list_messages_usecase(
     message_contents = tuple([message.content for message in messages])
 
     with db_session() as session:
-        user_with_conv.save(session=session, flush=True)
+        client_with_conv.save(session=session, flush=True)
         session.commit()
 
     with db_session() as session:
@@ -64,24 +64,24 @@ def test_list_messages_controller(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user_with_conversation: SQLAUser,
+    fake_client_with_conversation: SQLAClient,
 ) -> None:
     controller: ListMessagesController = app_initialization_container.list_messages_feature.controller()
 
     assert controller is not None
 
-    user_with_conv = fake_user_with_conversation
+    client_with_conv = fake_client_with_conversation
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user_with_conv.research_contexts,
+        research_contexts=client_with_conv.research_contexts,
     )
 
-    researchContext = random.choice(user_with_conv.research_contexts)
+    researchContext = random.choice(client_with_conv.research_contexts)
     conversation = random.choice(researchContext.conversations)
     conversation_title = conversation.title
 
     with db_session() as session:
-        user_with_conv.save(session=session, flush=True)
+        client_with_conv.save(session=session, flush=True)
         session.commit()
 
     with db_session() as session:
@@ -118,15 +118,15 @@ def test_conversation_without_messages(
         conversations=[conv],
     )
 
-    user = SQLAUser(
-        sid=fake.name(),
+    client = SQLAClient(
+        sub=fake.name(),
         research_contexts=[rc],
     )
 
-    llm = SQLALLM(llm_name=fake.name(), research_contexts=user.research_contexts)
+    llm = SQLALLM(llm_name=fake.name(), research_contexts=client.research_contexts)
 
     with db_session() as session:
-        user.save(session=session, flush=True)
+        client.save(session=session, flush=True)
         session.commit()
 
     with db_session() as session:

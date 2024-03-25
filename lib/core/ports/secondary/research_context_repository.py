@@ -3,7 +3,7 @@ import logging
 
 from lib.core.dto.research_context_repository_dto import (
     GetResearchContextDTO,
-    GetResearchContextUserDTO,
+    GetResearchContextClientDTO,
     ListResearchContextConversationsDTO,
     ListSourceDataDTO,
     NewResearchContextConversationDTO,
@@ -38,14 +38,14 @@ class ResearchContextRepositoryOutputPort(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_research_context_user(self, research_context_id: int) -> GetResearchContextUserDTO:
+    def get_research_context_client(self, research_context_id: int) -> GetResearchContextClientDTO:
         """
-        Gets the user of a research context.
+        Gets the client that created a research context.
 
-        @param research_context_id: The ID of the research context to get the user for.
+        @param research_context_id: The ID of the research context to get the client for.
         @type research_context_id: int
         @return: A DTO containing the result of the operation.
-        @rtype: GetResearchContextUserDTO
+        @rtype: GetResearchContextClientDTO
         """
         raise NotImplementedError
 

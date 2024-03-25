@@ -1,6 +1,4 @@
 import logging
-from typing import Any, Dict, List, Literal
-from lib.core.entity.models import KnowledgeSourceEnum
 from lib.core.ports.primary.create_default_data_primary_ports import CreateDefaultDataInputPort
 from lib.core.usecase_models.create_default_data_usecase_models import (
     CreateDefaultDataError,
@@ -8,7 +6,7 @@ from lib.core.usecase_models.create_default_data_usecase_models import (
     CreateDefaultDataResponse,
 )
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
-from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAKnowledgeSource, SQLAUser
+from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAClient
 
 
 class CreateDefaultDataUseCase(CreateDefaultDataInputPort):
@@ -26,85 +24,36 @@ class CreateDefaultDataUseCase(CreateDefaultDataInputPort):
         with session_factory() as session:
             self.session = session
 
-    def _create_default_knowledge_sources(self) -> Dict[str, int] | CreateDefaultDataError:
-        ks_enum_members: List[Any] = list(KnowledgeSourceEnum.__members__.keys())
-
-        successful_ks: Dict[str, int] = {}
-
-        for ks_enum in ks_enum_members:
-            queried_sqla_ks = self.session.query(SQLAKnowledgeSource).filter_by(source=ks_enum).first()
-
-            if queried_sqla_ks is not None:
-                successful_ks[f"{queried_sqla_ks.source.name}"] = queried_sqla_ks.id
-                continue
-
-            sqla_ks_alpha = SQLAKnowledgeSource(
-                source=ks_enum,
-                content_metadata=self._default_parameters["ks_metadata"],
-            )
-
-            try:
-                sqla_ks_alpha.save(session=self.session)
-                self.session.commit()
-
-                queried_sqla_ks = self.session.query(SQLAKnowledgeSource).filter_by(source=ks_enum).first()
-
-                if queried_sqla_ks is None:
-                    self.logger.error(f"Error while getting default knowledge source for {ks_enum}")
-                    errorResponse = CreateDefaultDataError(
-                        errorCode=-1,
-                        errorMessage=f"Error while getting default knowledge source for {ks_enum}",
-                        errorName="Error while getting default knowledge source",
-                        errorType="ErrorWhileGettingDefaultKnowledgeSource",
-                    )
-                    self.logger.error(f"{errorResponse}")
-                    return errorResponse
-
-                successful_ks[f"{queried_sqla_ks.source.name}"] = queried_sqla_ks.id
-
-            except Exception as e:
-                self.logger.error(f"Error while creating new knowledge source: {e}")
-                errorResponse = CreateDefaultDataError(
-                    errorCode=-1,
-                    errorMessage=f"Error while creating new knowledge source: {e}",
-                    errorName="Error while creating new knowledge source",
-                    errorType="ErrorWhileCreatingNewKnowledgeSource",
-                )
-                self.logger.error(f"{errorResponse}")
-                return errorResponse
-
-        return successful_ks
-
-    def _create_defaut_user(self, request_user_sid: str) -> int | CreateDefaultDataError:
-        sqla_user_alpha = SQLAUser(
-            sid=request_user_sid,
+    def _create_defaut_client(self, request_client_sub: str) -> int | CreateDefaultDataError:
+        sqla_client_alpha = SQLAClient(
+            sub=request_client_sub,
         )
 
         try:
-            sqla_user_alpha.save(session=self.session)
+            sqla_client_alpha.save(session=self.session)
             self.session.commit()
-            queried_sqla_user = self.session.query(SQLAUser).filter_by(sid=request_user_sid).first()
+            queried_sqla_client = self.session.query(SQLAClient).filter_by(sub=request_client_sub).first()
 
-            if queried_sqla_user is None:
-                self.logger.error(f"Error while getting default user")
+            if queried_sqla_client is None:
+                self.logger.error(f"Error while getting default client")
                 errorResponse = CreateDefaultDataError(
                     errorCode=-1,
-                    errorMessage=f"Error while getting default user",
-                    errorName="Error while getting default user",
-                    errorType="ErrorWhileGettingDefaultUser",
+                    errorMessage=f"Error while getting default client",
+                    errorName="Error while getting default client",
+                    errorType="ErrorWhileGettingDefaultClient",
                 )
                 self.logger.error(f"{errorResponse}")
                 return errorResponse
 
-            return queried_sqla_user.id
+            return queried_sqla_client.id
 
         except Exception as e:
-            self.logger.error(f"Error while creating new user: {e}")
+            self.logger.error(f"Error while creating new client: {e}")
             errorResponse = CreateDefaultDataError(
                 errorCode=-1,
-                errorMessage=f"Error while creating new user: {e}",
-                errorName="Error while creating new user",
-                errorType="ErrorWhileCreatingNewUser",
+                errorMessage=f"Error while creating new client: {e}",
+                errorName="Error while creating new client",
+                errorType="ErrorWhileCreatingNewClient",
             )
             self.logger.error(f"{errorResponse}")
             return errorResponse
@@ -144,25 +93,22 @@ class CreateDefaultDataUseCase(CreateDefaultDataInputPort):
             return errorResponse
 
     def execute(self, request: CreateDefaultDataRequest) -> CreateDefaultDataResponse | CreateDefaultDataError:
-        request_user_sid = request.user_sid
+        request_client_sub = request.client_sub
         request_llm_name = request.llm_name
 
-        create_default_knowledge_sources_result = self._create_default_knowledge_sources()
-
-        if isinstance(create_default_knowledge_sources_result, CreateDefaultDataError):
-            return create_default_knowledge_sources_result
-
-        queried_sqla_user: SQLAUser | None = self.session.query(SQLAUser).filter_by(sid=request_user_sid).first()
+        queried_sqla_client: SQLAClient | None = (
+            self.session.query(SQLAClient).filter_by(sub=request_client_sub).first()
+        )
 
         queried_sqla_llm: SQLALLM | None = self.session.query(SQLALLM).filter_by(llm_name=request_llm_name).first()
 
-        if queried_sqla_user is not None:
+        if queried_sqla_client is not None:
             if queried_sqla_llm is not None:
                 return CreateDefaultDataResponse(
-                    knowledge_sources_dict=create_default_knowledge_sources_result,
-                    user_id=queried_sqla_user.id,
+                    client_id=queried_sqla_client.id,
                     llm_id=queried_sqla_llm.id,
                 )
+
             else:
                 create_default_llm_result = self._create_defaut_llm(request_llm_name=request_llm_name)
 
@@ -170,28 +116,26 @@ class CreateDefaultDataUseCase(CreateDefaultDataInputPort):
                     return create_default_llm_result
 
                 return CreateDefaultDataResponse(
-                    knowledge_sources_dict=create_default_knowledge_sources_result,
-                    user_id=queried_sqla_user.id,
+                    client_id=queried_sqla_client.id,
                     llm_id=create_default_llm_result,
                 )
 
         else:
             if queried_sqla_llm is not None:
-                create_default_user_result = self._create_defaut_user(request_user_sid=request_user_sid)
+                create_default_client_result = self._create_defaut_client(request_client_sub=request_client_sub)
 
-                if isinstance(create_default_user_result, CreateDefaultDataError):
-                    return create_default_user_result
+                if isinstance(create_default_client_result, CreateDefaultDataError):
+                    return create_default_client_result
 
                 return CreateDefaultDataResponse(
-                    knowledge_sources_dict=create_default_knowledge_sources_result,
-                    user_id=create_default_user_result,
+                    client_id=create_default_client_result,
                     llm_id=queried_sqla_llm.id,
                 )
             else:
-                create_default_user_result = self._create_defaut_user(request_user_sid=request_user_sid)
+                create_default_client_result = self._create_defaut_client(request_client_sub=request_client_sub)
 
-                if isinstance(create_default_user_result, CreateDefaultDataError):
-                    return create_default_user_result
+                if isinstance(create_default_client_result, CreateDefaultDataError):
+                    return create_default_client_result
 
                 create_default_llm_result = self._create_defaut_llm(request_llm_name=request_llm_name)
 
@@ -199,7 +143,6 @@ class CreateDefaultDataUseCase(CreateDefaultDataInputPort):
                     return create_default_llm_result
 
                 return CreateDefaultDataResponse(
-                    knowledge_sources_dict=create_default_knowledge_sources_result,
-                    user_id=create_default_user_result,
+                    client_id=create_default_client_result,
                     llm_id=create_default_llm_result,
                 )

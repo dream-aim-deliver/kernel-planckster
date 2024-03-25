@@ -5,9 +5,9 @@ from lib.infrastructure.config.containers import ApplicationContainer
 
 
 def test_demo_fastapi_get_endpoint_returns_valid_response(
-    client: TestClient, app_container: ApplicationContainer
+    httpx_client: TestClient, app_container: ApplicationContainer
 ) -> None:
-    response = client.get("/sum", params={"num1": 1, "num2": 2})
+    response = httpx_client.get("/sum", params={"num1": 1, "num2": 2})
     assert response.status_code == 200
     data = response.json()
     assert (
@@ -20,6 +20,6 @@ def test_demo_fastapi_get_endpoint_returns_valid_response(
     )
 
 
-def test_demo_fastapi_get_endpoint_invalid_query(client: TestClient, app_container: ApplicationContainer) -> None:
-    response = client.get("/sum")
+def test_demo_fastapi_get_endpoint_invalid_query(httpx_client: TestClient, app_container: ApplicationContainer) -> None:
+    response = httpx_client.get("/sum")
     assert response.status_code == 422

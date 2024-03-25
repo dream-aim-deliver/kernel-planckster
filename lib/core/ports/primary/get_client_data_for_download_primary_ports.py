@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from lib.core.ports.secondary.client_repository import ClientRepositoryOutputPort
 from lib.core.ports.secondary.file_repository import FileRepositoryOutputPort
 from lib.core.ports.secondary.source_data_repository import SourceDataRepositoryOutputPort
 from lib.core.sdk.presenter import BasePresenter
@@ -15,18 +16,26 @@ class GetClientDataForDownloadInputPort(
     BaseUseCase[GetClientDataForDownloadRequest, GetClientDataForDownloadResponse, GetClientDataForDownloadError]
 ):
     def __init__(
-        self, file_repository: FileRepositoryOutputPort, source_data_repository: SourceDataRepositoryOutputPort
+        self,
+        client_repository: ClientRepositoryOutputPort,
+        source_data_repository: SourceDataRepositoryOutputPort,
+        file_repository: FileRepositoryOutputPort,
     ) -> None:
-        self._file_repository = file_repository
+        self._client_repository = client_repository
         self._source_data_repository = source_data_repository
+        self._file_repository = file_repository
 
     @property
-    def file_repository(self) -> FileRepositoryOutputPort:
-        return self._file_repository
+    def client_repository(self) -> ClientRepositoryOutputPort:
+        return self._client_repository
 
     @property
     def source_data_repository(self) -> SourceDataRepositoryOutputPort:
         return self._source_data_repository
+
+    @property
+    def file_repository(self) -> FileRepositoryOutputPort:
+        return self._file_repository
 
     @abstractmethod
     def execute(

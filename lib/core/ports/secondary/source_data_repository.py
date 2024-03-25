@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import logging
 
-from lib.core.dto.source_data_repository_dto import GetSourceDataByLFNDTO, ListSourceDataDTO
-from lib.core.entity.models import LFN
+from lib.core.dto.source_data_repository_dto import GetSourceDataByProtocolRelativePathDTO
+from lib.core.entity.models import ProtocolEnum
 
 
 class SourceDataRepositoryOutputPort(ABC):
@@ -21,24 +21,18 @@ class SourceDataRepositoryOutputPort(ABC):
         return self._logger
 
     @abstractmethod
-    def list_source_data(self, knowledge_source_id: int | None = None) -> ListSourceDataDTO:
+    def get_source_data_by_composite_index(
+        self, client_id: int, protocol: ProtocolEnum, relative_path: str
+    ) -> GetSourceDataByProtocolRelativePathDTO:
         """
-        Lists source data. If a knowledge source ID is provided, only source data for that knowledge source will be listed, otherwise all source data will be listed.
+        Gets source data by its composite index.
 
-        @param knowledge_source_id: The ID of the knowledge source to list the source data for.
-        @type knowledge_source_id: int
-        @return: A DTO containing the result of the operation.
-        @rtype: ListSourceDataDTO
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_source_data_by_lfn(self, lfn: LFN) -> GetSourceDataByLFNDTO:
-        """
-        Gets source data by LFN.
-
-        @param lfn: The logical file name of the source data to get.
-        @type lfn: LFN
+        @param client_id: The ID of the client that owns the source data.
+        @type client_id: int
+        @param protocol: The protocol of the source data.
+        @type protocol: ProtocolEnum
+        @param relative_path: The relative path of the source data.
+        @type relative_path: str
         @return: A DTO containing the result of the operation.
         @rtype: GetSourceDataByLFNDTO
         """

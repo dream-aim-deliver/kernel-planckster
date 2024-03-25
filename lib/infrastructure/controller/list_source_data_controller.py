@@ -12,9 +12,9 @@ from lib.infrastructure.presenter.list_source_data_presenter import ListSourceDa
 
 
 class ListSourceDataControllerParameter(BaseControllerParameters):
-    knowledge_source_id: int | None = Field(
-        title="Knowledge Source ID",
-        description="Knowledge Source ID for which the source data is to be listed. If None, all source data of the database is listed.",
+    client_id: int = Field(
+        title="Client ID",
+        description="Client ID for which the source data is to be listed.",
     )
 
 
@@ -34,4 +34,4 @@ class ListSourceDataController(
         if parameters is None:
             raise HTTPException(status_code=400, detail="Invalid request parameters.")
         else:
-            return ListSourceDataRequest(knowledge_source_id=parameters.knowledge_source_id)
+            return ListSourceDataRequest(client_id=parameters.client_id)

@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from lib.core.ports.secondary.source_data_repository import SourceDataRepositoryOutputPort
+from lib.core.ports.secondary.client_repository import ClientRepositoryOutputPort
 from lib.core.sdk.presenter import BasePresenter
 from lib.core.sdk.usecase import BaseUseCase
 from lib.core.usecase_models.list_source_data_usecase_models import (
@@ -11,12 +11,12 @@ from lib.core.view_model.list_source_data_view_model import ListSourceDataViewMo
 
 
 class ListSourceDataInputPort(BaseUseCase[ListSourceDataRequest, ListSourceDataResponse, ListSourceDataError]):
-    def __init__(self, source_data_repository: SourceDataRepositoryOutputPort) -> None:
-        self._source_data_repository = source_data_repository
+    def __init__(self, client_repository: ClientRepositoryOutputPort) -> None:
+        self._client_repository = client_repository
 
     @property
-    def source_data_repository(self) -> SourceDataRepositoryOutputPort:
-        return self._source_data_repository
+    def client_repository(self) -> ClientRepositoryOutputPort:
+        return self._client_repository
 
     @abstractmethod
     def execute(self, request: ListSourceDataRequest) -> ListSourceDataResponse | ListSourceDataError:

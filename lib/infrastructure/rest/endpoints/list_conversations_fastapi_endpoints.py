@@ -38,7 +38,7 @@ class ListConversationsFastAPIFeature(
         @self.router.get(
             name=self.name,
             description=self.descriptor.description,
-            path="/research_context/{id}/conversations",
+            path="/research-context/{id}/conversation",
             responses=self.responses,
         )
         def endpoint(

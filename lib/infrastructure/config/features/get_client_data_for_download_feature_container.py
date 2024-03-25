@@ -12,13 +12,17 @@ from lib.infrastructure.presenter.get_client_data_for_download_presenter import 
 
 
 class GetClientDataForDownloadFeatureContainer(BaseFeatureContainer):
-    file_repository: Any = providers.Dependency()
+    client_repository: Any = providers.Dependency()
     source_data_repository: Any = providers.Dependency()
+    file_repository: Any = providers.Dependency()
 
     presenter = providers.Factory[GetClientDataForDownloadOutputPort](GetClientDataForDownloadPresenter)
 
     usecase = providers.Factory[GetClientDataForDownloadInputPort](
-        GetClientDataForDownloadUseCase, file_repository=file_repository, source_data_repository=source_data_repository
+        GetClientDataForDownloadUseCase,
+        client_repository=client_repository,
+        source_data_repository=source_data_repository,
+        file_repository=file_repository,
     )
 
     controller = providers.Factory(

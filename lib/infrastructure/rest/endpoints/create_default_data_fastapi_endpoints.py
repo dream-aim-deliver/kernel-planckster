@@ -42,11 +42,11 @@ class CreateDefaultDataFastAPIFeature(
             responses=self.responses,
         )
         def endpoint(
-            user_sid: str,
+            client_sub: str,
             llm_name: str,
         ) -> CreateDefaultDataViewModel | None:
             controller_parameters = CreateDefaultDataControllerParameters(
-                user_sid=user_sid,
+                client_sub=client_sub,
                 llm_name=llm_name,
             )
             view_model: CreateDefaultDataViewModel = self.execute(

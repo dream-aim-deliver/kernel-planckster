@@ -1,12 +1,9 @@
-from datetime import datetime
-import os
 from lib.core.dto.file_repository_dto import (
     GetClientDataForDownloadDTO,
-    FilePathToLFNDTO,
-    LFNExistsDTO,
+    SourceDataCompositeIndexExistsAsFileDTO,
     GetClientDataForUploadDTO,
 )
-from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum
+from lib.core.entity.models import Client, ProtocolEnum, SourceData
 from lib.core.ports.secondary.file_repository import FileRepositoryOutputPort
 
 from lib.infrastructure.repository.minio.minio_object_store import MinIOObjectStore
@@ -15,6 +12,9 @@ from lib.infrastructure.repository.minio.minio_object_store import MinIOObjectSt
 class MinIOFileRepository(FileRepositoryOutputPort):
     """
     A MinIO implementation of the file repository.
+
+    @ivar store: The MinIO object store.
+    @type store: MinIOObjectStore
     """
 
     def __init__(self, object_store: MinIOObjectStore) -> None:
@@ -26,83 +26,59 @@ class MinIOFileRepository(FileRepositoryOutputPort):
     def store(self) -> MinIOObjectStore:
         return self._store
 
-    def file_path_to_lfn(self, file_path: str) -> FilePathToLFNDTO:
+    def get_client_data_for_upload(
+        self, client: Client, protocol: ProtocolEnum, relative_path: str
+    ) -> GetClientDataForUploadDTO:
         """
-        Converts a local file path to a logical file name.
+        Gets the file manager client data for uploading a file.
 
-        @param file_path: The path to the file.
-        @type file_path: str
-        @return: A DTO containing the result of the operation.
-        @rtype: FilePathToLFNDTO
-        """
-
-        if file_path is None:
-            self.logger.error("File path cannot be None")
-            return FilePathToLFNDTO(
-                lfn=None,
-                status=False,
-                errorCode=-1,
-                errorMessage="File path cannot be None",
-                errorName="FilePathNotProvided",
-                errorType="FilePathNotProvided",
-            )
-
-        try:
-            self.store.initialize_store()
-
-            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-            int_ts = int(timestamp)
-
-            base_name = os.path.basename(file_path)
-
-            lfn = LFN(
-                protocol=ProtocolEnum.S3,
-                tracer_id="user_uploads",
-                source=KnowledgeSourceEnum.USER,
-                job_id=int_ts,
-                relative_path=base_name,
-            )
-
-            return FilePathToLFNDTO(status=True, lfn=lfn)
-
-        except Exception as e:
-            self.logger.error(f"Could not convert file path to LFN: {e}")
-            return FilePathToLFNDTO(
-                lfn=None,
-                status=False,
-                errorCode=-1,
-                errorMessage=f"Could not convert file path to LFN: {e}",
-                errorName="CouldNotConvertFilePathToLFN",
-                errorType="CouldNotConvertFilePathToLFN",
-            )
-
-    def get_client_data_for_upload(self, lfn: LFN) -> GetClientDataForUploadDTO:
-        """
-        Uploads a user source data file to a bucket in MinIO S3 Repository.
-
-        @param file_path: The name of the file to upload.
-        @type file_path: str
+        @param client: The client uploading the file.
+        @type client: Client
+        @param protocol: The protocol of the file to upload.
+        @type protocol: ProtocolEnum
+        @param relative_path: The relative path of the file to upload.
+        @type relative_path: str
         @return: A DTO containing the result of the operation.
         @rtype: UploadSourceDataDTO
         """
-
-        if lfn is None:
-            self.logger.error("LFN cannot be None")
+        if client is None:
+            self.logger.error("Client cannot be None")
             return GetClientDataForUploadDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage="LFN cannot be None",
-                errorName="LFNNotProvided",
-                errorType="LFNNotProvided",
+                errorMessage="Client cannot be None",
+                errorName="ClientNotProvided",
+                errorType="ClientNotProvided",
+            )
+
+        if protocol is None:
+            self.logger.error("Protocol cannot be None")
+            return GetClientDataForUploadDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Protocol cannot be None",
+                errorName="ProtocolNotProvided",
+                errorType="ProtocolNotProvided",
+            )
+
+        if relative_path is None:
+            self.logger.error("Relative path cannot be None")
+            return GetClientDataForUploadDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Relative path cannot be None",
+                errorName="RelativePathNotProvided",
+                errorType="RelativePathNotProvided",
             )
 
         try:
-            self.store.initialize_store()
+            pfn = self.store.protocol_and_relative_path_to_pfn(
+                protocol=protocol, relative_path=relative_path, bucket_name=client.sub
+            )
 
-            pfn = self.store.lfn_to_pfn(lfn)
-            object_name = self.store.pfn_to_object_name(pfn)
+            minio_object = self.store.pfn_to_object_name(pfn)
 
-            url = self.store.get_signed_url_for_file_upload(self.store.bucket, object_name)
+            url = self.store.get_signed_url_for_file_upload(minio_object)
 
         except Exception as e:
             self.logger.error(f"Could not get signed URL to upload the file to MinIO Repository: {e}")
@@ -130,49 +106,49 @@ class MinIOFileRepository(FileRepositoryOutputPort):
 
         return GetClientDataForUploadDTO(
             status=True,
-            lfn=lfn,
             credentials=url,
         )
 
-    def get_client_data_for_download(self, lfn: LFN) -> GetClientDataForDownloadDTO:
+    def get_client_data_for_download(self, client: Client, source_data: SourceData) -> GetClientDataForDownloadDTO:
         """
-        Downloads source data.
+        Gets the file manager client data for downloading a file.
 
-        @param lfn: The logical file name of the file to download.
-        @type lfn: LFN
+        @param client: The client downloading the file.
+        @type client: Client
+        @param source_data: The source data to download.
+        @type source_data: SourceData
         @return: A DTO containing the result of the operation.
         @rtype: DownloadSourceDataDTO
         """
 
-        if lfn is None:
-            self.logger.error("LFN cannot be None")
+        if client is None:
+            self.logger.error("Client cannot be None")
             return GetClientDataForDownloadDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage="LFN cannot be None",
-                errorName="LFNNotProvided",
-                errorType="LFNNotProvided",
+                errorMessage="Client cannot be None",
+                errorName="ClientNotProvided",
+                errorType="ClientNotProvided",
+            )
+
+        if source_data is None:
+            self.logger.error("Source data cannot be None")
+            return GetClientDataForDownloadDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Source data cannot be None",
+                errorName="SourceDataNotProvided",
+                errorType="SourceDataNotProvided",
             )
 
         try:
-            self.store.initialize_store()
+            pfn = self.store.protocol_and_relative_path_to_pfn(
+                protocol=source_data.protocol, relative_path=source_data.relative_path, bucket_name=client.sub
+            )
 
-            pfn = self.store.lfn_to_pfn(lfn)
-            object_name = self.store.pfn_to_object_name(pfn)
+            minio_object = self.store.pfn_to_object_name(pfn)
 
-            existence = self.store.object_exists(object_name)
-
-            if not existence:
-                self.logger.error(f"Object {object_name} does not exist in MinIO")
-                return GetClientDataForDownloadDTO(
-                    status=False,
-                    errorCode=-1,
-                    errorMessage=f"Object {object_name} does not exist in MinIO",
-                    errorName="ObjectDoesNotExist",
-                    errorType="ObjectDoesNotExist",
-                )
-
-            url = self.store.get_signed_url_for_file_download(self.store.bucket, object_name)
+            url = self.store.get_signed_url_for_file_download(minio_object)
 
         except Exception as e:
             self.logger.error(f"Could not get signed URL to download the file from MinIO Repository: {e}")
@@ -200,45 +176,56 @@ class MinIOFileRepository(FileRepositoryOutputPort):
 
         return GetClientDataForDownloadDTO(
             status=True,
-            lfn=lfn,
             credentials=url,
         )
 
-    def lfn_exists(self, lfn: LFN) -> LFNExistsDTO:
+    def composite_index_of_source_data_exists_as_file(
+        self, client: Client, protocol: ProtocolEnum, relative_path: str
+    ) -> SourceDataCompositeIndexExistsAsFileDTO:
         """
-        Asserts the existence of an LFN as an actual file.
+        Asserts the existence of a SourceData object as an actual file.
 
+        @param client: The client asserting the existence of the source data.
+        @type client: Client
         @param lfn: The logical file name to assert the existence of.
         @type lfn: LFN
         @return: A DTO containing the result of the operation.
         @rtype: LFNExistsDTO
         """
-
-        if lfn is None:
-            self.logger.error("LFN cannot be None")
-            return LFNExistsDTO(
-                lfn=None,
+        if protocol is None:
+            self.logger.error("Protocol cannot be None")
+            return SourceDataCompositeIndexExistsAsFileDTO(
                 existence=None,
                 status=False,
                 errorCode=-1,
-                errorMessage="LFN cannot be None",
-                errorName="LFNNotProvided",
-                errorType="LFNNotProvided",
+                errorMessage="Protocol cannot be None",
+                errorName="ProtocolNotProvided",
+                errorType="ProtocolNotProvided",
+            )
+
+        if relative_path is None:
+            self.logger.error("Relative path cannot be None")
+            return SourceDataCompositeIndexExistsAsFileDTO(
+                existence=None,
+                status=False,
+                errorCode=-1,
+                errorMessage="Relative path cannot be None",
+                errorName="RelativePathNotProvided",
+                errorType="RelativePathNotProvided",
             )
 
         try:
-            self.store.initialize_store()
+            pfn = self.store.protocol_and_relative_path_to_pfn(
+                protocol=protocol, relative_path=relative_path, bucket_name=client.sub
+            )
 
-            # Turn lfn to object_name
-            pfn = self.store.lfn_to_pfn(lfn)
-            object_name = self.store.pfn_to_object_name(pfn)
+            minio_object = self.store.pfn_to_object_name(pfn)
 
-            existence = self.store.object_exists(object_name)
+            existence = self.store.object_exists(minio_object)
 
         except Exception as e:
             self.logger.error(f"Could not assert the existence of the file in MinIO Repository: {e}")
-            return LFNExistsDTO(
-                lfn=lfn,
+            return SourceDataCompositeIndexExistsAsFileDTO(
                 existence=None,
                 status=False,
                 errorCode=-1,
@@ -247,8 +234,9 @@ class MinIOFileRepository(FileRepositoryOutputPort):
                 errorType="CouldNotAssertExistence",
             )
 
-        return LFNExistsDTO(
-            lfn=lfn,
-            existence=existence,
+        return SourceDataCompositeIndexExistsAsFileDTO(
             status=True,
+            existence=existence,
+            protocol=pfn.protocol,
+            relative_path=pfn.relative_path,
         )

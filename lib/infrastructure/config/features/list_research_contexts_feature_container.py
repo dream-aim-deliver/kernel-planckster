@@ -14,11 +14,11 @@ from lib.infrastructure.presenter.list_research_contexts_presenter import ListRe
 
 
 class ListResearchContextsFeatureContainer(BaseFeatureContainer):
-    user_repository: Any = providers.Dependency()
+    client_repository: Any = providers.Dependency()
     presenter = providers.Factory[ListResearchContextsOutputPort](ListResearchContextsPresenter)
 
     usecase = providers.Factory[ListResearchContextsInputPort](
-        ListResearchContextsUseCase, user_repository=user_repository
+        ListResearchContextsUseCase, client_repository=client_repository
     )
 
     controller = providers.Factory(

@@ -1,6 +1,3 @@
-from typing import List
-
-from lib.core.entity.models import LFN, KnowledgeSourceEnum
 from lib.core.ports.primary.list_source_data_primary_ports import ListSourceDataOutputPort
 from lib.core.usecase_models.list_source_data_usecase_models import ListSourceDataError, ListSourceDataResponse
 from lib.core.view_model.list_source_data_view_model import ListSourceDataViewModel

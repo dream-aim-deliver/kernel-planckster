@@ -1,4 +1,6 @@
 from datetime import datetime
+import random
+import uuid
 from faker import Faker
 from lib.core.dto.conversation_repository_dto import (
     ListConversationSourcesDTO,
@@ -11,9 +13,8 @@ from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
-    SQLAKnowledgeSource,
     SQLAUserMessage,
-    SQLAUser,
+    SQLAClient,
 )
 
 
@@ -21,26 +22,25 @@ def test_new_message_repository_function(
     app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user_with_conversation: SQLAUser,
-    fake_knowledge_source_with_source_data: SQLAKnowledgeSource,
+    fake_client_with_conversation: SQLAClient,
+    fake_client_with_source_data: SQLAClient,
 ) -> None:
     conversation_repository = app_container.sqla_conversation_repository()
 
-    user_with_conv = fake_user_with_conversation
+    sqla_client_with_conv = fake_client_with_conversation
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user_with_conv.research_contexts,
+        research_contexts=sqla_client_with_conv.research_contexts,
     )
-    researchContext = user_with_conv.research_contexts[0]
+    researchContext = sqla_client_with_conv.research_contexts[0]
 
-    ks_with_sd = fake_knowledge_source_with_source_data
-    source_data = ks_with_sd.source_data
-    source_data_names = tuple(source.name for source in source_data)
-    source_data_lfns = tuple(source.lfn for source in source_data)
+    sqla_client_with_sd = fake_client_with_source_data
+    source_data = sqla_client_with_sd.source_data
 
     researchContext.source_data = source_data
 
-    conversation = researchContext.conversations[0]
+    conversation = random.choice(researchContext.conversations)
+    conversation.title = f"{conversation.title}-{uuid.uuid4()}"
     conversation_title = conversation.title
 
     new_message_content = fake.text()
@@ -49,38 +49,37 @@ def test_new_message_repository_function(
         researchContext.save(session=session, flush=True)
         session.commit()
 
-    id = None
-    with db_session() as session:
+        conv_id = None
         result = session.query(SQLAConversation).filter_by(title=conversation_title).first()
 
         if result is None:
             raise Exception("Test: Conversation not found")
 
-        id = result.id
+        conv_id = result.id
 
-        send_msg_to_conv_DTO: NewMessageDTO = conversation_repository.new_message(
-            conversation_id=id,
+        dto: NewMessageDTO = conversation_repository.new_message(
+            conversation_id=conv_id,
             message_content=new_message_content,
             sender_type=MessageSenderTypeEnum.USER,
             timestamp=datetime.now(),
         )
 
-        assert send_msg_to_conv_DTO.data is not None
+        assert dto.data is not None
 
-        dto_user_message_id = send_msg_to_conv_DTO.data.id
+        dto_message_id = dto.data.id
 
-        sqla_user_message = session.query(SQLAUserMessage).filter_by(id=dto_user_message_id).first()
+        sqla_message = session.query(SQLAUserMessage).filter_by(id=dto_message_id).first()
 
-        assert sqla_user_message is not None
+        assert sqla_message is not None
 
-        sqla_user_message_id = sqla_user_message.id
+        sqla_message_id = sqla_message.id
 
-    assert send_msg_to_conv_DTO.data is not None
+        assert dto.data is not None
 
-    assert send_msg_to_conv_DTO.status == True
-    assert send_msg_to_conv_DTO.errorCode == None
-    assert send_msg_to_conv_DTO.data.id == sqla_user_message_id
-    assert send_msg_to_conv_DTO.data.content == new_message_content
+        assert dto.status == True
+        assert dto.errorCode == None
+        assert dto.data.id == sqla_message_id
+        assert dto.data.content == new_message_content
 
 
 def test_error_new_message_no_conversation_id(

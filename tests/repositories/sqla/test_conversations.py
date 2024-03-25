@@ -3,23 +3,23 @@ from faker import Faker
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
-    SQLAUser,
+    SQLAClient,
 )
 
 
 def test_add_conversation_to_research_context(
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user_with_conversation: SQLAUser,
+    fake_client_with_conversation: SQLAClient,
 ) -> None:
-    user_with_conv = fake_user_with_conversation
-    user_sid = user_with_conv.sid
+    client_with_conv = fake_client_with_conversation
+    client_sub = client_with_conv.sub
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user_with_conv.research_contexts,
+        research_contexts=client_with_conv.research_contexts,
     )
 
-    researchContext = user_with_conv.research_contexts[0]
+    researchContext = client_with_conv.research_contexts[0]
 
     conversation = researchContext.conversations[0]
     conversation_title = conversation.title
@@ -53,4 +53,4 @@ def test_add_conversation_to_research_context(
         assert messages[index_msg_1].type == message_1_type
         assert messages[index_msg_2].type == message_2_type
 
-        assert messages[index_msg_1].conversation.research_context.user.sid == user_sid
+        assert messages[index_msg_1].conversation.research_context.client.sub == client_sub

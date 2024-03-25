@@ -16,7 +16,7 @@ from lib.infrastructure.controller.create_default_data_controller import (
     CreateDefaultDataControllerParameters,
 )
 import lib.infrastructure.rest.endpoints as endpoints
-from tools.app_startup_utils import cleanup_handler, docker_compose_context, start_depdendencies, stop_dependencies
+from tools.app_startup_utils import cleanup_handler, docker_compose_context, start_dependencies, stop_dependencies
 
 
 def create_app() -> FastAPI:
@@ -29,7 +29,7 @@ def create_app() -> FastAPI:
         app_container.create_default_data_feature().controller()
     )
     default_parameters: CreateDefaultDataControllerParameters = CreateDefaultDataControllerParameters(
-        user_sid=None, llm_name=None
+        client_sub=None, llm_name=None
     )
     create_default_data_controller.execute(default_parameters)
     fastapi_endpoints = get_all_modules(package=endpoints, relative_package_dir=Path(__file__).parent / "endpoints")
@@ -77,7 +77,7 @@ def dev_server() -> None:
         dev_env_file = "../../../.env.development"
         load_dotenv(dev_env_file)
 
-    start_depdendencies(
+    start_dependencies(
         project_root_dir=Path(__file__).parent.parent.parent.parent,
         compose_rel_path=Path("docker-compose.yml"),
         alemibc_ini_rel_path=Path("alembic.ini"),

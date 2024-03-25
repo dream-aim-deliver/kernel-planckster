@@ -13,7 +13,7 @@ import psycopg2
 import pytest
 import yaml
 import lib
-from lib.core.entity.models import LFN, KnowledgeSourceEnum, ProtocolEnum, SourceDataStatusEnum
+from lib.core.entity.models import ProtocolEnum, SourceData, SourceDataStatusEnum
 from lib.infrastructure.config.containers import ApplicationContainer
 from alembic.config import Config
 from alembic import command
@@ -25,13 +25,12 @@ from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLACitation,
     SQLAConversation,
-    SQLAKnowledgeSource,
     SQLAMessageBase,
     SQLAUserMessage,
     SQLAAgentMessage,
     SQLAResearchContext,
     SQLASourceData,
-    SQLAUser,
+    SQLAClient,
 )
 from tests.fixtures.factory.sqla_model_factory import SQLATemporaryModelFactory
 
@@ -86,7 +85,6 @@ def start_docker_services(
                 port=object_store_conf["port"],
                 access_key=object_store_conf["access_key"],
                 secret_key=object_store_conf["secret_key"],
-                bucket=object_store_conf["bucket"],
                 signed_url_expiry=1,
             )
             return object_store.ping()
@@ -104,7 +102,6 @@ def start_docker_services(
             "port": os.getenv("KP_OBJECT_STORE_PORT", object_store_config["port"].split(":"[-1][-1])),
             "access_key": os.getenv("KP_OBJECT_STORE_ACCESS_KEY", object_store_config["access_key"].split(":"[-1][-1])),
             "secret_key": os.getenv("KP_OBJECT_STORE_SECRET_KEY", object_store_config["secret_key"].split(":"[-1][-1])),
-            "bucket": os.getenv("KP_OBJECT_STORE_BUCKET", object_store_config["bucket"].split(":"[-1][-1])),
             "signed_url_expiry": signed_url_expiry,
         }
         docker_services.wait_until_responsive(  # type: ignore
@@ -179,7 +176,7 @@ def server(app_container: None) -> FastAPI:
 
 
 @pytest.fixture(scope="function")
-def client(server: FastAPI) -> TestClient:
+def httpx_client(server: FastAPI) -> TestClient:
     test_client = TestClient(server)
     return test_client
 
@@ -336,73 +333,53 @@ def fake_research_context() -> SQLAResearchContext:
     return research_context()
 
 
-def user() -> SQLAUser:
+def sqla_client() -> SQLAClient:
     fake = Faker().unique
+    # Has to also be a valid minio bucket name
+    fake_sub = f"{fake.name()}-{uuid.uuid4()}"
 
-    fake_sid = f"{fake.name()}-{uuid.uuid4()}"
-
-    return SQLAUser(
-        sid=fake_sid,
+    return SQLAClient(
+        sub=fake_sub,
     )
 
 
 @pytest.fixture(scope="function")
-def fake_user() -> SQLAUser:
-    return user()
+def fake_client() -> SQLAClient:
+    return sqla_client()
 
 
-def user_with_conversation(number_of_research_contexts: int = 2) -> SQLAUser:
+def client_with_conversation(number_of_research_contexts: int = 2) -> SQLAClient:
     fake = Faker().unique
 
-    fake_sid = fake.name()
+    fake_sub = fake.name()
 
     fake_research_contexts_init = tuple(research_context() for _ in range(number_of_research_contexts + 1))
     fake_research_contexts = list(fake_research_contexts_init)
     #    fake_research_context = research_context()
 
-    return SQLAUser(
-        sid=fake_sid,
+    return SQLAClient(
+        sub=fake_sub,
         research_contexts=fake_research_contexts,
     )
 
 
 @pytest.fixture(scope="function")
-def fake_user_with_conversation() -> SQLAUser:
-    return user_with_conversation()
+def fake_client_with_conversation() -> SQLAClient:
+    return client_with_conversation()
 
 
 def source_data() -> SQLASourceData:
     fake = Faker().unique
 
-    protocols = [
-        attr_name.__str__().lower() for attr_name in vars(ProtocolEnum) if not attr_name.__str__().startswith("_")
-    ]
-    knowledge_sources = [
-        attr_name.__str__().lower()
-        for attr_name in vars(KnowledgeSourceEnum)
-        if not attr_name.__str__().startswith("_")
-    ]
+    # Validation is so good that now this fails, hardcode S3 for now
+    # protocols = [
+    # attr_name.__str__().lower() for attr_name in vars(ProtocolEnum) if not attr_name.__str__().startswith("_")
+    # ]
 
-    protocol_choice: str = random.choice(protocols)
-    protocol = ProtocolEnum(protocol_choice)
-    tracer_id = f"{random.randint(1, 1000000000)}"
-    knowledge_source_choice: str = random.choice(knowledge_sources)
-    job_id = random.randint(1, 1000000000)
+    # protocol_choice: str = random.choice(protocols)
+    # protocol = ProtocolEnum(protocol_choice)
 
-    sd_filename = fake.file_name()
-    sd_name = sd_filename.split(".")[0]
-    sd_type = sd_filename.split(".")[1]
-    sd_relative_path = fake.file_path(depth=3).split(".")[0] + "/" + sd_filename
-
-    sd_lfn = LFN(
-        protocol=protocol,
-        tracer_id=tracer_id,
-        job_id=job_id,
-        source=KnowledgeSourceEnum(knowledge_source_choice),
-        relative_path=sd_relative_path,
-    )
-
-    sd_lfn_str = sd_lfn.to_json()
+    protocol = ProtocolEnum.S3
 
     statuses = [
         attr_name.__str__().lower()
@@ -412,7 +389,29 @@ def source_data() -> SQLASourceData:
     sd_status_choice: str = random.choice(statuses)
     sd_status = SourceDataStatusEnum(sd_status_choice)
 
-    return SQLASourceData(name=sd_name, type=sd_type, lfn=sd_lfn_str, status=sd_status)
+    sd_name = fake.name()  # Name can be anything
+    sd_relative_path = fake.file_name()
+
+    core_sd = SourceData(  # use the pydantic model to generate a proper one
+        id=random.randint(1, 1000),
+        created_at=datetime.datetime.now(),
+        updated_at=datetime.datetime.now(),
+        deleted=False,
+        deleted_at=None,
+        name=sd_name,
+        relative_path=sd_relative_path,
+        type="",  # type is generated automatically
+        protocol=protocol,
+        status=sd_status,
+    )
+
+    return SQLASourceData(
+        name=core_sd.name,
+        relative_path=core_sd.relative_path,
+        type=core_sd.type,
+        protocol=core_sd.protocol,
+        status=core_sd.status,
+    )
 
 
 @pytest.fixture(scope="function")
@@ -425,38 +424,25 @@ def fake_source_data_list() -> List[SQLASourceData]:
     return [source_data() for _ in range(10)]
 
 
-def knowledge_source_with_source_data(number_of_source_data: int = 3) -> SQLAKnowledgeSource:
-    fake = Faker().unique
-
-    ks_enums = [
-        attr_name.__str__().lower()
-        for attr_name in vars(KnowledgeSourceEnum)
-        if not attr_name.__str__().startswith("_")
-    ]
-
-    ks_source_choice: str = random.choice(ks_enums)
-    ks_source = KnowledgeSourceEnum(ks_source_choice)
-
-    fake_metadata = fake.text(max_nb_chars=70)
+def client_with_source_data(number_of_source_data: int = 3) -> SQLAClient:
+    client = sqla_client()
 
     fake_source_data_init = tuple(source_data() for _ in range(number_of_source_data + 1))
     fake_source_data = list(fake_source_data_init)
 
-    return SQLAKnowledgeSource(
-        source=ks_source,
-        content_metadata=fake_metadata,
-        source_data=fake_source_data,
-    )
+    client.source_data.extend(fake_source_data)
+
+    return client
 
 
 @pytest.fixture(scope="function")
-def fake_knowledge_source_with_source_data() -> SQLAKnowledgeSource:
-    return knowledge_source_with_source_data()
+def fake_client_with_source_data() -> SQLAClient:
+    return client_with_source_data()
 
 
 @pytest.fixture(scope="function")
-def fake_knowledge_source_with_source_data_list() -> List[SQLAKnowledgeSource]:
-    return [knowledge_source_with_source_data() for _ in range(10)]
+def fake_client_with_source_data_list() -> List[SQLAClient]:
+    return [client_with_source_data() for _ in range(10)]
 
 
 def citation() -> SQLACitation:

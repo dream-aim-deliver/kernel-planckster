@@ -1,5 +1,7 @@
 from abc import abstractmethod
+from lib.core.ports.secondary.client_repository import ClientRepositoryOutputPort
 from lib.core.ports.secondary.file_repository import FileRepositoryOutputPort
+from lib.core.ports.secondary.source_data_repository import SourceDataRepositoryOutputPort
 from lib.core.sdk.presenter import BasePresenter
 from lib.core.sdk.usecase import BaseUseCase
 from lib.core.usecase_models.get_client_data_for_upload_usecase_models import (
@@ -13,8 +15,17 @@ from lib.core.view_model.get_client_data_for_upload_view_model import GetClientD
 class GetClientDataForUploadInputPort(
     BaseUseCase[GetClientDataForUploadRequest, GetClientDataForUploadResponse, GetClientDataForUploadError]
 ):
-    def __init__(self, file_repository: FileRepositoryOutputPort) -> None:
+    def __init__(
+        self,
+        client_repository: ClientRepositoryOutputPort,
+        file_repository: FileRepositoryOutputPort,
+    ) -> None:
+        self._client_repository = client_repository
         self._file_repository = file_repository
+
+    @property
+    def client_repository(self) -> ClientRepositoryOutputPort:
+        return self._client_repository
 
     @property
     def file_repository(self) -> FileRepositoryOutputPort:

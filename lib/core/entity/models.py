@@ -1,28 +1,9 @@
 from enum import Enum
 import os
 import re
-import uuid
-from pydantic import BaseModel, field_validator
-from typing import Any, TypeVar
+from pydantic import BaseModel, field_validator, model_validator
+from typing import TypeVar
 from datetime import datetime
-
-
-class KnowledgeSourceEnum(Enum):
-    """
-    Enum for the different knowledge sources that can be used to create a research context.
-
-    TELEGRAM: the knowledge source is a Telegram channel
-    TWITTER: the knowledge source is a Twitter account
-    AUGMENTED: the knowledge source is a collection of user uploads
-    SENTINEL: the knowledge source is a collection of user uploads, and the user wants to be notified when new uploads are available
-    USER: the knowledge source is a collection of user uploads
-    """
-
-    TELEGRAM = "telegram"
-    TWITTER = "twitter"
-    AUGMENTED = "augmented"
-    SENTINEL = "sentinel"
-    USER = "user"
 
 
 class ProtocolEnum(Enum):
@@ -53,52 +34,6 @@ class SourceDataStatusEnum(Enum):
     UNAVAILABLE = "unavailable"
     AVAILABLE = "available"
     INCONSISTENT_DATASET = "inconsistent_dataset"
-
-
-class LFN(BaseModel):
-    """
-    Represents a Logical File Name, used to store files in a consistent way, regardless of the protocol used
-
-    @param protocol: the protocol used to store the source_data
-    @param tracer_id: the id of the user that uploaded the source_data
-    @param job_id: the id of the job that created the source_data
-    @param source: the source of the source_data (e.g., Twitter, Telegram, etc.)
-    @param relative_path: the relative path of the source_data
-    """
-
-    protocol: ProtocolEnum
-    tracer_id: str
-    job_id: int
-    source: KnowledgeSourceEnum
-    relative_path: str
-
-    @field_validator("relative_path")
-    def relative_path_must_be_alphanumberic_underscores_backslashes(cls, v: str) -> str:
-        marker = "sdamarker"
-        if marker not in v:
-            v = os.path.basename(v)  # Take just the basename, saner for the object stores
-            v = re.sub(r"[^a-zA-Z0-9_\./-]", "", v)
-            ext = v.split(".")[-1]
-            name = v.split(".")[0]  # this completely removes dots
-            seed = f"{uuid.uuid4()}".replace("-", "")
-            v = f"{name}-{seed}-{marker}.{ext}"
-        return v
-
-    def to_json(cls) -> str:
-        """
-        Dumps the model to a json formatted string. Wrapper around pydantic's model_dump_json method: in case they decide to deprecate it, we only refactor here.
-        """
-        return cls.model_dump_json()
-
-    def __str__(self) -> str:
-        return self.to_json()
-
-    @classmethod
-    def from_json(cls, json_str: str) -> "LFN":
-        """
-        Loads the model from a json formatted string. Wrapper around pydantic's model_validate_json method: in case they decide to deprecate it, we only refactor here.
-        """
-        return cls.model_validate_json(json_data=json_str)
 
 
 class BaseKernelPlancksterModel(BaseModel):
@@ -134,32 +69,18 @@ class BaseSoftDeleteKernelPlancksterModel(BaseKernelPlancksterModel):
     deleted_at: datetime | None
 
 
-class User(BaseSoftDeleteKernelPlancksterModel):
+class Client(BaseSoftDeleteKernelPlancksterModel):
     """
-    Represents a user in the system
+    Represents a human user, or any other entity (agent or program) that can interact with Kernel Planckster
 
-    @param id: the id of the user
+    @param id: the id of the client
     @type id: int
-    @param sid: the sid of the user
-    @type sid: str
+    @param sub: the name of the client
+    @type sub: str
     """
 
     id: int
-    sid: str
-
-
-class KnowledgeSource(BaseSoftDeleteKernelPlancksterModel):
-    """
-    Represents a knowledge source, a collection of sources defined by the user
-
-    @param id: the id of the knowledge source
-    @param source: the source of the source_data (e.g., Twitter, Telegram, etc.)
-    @param content_metadata: depending on the source, can be the query made to the source or the list of user uploads; meant to be a json formatted string, including e.g. an URL
-    """
-
-    id: int
-    source: KnowledgeSourceEnum
-    content_metadata: str
+    sub: str
 
 
 class SourceData(BaseSoftDeleteKernelPlancksterModel):
@@ -168,16 +89,17 @@ class SourceData(BaseSoftDeleteKernelPlancksterModel):
 
     @param id: the id of the source_data
     @param name: the name of the source_data
-    @param type: the type of the source_data (e.g., pdf, txt, etc.)
-    @param lfn: the logical file name of the source_data
+    @param relative_path: the relative path of the source_data
+    @param type: the type of the source_data (e.g., txt, pdf, csv, etc.); inferred from the extension of the relative_path
     @param protocol: the protocol used to store the source_data
     @param status: the status of the source_data
     """
 
     id: int
     name: str
+    relative_path: str
     type: str
-    lfn: LFN
+    protocol: ProtocolEnum
     status: SourceDataStatusEnum
 
     @classmethod
@@ -186,6 +108,92 @@ class SourceData(BaseSoftDeleteKernelPlancksterModel):
         Loads the model from a json formatted string. Wrapper around pydantic's model_validate_json method: in case they decide to deprecate it, we only refactor here.
         """
         return cls.model_validate_json(json_data=json_str)
+
+    @classmethod
+    def name_validation(cls, v: str) -> str:
+        if v == "":
+            raise ValueError("The name must not be empty")
+        return v
+
+    @classmethod
+    def relative_path_validation(cls, v: str) -> str:
+        value_error_flag = False
+        value_error_msg = ""
+
+        if v == "":
+            value_error_msg += f"The relative path must not be empty. "
+            raise ValueError(value_error_msg)
+
+        v2 = re.sub(r"[^a-zA-Z0-9_\./-]", "", v)
+        if v != v2:
+            value_error_flag = True
+            value_error_msg += f"The relative path must contain only alphanumeric characters, underscores, slashes, and dots. Other characters are not allowed. "
+
+        ext = os.path.splitext(v)[1].replace(".", "")
+        if ext == "":
+            value_error_flag = True
+            value_error_msg += f"The relative path provided did not have an extension. Extensions are required to infer the type of the source data. "
+
+        first_char = v[0]
+        if first_char == "/":
+            value_error_flag = True
+            value_error_msg += f"The relative path provided must not start with a slash. "
+
+        if value_error_flag:
+            value_error_msg += f"\nThe relative path provided was: '{v}'"
+            raise ValueError(value_error_msg)
+
+        return v
+
+    @classmethod
+    def protocol_validation(cls, v: str) -> ProtocolEnum:
+        all_protocols = [e for e in ProtocolEnum]
+        all_protocols_str = [p.value for p in all_protocols]
+        implemented_protocols = [ProtocolEnum.S3]
+        implemented_protocols_str = [p.value for p in implemented_protocols]
+
+        try:
+            enum = ProtocolEnum(v)
+        except ValueError:
+            raise ValueError(
+                f"'{v}' is not a valid protocol. Valid protocols are:\n{all_protocols_str}\nImplemented protocols are:\n{implemented_protocols_str}"
+            )
+
+        if enum not in implemented_protocols:
+            raise ValueError(
+                f"The protocol '{v}' is not implemented. Please use one of the following: {implemented_protocols_str}"
+            )
+
+        return ProtocolEnum(v)
+
+    @classmethod
+    def populate_type(cls, v: str) -> str:
+        basename = os.path.basename(v)
+        ext_dot = os.path.splitext(basename)[1]
+        ext = ext_dot.replace(".", "")
+        return ext
+
+    @field_validator("name")
+    def name_must_not_be_empty(cls, v: str) -> str:
+        return cls.name_validation(v)
+
+    @field_validator("relative_path")
+    def relative_path_must_be_correctly_formatted(cls, v: str) -> str:
+        return cls.relative_path_validation(v)
+
+    @field_validator("protocol")
+    def protocol_must_be_supported(cls, v: ProtocolEnum) -> ProtocolEnum:
+        return cls.protocol_validation(v.value)
+
+    @model_validator(mode="before")
+    def autofill_type(
+        cls, values: dict[str, int | str | ProtocolEnum | SourceDataStatusEnum]
+    ) -> dict[str, int | str | ProtocolEnum | SourceDataStatusEnum]:
+        if "relative_path" in values:
+            relative_path = values.get("relative_path")
+            if isinstance(relative_path, str):
+                values["type"] = cls.populate_type(relative_path)
+        return values
 
 
 class EmbeddingModel(BaseSoftDeleteKernelPlancksterModel):
@@ -238,7 +246,6 @@ class VectorStore(BaseSoftDeleteKernelPlancksterModel):
 
     id: int
     name: str
-    lfn: LFN
 
 
 class Conversation(BaseSoftDeleteKernelPlancksterModel):

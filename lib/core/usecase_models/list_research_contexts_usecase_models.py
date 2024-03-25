@@ -9,7 +9,7 @@ class ListResearchContextsRequest(BaseRequest):
     Request Model for the List Research Contexts Use Case.
     """
 
-    user_id: int = Field(description="User ID for which the research contexts are to be listed.")
+    client_id: int = Field(description="Client ID for which the research contexts are to be listed.")
 
 
 class ListResearchContextsResponse(BaseResponse):
@@ -17,8 +17,8 @@ class ListResearchContextsResponse(BaseResponse):
     Response Model for the List Research Contexts Use Case.
     """
 
-    user_id: int = Field(description="User ID for which the research contexts are to be listed.")
-    research_contexts: List[ResearchContext] = Field(description="List of research contexts for the user.")
+    client_id: int = Field(description="Client ID for which the research contexts are to be listed.")
+    research_contexts: List[ResearchContext] = Field(description="List of research contexts for the client.")
 
 
 class ListResearchContextsError(BaseErrorResponse):
@@ -26,4 +26,4 @@ class ListResearchContextsError(BaseErrorResponse):
     Error Response Model for the List Research Contexts Use Case.
     """
 
-    user_id: int = Field(description="User ID that was passed in the request.")
+    client_id: int = Field(description="Client ID that was passed in the request.")

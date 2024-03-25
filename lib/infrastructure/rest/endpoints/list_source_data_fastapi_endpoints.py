@@ -35,14 +35,14 @@ class ListSourceDataFastAPIFeature(FastAPIEndpoint[ListSourceDataControllerParam
         @self.router.get(
             name=self.name,
             description=self.descriptor.description,
-            path="/sources",
+            path="/client/{id}/source",
             responses=self.responses,
         )
         def endpoint(
             id: int | None = None,
         ) -> ListSourceDataViewModel | None:
             controller_parameters = ListSourceDataControllerParameter(
-                knowledge_source_id=id,
+                client_id=id,
             )
             view_model: ListSourceDataViewModel = self.execute(
                 controller_parameters=controller_parameters,
