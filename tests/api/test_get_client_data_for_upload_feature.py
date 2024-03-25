@@ -44,7 +44,7 @@ def test_get_client_data_for_upload_feature_usecase_presenter(
 
         request = GetClientDataForUploadRequest(
             client_id=sqla_client.id,
-            protocol=sqla_source_data.protocol,
+            protocol=sqla_source_data.protocol.value,
             relative_path=sqla_source_data.relative_path,
         )
         response = usecase.execute(request=request)
@@ -130,7 +130,7 @@ def test_get_client_data_for_upload_feature_controller(
 
         controller_parameters = GetClientDataForUploadControllerParameters(
             client_id=sqla_client.id,
-            protocol=sqla_source_data.protocol,
+            protocol=sqla_source_data.protocol.value,
             relative_path=sqla_source_data.relative_path,
         )
 
