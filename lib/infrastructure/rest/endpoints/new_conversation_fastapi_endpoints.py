@@ -35,7 +35,7 @@ class NewConversationFastAPIFeature(FastAPIEndpoint[NewConversationControllerPar
         @self.router.post(
             name=self.name,
             description=self.descriptor.description,
-            path="/research_contexts/{id}/conversations",
+            path="/research-context/{id}/conversation",
             responses=self.responses,
         )
         def endpoint(

@@ -1,18 +1,16 @@
-from ast import Tuple
 from datetime import datetime
 from typing import Dict, List, Any
 
 from sqlalchemy import (
     CheckConstraint,
     Column,
+    Index,
     Integer,
     String,
     DateTime,
     Boolean,
     ForeignKey,
     Table,
-    Text,
-    TypeDecorator,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy import Enum as SAEnum
@@ -21,7 +19,7 @@ from sqlalchemy.orm import mapped_column, object_mapper, relationship, Mapped, M
 from sqlalchemy.orm.session import Session
 
 from lib.infrastructure.repository.sqla.database import Base
-from lib.core.entity.models import LFN, KnowledgeSourceEnum, SourceDataStatusEnum
+from lib.core.entity.models import ProtocolEnum, SourceDataStatusEnum
 
 
 class ModelBase(object):
@@ -144,51 +142,31 @@ class SoftModelBase(ModelBase):
         self.save(session=session)  # TODO: typing: if session is None, it doesn't have save
 
 
-class SQLAUser(Base, SoftModelBase):  # type: ignore
+class SQLAClient(Base, SoftModelBase):  # type: ignore
     """
-    SQLAlchemy User model
+    SQLAlchemy Client model
 
-    @param id: The ID of the user
+    @param id: The ID of the client
     @type id: int
-    param sid: The SID of the user
-    @type sid: str
-    @param research_contexts: The research contexts of the user
+    param sub: The SUB of the client
+    @type sub: str
+    @param research_contexts: The research contexts of the client
     @type research_contexts: List[SQLAResearchContext]
     """
 
-    __tablename__ = "user"
+    __tablename__ = "client"
 
     id: Mapped[int] = mapped_column("id", Integer, primary_key=True)
-    sid: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    sub: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
-    research_contexts: Mapped[List["SQLAResearchContext"]] = relationship("SQLAResearchContext", backref="user")
+    research_contexts: Mapped[List["SQLAResearchContext"]] = relationship("SQLAResearchContext", backref="client")
+
+    source_data: Mapped[List["SQLASourceData"]] = relationship(
+        "SQLASourceData", backref="client", cascade="all, delete"
+    )
 
     def __repr__(self) -> str:
-        return f"<User(id={self.id})>"
-
-
-class SQLAKnowledgeSource(Base, SoftModelBase):  # type: ignore
-    """
-    SQLAlchemy Knowledge Source model
-
-    @param id: The ID of the knowledge source
-    @type id: int
-    @param source: The source of the knowledge source
-    @type source: str
-    @param content_metadata: The content metadata of the knowledge source
-    @type content_metadata: str
-    @param source_data: The source data of the knowledge source
-    @type source_data: List[SQLASourceData]
-    """
-
-    __tablename__ = "knowledge_source"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    source: Mapped[KnowledgeSourceEnum] = mapped_column(SAEnum(KnowledgeSourceEnum), nullable=False)
-    content_metadata: Mapped[str] = mapped_column(String, nullable=False)
-    source_data: Mapped[List["SQLASourceData"]] = relationship(
-        "SQLASourceData", backref="knowledge_source", cascade="all, delete"
-    )
+        return f"<Client(id={self.id})>"
 
 
 SourceDataResearchContextAssociation = Table(
@@ -207,27 +185,35 @@ class SQLASourceData(Base, SoftModelBase):  # type: ignore
     @type id: int
     @param name: The name of the source data
     @type name: str
+    @param relative_path: The relative path of the source data
+    @type relative_path: str
     @param type: The type of the source data
     @type type: str
-    @param lfn: The LFN of the source data. Must be a valid serialized LFN
-    @type lfn: str
+    @param protocol: The protocol of the source data
+    @type protocol: ProtocolEnum
     @param status: The status of the source data
     @type status: SourceDataStatusEnum
-    @param knowledge_source_id: The ID of the knowledge source of the source data
-    @type knowledge_source_id: int
+    @param client_id: The ID of the client of the source data
+    @type client_id: int
     @param citations: The citations of the source data by the llm associated to the research contexts this source data belongs to
     @type citations: List[SQLACitation]
+
+    :composite_index: client_id, relative_path, protocol
     """
 
     __tablename__ = "source_data"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
+    relative_path: Mapped[str] = mapped_column(String, nullable=False)
     type: Mapped[str] = mapped_column(String, nullable=False)
-    lfn: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    protocol: Mapped[ProtocolEnum] = mapped_column(SAEnum(ProtocolEnum), nullable=False)
     status: Mapped[SourceDataStatusEnum] = mapped_column(SAEnum(SourceDataStatusEnum), nullable=False)
-    knowledge_source_id: Mapped[int] = mapped_column(ForeignKey("knowledge_source.id"), nullable=False)
+
+    client_id: Mapped[int] = mapped_column(ForeignKey("client.id"), nullable=False)
     citations: Mapped[List["SQLACitation"]] = relationship("SQLACitation", backref="source_data")
+
+    __table_args__ = (Index("uix_client_id_relative_path_protocol", "client_id", "relative_path", "protocol", unique=True),)  # type: ignore
 
     def __repr__(self) -> str:
         return f"<SourceData (id={self.id}, name={self.name})>"
@@ -322,8 +308,8 @@ class SQLAResearchContext(Base, SoftModelBase):  # type: ignore
     @type title: str
     @param description: The description of the research context
     @type description: str
-    @param user_id: The ID of the user of the research context
-    @type user_id: str
+    @param client_id: The ID of the client of the research context
+    @type client_id: str
     @param llm_id: The ID of the llm of the research context
     @type llm_id: int
     @param source_data: The source data of the research context
@@ -339,7 +325,7 @@ class SQLAResearchContext(Base, SoftModelBase):  # type: ignore
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+    client_id: Mapped[int] = mapped_column(ForeignKey("client.id"), nullable=False)
     llm_id: Mapped[int] = mapped_column(ForeignKey("llm.id"), nullable=False)
     source_data: Mapped[List["SQLASourceData"]] = relationship(
         "SQLASourceData", secondary=SourceDataResearchContextAssociation

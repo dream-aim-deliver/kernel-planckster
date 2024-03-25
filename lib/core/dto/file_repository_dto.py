@@ -1,35 +1,35 @@
-from lib.core.entity.models import LFN
+from lib.core.entity.models import ProtocolEnum, SourceData
 from lib.core.sdk.dto import BaseDTO
 
 
-class FilePathToLFNDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
+class FilePathToSourceDataIndexDTO(BaseDTO):  # type: ignore
     """
-    A DTO for whenever a file path is converted to an LFN.
+    A DTO for whenever a file path is converted to a SourceData object.
 
-    @param lfn: The logical file name of the file.
-    @type lfn: LFN
+    @param protocol: The protocol of the file.
+    @type protocol: ProtocolEnum
+    @param relative_path: The relative path of the file.
+    @type relative_path: str
     """
 
-    lfn: LFN | None = None
+    protocol: ProtocolEnum | None = None
+    relative_path: str | None = None
 
 
-class GetClientDataForUploadDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
+class GetClientDataForUploadDTO(BaseDTO):  # type: ignore
     """
-    A DTO for whenever a user wants to upload source data via a public upload.
+    A DTO for whenever a client wants to upload source data via a public upload.
 
-    @param lfn: The logical file name of the file that was uploaded.
-    @type lfn: LFN
     @param credentials: The credentials to handle the file in question. For example, the signed URL, key, auth token, etc.
     @type credentials: str
     """
 
-    lfn: LFN | None = None
     credentials: str | None = None
 
 
-class GetClientDataForDownloadDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
+class GetClientDataForDownloadDTO(BaseDTO):  # type: ignore
     """
-    A DTO for whenever source data is downloaded by the user.
+    A DTO for whenever source data is downloaded by the client.
 
     @param lfn: The logical file name of the file that was downloaded.
     @type lfn: LFN
@@ -37,17 +37,21 @@ class GetClientDataForDownloadDTO(BaseDTO):  # type: ignore  # TODO: decide how 
     @type credentials: str
     """
 
-    lfn: LFN | None = None
     credentials: str | None = None
 
 
-class LFNExistsDTO(BaseDTO):  # type: ignore  # TODO: decide how to model these data entering core
+class SourceDataCompositeIndexExistsAsFileDTO(BaseDTO):  # type: ignore
     """
-    A DTO for whenever the existence of an LFN as an actual file is asserted.
+    A DTO for whenever the existence of a SourceData as an actual file is asserted.
 
-    @param lfn: The logical file name to assert the existence of.
-    @type lfn: LFN
+    @param protocol: The protocol of the SourceData object in question.
+    @type protocol: ProtocolEnum
+    @param relative_path: The relative path of the SourceData object in the file system.
+    @type relative_path: str
+    @param existence: The existence of the SourceData object.
+    @type existence: bool
     """
 
-    lfn: LFN | None = None
+    protocol: ProtocolEnum | None = None
+    relative_path: str | None = None
     existence: bool | None = None

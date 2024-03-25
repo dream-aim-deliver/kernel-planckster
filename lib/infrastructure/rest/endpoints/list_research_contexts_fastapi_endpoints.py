@@ -23,7 +23,7 @@ class ListResearchContextsFastAPIFeature(
             },
             400: {
                 "model": ListResearchContextsViewModel,
-                "description": "Bad Request. User ID does not exist",
+                "description": "Bad Request. Client ID does not exist",
             },
             500: {
                 "model": ListResearchContextsViewModel,
@@ -37,14 +37,14 @@ class ListResearchContextsFastAPIFeature(
         @self.router.get(
             name=self.name,
             description=self.descriptor.description,
-            path="/user/{id}/research_contexts",
+            path="/client/{id}/research-context",
             responses=self.responses,
         )
         def endpoint(
             id: int,
         ) -> ListResearchContextsViewModel | None:
             controller_parameters = ListResearchContextsControllerParameters(
-                user_id=id,
+                client_id=id,
             )
             view_model: ListResearchContextsViewModel = self.execute(
                 controller_parameters=controller_parameters,

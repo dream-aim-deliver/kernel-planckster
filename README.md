@@ -56,16 +56,17 @@ cp .env.example .env
 Using docker containers to spin up an SQL database, you can autogenerate migrations with Alembic. From the root of the project, do:
 
 ```bash
-docker compose up -d
+docker compose --profile dev up -d
 alembic upgrade head
 alembic revision --autogenerate -m "migration message"
 alembic upgrade head
 alembic downgrade base
 alembic upgrade head
-docker compose down
+docker compose --profile dev down
 ```
 
 Make sure to fix any errors given by the alembic commands above before executing the next one and commiting the changes.
+In particular, you might need to fix the alembic version files.
 
 
 ### Accessing the server and database

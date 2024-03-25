@@ -1,10 +1,9 @@
 import sys
 import logging.config
-from typing import List
 from dependency_injector import containers, providers
 from lib.core.sdk.utils import get_all_modules
 from lib.infrastructure.config.features.demo_feature_container import DemoFeatureContainer
-from lib.infrastructure.config.features.get_client_data_for_download_featur_container import (
+from lib.infrastructure.config.features.get_client_data_for_download_feature_container import (
     GetClientDataForDownloadFeatureContainer,
 )
 from lib.infrastructure.config.features.list_conversations_feature_container import ListConversationsFeatureContainer
@@ -26,10 +25,9 @@ from lib.infrastructure.config.features.get_client_data_for_upload_feature_conta
 )
 from lib.infrastructure.repository.minio.minio_file_repository import MinIOFileRepository
 from lib.infrastructure.repository.minio.minio_object_store import MinIOObjectStore
-from lib.infrastructure.repository.sqla.sqla_knowledge_source_repository import SQLAKnowledgeSourceRepository
 from lib.infrastructure.repository.sqla.sqla_research_context_repository import SQLAReseachContextRepository
 from lib.infrastructure.repository.sqla.sqla_source_data_repository import SQLASourceDataRepository
-from lib.infrastructure.repository.sqla.sqla_user_repository import SQLAUserRepository
+from lib.infrastructure.repository.sqla.sqla_client_repository import SQLAClientRepository
 import lib.infrastructure.rest.endpoints as endpoints
 
 from lib.infrastructure.repository.sqla.database import Database
@@ -62,13 +60,12 @@ class ApplicationContainer(containers.DeclarativeContainer):
         port=config.object_store.port.as_int(),
         access_key=config.object_store.access_key,
         secret_key=config.object_store.secret_key,
-        bucket=config.object_store.bucket,
         signed_url_expiry=config.object_store.signed_url_expiry.as_int(),
     )
 
     # Repositories:
-    sqla_user_repository: providers.Factory[SQLAUserRepository] = providers.Factory(
-        SQLAUserRepository, session_factory=db.provided.session
+    sqla_client_repository: providers.Factory[SQLAClientRepository] = providers.Factory(
+        SQLAClientRepository, session_factory=db.provided.session
     )
 
     sqla_conversation_repository: providers.Factory[SQLAConversationRepository] = providers.Factory(
@@ -78,11 +75,6 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     sqla_research_context_repository: providers.Factory[SQLAReseachContextRepository] = providers.Factory(
         SQLAReseachContextRepository,
-        session_factory=db.provided.session,
-    )
-
-    sqla_knowledge_source_repository: providers.Factory[SQLAKnowledgeSourceRepository] = providers.Factory(
-        SQLAKnowledgeSourceRepository,
         session_factory=db.provided.session,
     )
 
@@ -117,29 +109,27 @@ class ApplicationContainer(containers.DeclarativeContainer):
         CreateDefaultDataFeatureContainer,
         config=config.features.create_default_data,
         session_factory=db.provided.session,
-        default_user_sid=config.default_data.user_sid,
-        default_llm_name=config.default_data.llm_name,
+        default_client_sub=config.features.default_data.default_client_sub,
+        default_llm_name=config.features.default_data.default_llm_name,
     )
 
     new_source_data_feature = providers.Container(
         NewSourceDataFeatureContainer,
         config=config.features.new_source_data,
-        knowledge_source_repository=sqla_knowledge_source_repository,
+        client_repository=sqla_client_repository,
         file_repository=minio_file_repository,
     )
 
     list_source_data_feature = providers.Container(
         ListSourceDataFeatureContainer,
         config=config.features.list_source_data,
-        source_data_repository=sqla_source_data_repository,
+        client_repository=sqla_client_repository,
     )
 
     new_research_context_feature = providers.Container(
         NewResearchContextFeatureContainer,
         config=config.features.new_research_context,
-        user_repository=sqla_user_repository,
-        default_user_sid=config.default_data.user_sid,
-        default_llm_name=config.default_data.llm_name,
+        client_repository=sqla_client_repository,
     )
 
     new_conversation_feature = providers.Container(
@@ -151,7 +141,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
     list_research_contexts_feature = providers.Container(
         ListResearchContextsFeatureContainer,
         config=config.features.list_research_contexts,
-        user_repository=sqla_user_repository,
+        client_repository=sqla_client_repository,
     )
 
     list_source_data_for_research_context_feature = providers.Container(
@@ -163,14 +153,16 @@ class ApplicationContainer(containers.DeclarativeContainer):
     get_client_data_for_upload_feature = providers.Container(
         GetClientDataForUploadFeatureContainer,
         config=config.features.get_client_data_for_upload,
+        client_repository=sqla_client_repository,
         file_repository=minio_file_repository,
     )
 
     get_client_data_for_download_feature = providers.Container(
         GetClientDataForDownloadFeatureContainer,
         config=config.features.get_client_data_for_download,
-        file_repository=minio_file_repository,
+        client_repository=sqla_client_repository,
         source_data_repository=sqla_source_data_repository,
+        file_repository=minio_file_repository,
     )
 
     list_messages_feature = providers.Container(

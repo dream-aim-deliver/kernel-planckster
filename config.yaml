@@ -20,7 +20,6 @@ object_store:
   port: ${KP_OBJECT_STORE_PORT:9001}
   access_key: ${KP_OBJECT_STORE_ACCESS_KEY:minio}
   secret_key: ${KP_OBJECT_STORE_SECRET_KEY:minio123}
-  bucket: ${KP_OBJECT_STORE_BUCKET:default}
   signed_url_expiry: ${KP_OBJECT_STORE_SIGNED_URL_EXPIRY:60}
 
 fastapi:
@@ -30,7 +29,7 @@ fastapi:
   reload: ${KP_FASTAPI_RELOAD:false}
 
 default_data:
-  user_sid: "admin"
+  client_sub: "SDA"
   llm_name: "gpt4"
 
 features:
@@ -52,7 +51,7 @@ features:
 
   create_default_data:
     name: "Create Default Data"
-    description: "Create default data for testing: a knowledge source per KnowledgeSourceEnum type (with metadata = 'default'); one user with sid 'default'; one llm with a hardcoded name. This is meant to be executed first to setup the necessary components to (1) register new source data, (2) create a new research context selecting from the available source data"
+    description: "Create default data for testing: one user with a hard-coded SUB; one llm with a hardcoded name. This is meant to be executed first to setup the necessary components to (1) register new source data, (2) create a new research context selecting from the available source data"
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true
@@ -60,7 +59,7 @@ features:
 
   new_source_data:
     name: "Register Source Data"
-    description: "Register a new source data in the database by passing an lfn"
+    description: "Register a new source data in the database"
     version: "1.0.0"
     tags: ["client: service"]
     enabled: true
@@ -68,12 +67,7 @@ features:
 
   list_source_data:
     name: "List Source Data"
-    description: |
-      List all source data registered in the database. If a knowledge source ID is provided, then list all source data registered for that knowledge source
-      Telegram ID: 1
-      Twitter ID: 2
-      Augmented ID: 3
-      Sentinel ID: 4
+    description: "List all source data registered in the database for a given Client"
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true
@@ -81,7 +75,7 @@ features:
 
   new_research_context:
     name: "Create Research Context"
-    description: "Create a new research context from a subset of the available source data"
+    description: "Create a new research context from a subset of the available source data for a client"
     version: "1.0.0"
     tags: ["client: websat"]
     enabled: true

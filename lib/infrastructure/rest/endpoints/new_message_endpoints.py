@@ -35,17 +35,17 @@ class NewMessageFastAPIFeature(FastAPIEndpoint[NewMessageControllerParameters, N
         @self.router.post(
             name=self.name,
             description=self.descriptor.description,
-            path="/conversations/{conversation_id}/new_message",
+            path="/conversation/{id}/message",
             responses=self.responses,
         )
         def endpoint(
-            conversation_id: int,
+            id: int,
             message_content: str,
             sender_type: str,
             unix_timestamp: int,
         ) -> NewMessageViewModel | None:
             controller_parameters = NewMessageControllerParameters(
-                conversation_id=conversation_id,
+                conversation_id=id,
                 message_content=message_content,
                 sender_type=sender_type,
                 unix_timestamp=unix_timestamp,

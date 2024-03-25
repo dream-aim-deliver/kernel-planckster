@@ -37,20 +37,20 @@ class NewResearchContextFastAPIFeature(
         @self.router.post(
             name=self.name,
             description=self.descriptor.description,
-            path="/research_contexts",
+            path="/research-context",
             responses=self.responses,
         )
         def endpoint(
             research_context_title: str,
             research_context_description: str,
             source_data_ids: list[int],
-            user_sid: str | None = None,
+            client_sub: str | None = None,
             llm_name: str | None = None,
         ) -> NewResearchContextViewModel | None:
             controller_parameters = NewResearchContextControllerParameters(
                 research_context_title=research_context_title,
                 research_context_description=research_context_description,
-                user_sid=user_sid,
+                client_sub=client_sub,
                 llm_name=llm_name,
                 source_data_ids=source_data_ids,
             )

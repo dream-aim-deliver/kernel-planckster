@@ -10,13 +10,11 @@ from lib.infrastructure.presenter.list_source_data_presenter import ListSourceDa
 
 
 class ListSourceDataFeatureContainer(BaseFeatureContainer):
-    source_data_repository: Any = providers.Dependency()
+    client_repository: Any = providers.Dependency()
 
     presenter = providers.Factory[ListSourceDataOutputPort](ListSourceDataPresenter)
 
-    usecase = providers.Factory[ListSourceDataInputPort](
-        ListSourceDataUseCase, source_data_repository=source_data_repository
-    )
+    usecase = providers.Factory[ListSourceDataInputPort](ListSourceDataUseCase, client_repository=client_repository)
 
     controller = providers.Factory(
         ListSourceDataController,

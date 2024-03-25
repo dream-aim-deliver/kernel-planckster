@@ -1,6 +1,6 @@
 from abc import abstractmethod
+from lib.core.ports.secondary.client_repository import ClientRepositoryOutputPort
 from lib.core.ports.secondary.file_repository import FileRepositoryOutputPort
-from lib.core.ports.secondary.knowledge_source_repository import KnowledgeSourceRepositoryOutputPort
 from lib.core.sdk.presenter import BasePresenter
 from lib.core.sdk.usecase import BaseUseCase
 from lib.core.usecase_models.new_source_data_usecase_models import (
@@ -14,15 +14,15 @@ from lib.core.view_model.new_source_data_view_model import NewSourceDataViewMode
 class NewSourceDataInputPort(BaseUseCase[NewSourceDataRequest, NewSourceDataResponse, NewSourceDataError]):
     def __init__(
         self,
-        knowledge_source_repository: KnowledgeSourceRepositoryOutputPort,
+        client_repository: ClientRepositoryOutputPort,
         file_repository: FileRepositoryOutputPort,
     ) -> None:
-        self._knowledge_source_repository = knowledge_source_repository
+        self._client_repository = client_repository
         self._file_repository = file_repository
 
     @property
-    def knowledge_source_repository(self) -> KnowledgeSourceRepositoryOutputPort:
-        return self._knowledge_source_repository
+    def client_repository(self) -> ClientRepositoryOutputPort:
+        return self._client_repository
 
     @property
     def file_repository(self) -> FileRepositoryOutputPort:

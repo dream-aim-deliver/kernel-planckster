@@ -32,7 +32,7 @@ from sqlalchemy.orm import Session
 
 from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_conversation_to_core_conversation,
-    convert_sqla_user_message_to_core_user_message,
+    convert_sqla_client_message_to_core_user_message,
     convert_sqla_agent_message_to_core_agent_message,
     convert_sqla_research_context_to_core_research_context,
     convert_sqla_source_data_to_core_source_data,
@@ -199,7 +199,7 @@ class SQLAConversationRepository(ConversationRepository):
 
         for sqla_message in sqla_conversation.messages:
             if isinstance(sqla_message, SQLAUserMessage):
-                core_user_message = convert_sqla_user_message_to_core_user_message(sqla_message)
+                core_user_message = convert_sqla_client_message_to_core_user_message(sqla_message)
                 core_messages.append(core_user_message)
 
             if isinstance(sqla_message, SQLAAgentMessage):
@@ -476,7 +476,7 @@ class SQLAConversationRepository(ConversationRepository):
             core_message: UserMessage | AgentMessage
 
             if isinstance(sqla_message, SQLAUserMessage):
-                core_message = convert_sqla_user_message_to_core_user_message(sqla_message)
+                core_message = convert_sqla_client_message_to_core_user_message(sqla_message)
 
             elif isinstance(sqla_message, SQLAAgentMessage):
                 core_message = convert_sqla_agent_message_to_core_agent_message(sqla_message)

@@ -24,7 +24,7 @@ def test_list_research_contexts_controller(
     controller = app_initialization_container.list_research_contexts_feature.controller()
     assert controller is not None
 
-    controller_parameters = ListResearchContextsControllerParameters(user_id=1)
+    controller_parameters = ListResearchContextsControllerParameters(client_id=1)
 
     view_model: ListResearchContextsViewModel = controller.execute(parameters=controller_parameters)
 

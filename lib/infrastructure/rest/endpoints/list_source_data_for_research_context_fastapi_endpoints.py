@@ -43,14 +43,14 @@ class ListSourceDataForResearchContextFastAPIFeature(
         @self.router.get(
             name=self.name,
             description=self.descriptor.description,
-            path="/research-contexts/{research_context_id}/source_data",
+            path="/research-context/{id}/source",
             responses=self.responses,
         )
         def endpoint(
-            research_context_id: int,
+            id: int,
         ) -> ListSourceDataForResearchContextViewModel | None:
             controller_parameters = ListSourceDataForResearchContextControllerParameters(
-                research_context_id=research_context_id,
+                research_context_id=id,
             )
 
             view_model: ListSourceDataForResearchContextViewModel = self.execute(

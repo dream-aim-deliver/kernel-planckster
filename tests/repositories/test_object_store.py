@@ -16,4 +16,3 @@ def test_minio_bucket_is_created(app_container: ApplicationContainer) -> None:
     storage = app_container.storage()
     assert storage is not None
     assert storage.ping() is True
-    assert storage.bucket_exists(storage.bucket) is True

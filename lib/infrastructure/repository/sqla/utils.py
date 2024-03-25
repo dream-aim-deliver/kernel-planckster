@@ -1,12 +1,11 @@
 from lib.core.entity.models import (
-    LFN,
     LLM,
     Conversation,
     UserMessage,
     AgentMessage,
     ResearchContext,
     SourceData,
-    User,
+    Client,
 )
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
@@ -15,26 +14,26 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAAgentMessage,
     SQLAResearchContext,
     SQLASourceData,
-    SQLAUser,
+    SQLAClient,
 )
 
 
-def convert_sqla_user_to_core_user(sqla_user: SQLAUser) -> User:
+def convert_sqla_client_to_core_client(sqla_client: SQLAClient) -> Client:
     """
-    Converts a SQLAUser to a (core) User
+    Converts a SQLAClient to a (core) Client
 
-    @param sqla_user: The SQLAUser to convert
-    @type sqla_user: SQLAUser
-    @return: The converted User
-    @rtype: User
+    @param sqla_client: The SQLAClient to convert
+    @type sqla_client: SQLAClient
+    @return: The converted Client
+    @rtype: Client
     """
-    return User(
-        created_at=sqla_user.created_at,
-        updated_at=sqla_user.updated_at,
-        deleted=sqla_user.deleted,
-        deleted_at=sqla_user.deleted_at,
-        id=sqla_user.id,
-        sid=sqla_user.sid,
+    return Client(
+        created_at=sqla_client.created_at,
+        updated_at=sqla_client.updated_at,
+        deleted=sqla_client.deleted,
+        deleted_at=sqla_client.deleted_at,
+        id=sqla_client.id,
+        sub=sqla_client.sub,
     )
 
 
@@ -79,25 +78,25 @@ def convert_sqla_conversation_to_core_conversation(sqla_conversation: SQLAConver
     )
 
 
-def convert_sqla_user_message_to_core_user_message(sqla_user_message: SQLAUserMessage) -> UserMessage:
+def convert_sqla_client_message_to_core_user_message(sqla_client_message: SQLAUserMessage) -> UserMessage:
     """
     Converts a SQLAUserMessage to a (core) UserMessage
 
-    @param sqla_user_message: The SQLAUserMessage to convert
-    @type sqla_user_message: SQLAUserMessage
+    @param sqla_client_message: The SQLAUserMessage to convert
+    @type sqla_client_message: SQLAUserMessage
     @return: The converted UserMessage
     @rtype: UserMessage
     """
-    sender = sqla_user_message.conversation.research_context.user.sid
+    sender = sqla_client_message.conversation.research_context.client.sub
 
     return UserMessage(
-        created_at=sqla_user_message.created_at,
-        updated_at=sqla_user_message.updated_at,
-        deleted=sqla_user_message.deleted,
-        deleted_at=sqla_user_message.deleted_at,
-        id=sqla_user_message.id,
-        content=sqla_user_message.content,
-        timestamp=sqla_user_message.timestamp,
+        created_at=sqla_client_message.created_at,
+        updated_at=sqla_client_message.updated_at,
+        deleted=sqla_client_message.deleted,
+        deleted_at=sqla_client_message.deleted_at,
+        id=sqla_client_message.id,
+        content=sqla_client_message.content,
+        timestamp=sqla_client_message.timestamp,
         sender=sender,
     )
 
@@ -127,18 +126,6 @@ def convert_sqla_agent_message_to_core_agent_message(
     )
 
 
-def convert_sqla_lfn_to_core_lfn(sqla_lfn: str) -> LFN:
-    """
-    Converts a SQLALFN to a (core) LFN
-
-    @param sqla_lfn: The SQLALFN to convert
-    @type sqla_lfn: SQLALFN
-    @return: The converted LFN
-    @rtype: LFN
-    """
-    return LFN.from_json(sqla_lfn)
-
-
 def convert_sqla_source_data_to_core_source_data(sqla_source_data: SQLASourceData) -> SourceData:
     """
     Converts a SQLASourceData to a (core) SourceData
@@ -148,7 +135,6 @@ def convert_sqla_source_data_to_core_source_data(sqla_source_data: SQLASourceDat
     @return: The converted SourceData
     @rtype: SourceData
     """
-    core_lfn = convert_sqla_lfn_to_core_lfn(sqla_source_data.lfn)
     return SourceData(
         created_at=sqla_source_data.created_at,
         updated_at=sqla_source_data.updated_at,
@@ -156,22 +142,11 @@ def convert_sqla_source_data_to_core_source_data(sqla_source_data: SQLASourceDat
         deleted_at=sqla_source_data.deleted_at,
         id=sqla_source_data.id,
         name=sqla_source_data.name,
+        relative_path=sqla_source_data.relative_path,
         type=sqla_source_data.type,
-        lfn=core_lfn,
+        protocol=sqla_source_data.protocol,
         status=sqla_source_data.status,
     )
-
-
-def convert_core_lfn_to_sqla_lfn(core_lfn: LFN) -> str:
-    """
-    Converts a (core) LFN to a SQLALFN
-
-    @param core_lfn: The LFN to convert
-    @type core_lfn: LFN
-    @return: The converted SQLALFN
-    @rtype: SQLALFN
-    """
-    return core_lfn.to_json()
 
 
 def convert_core_source_data_to_sqla_source_data(core_source_data: SourceData) -> SQLASourceData:
@@ -183,11 +158,16 @@ def convert_core_source_data_to_sqla_source_data(core_source_data: SourceData) -
     @return: The converted SQLASourceData
     @rtype: SQLASourceData
     """
-    sqla_lfn = convert_core_lfn_to_sqla_lfn(core_source_data.lfn)
     return SQLASourceData(
+        created_at=core_source_data.created_at,
+        updated_at=core_source_data.updated_at,
+        deleted=core_source_data.deleted,
+        deleted_at=core_source_data.deleted_at,
+        id=core_source_data.id,
         name=core_source_data.name,
+        relative_path=core_source_data.relative_path,
         type=core_source_data.type,
-        lfn=sqla_lfn,
+        protocol=core_source_data.protocol,
         status=core_source_data.status,
     )
 

@@ -2,6 +2,7 @@ from datetime import datetime
 import random
 import uuid
 from faker import Faker
+from lib.core.entity.models import MessageSenderTypeEnum
 from lib.core.usecase.new_message_usecase import NewMessageUseCase
 from lib.core.usecase_models.new_message_usecase_models import NewMessageRequest, NewMessageResponse
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -12,7 +13,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAAgentMessage,
     SQLAConversation,
     SQLAMessageBase,
-    SQLAUser,
+    SQLAClient,
     SQLAUserMessage,
 )
 
@@ -21,26 +22,26 @@ def test_new_message_usecase(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user_with_conversation: SQLAUser,
+    fake_client_with_conversation: SQLAClient,
 ) -> None:
     usecase: NewMessageUseCase = app_initialization_container.new_message_feature.usecase()
 
     assert usecase is not None
 
-    user_with_conv = fake_user_with_conversation
+    client_with_conv = fake_client_with_conversation
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user_with_conv.research_contexts,
+        research_contexts=client_with_conv.research_contexts,
     )
 
-    researchContext = random.choice(user_with_conv.research_contexts)
+    researchContext = random.choice(client_with_conv.research_contexts)
     conversation = random.choice(researchContext.conversations)
     # Make it unique to query it later
     conversation_title = f"{conversation.title}-{uuid.uuid4()}"
     conversation.title = conversation_title
 
     with db_session() as session:
-        user_with_conv.save(session=session, flush=True)
+        client_with_conv.save(session=session, flush=True)
         session.commit()
 
     with db_session() as session:
@@ -50,7 +51,7 @@ def test_new_message_usecase(
 
         message_content = f"{fake.text()}-{uuid.uuid4()}"
         timestamp = fake.unix_time()
-        sender_type = random.choice(["user", "agent"])
+        sender_type = random.choice([p.value for p in MessageSenderTypeEnum])
 
         request = NewMessageRequest(
             conversation_id=queried_conversation.id,
@@ -72,9 +73,9 @@ def test_new_message_usecase(
         assert queried_message.timestamp == datetime.fromtimestamp(timestamp)
 
         if isinstance(queried_message, SQLAAgentMessage):
-            assert sender_type == "agent"
+            assert sender_type == MessageSenderTypeEnum.AGENT.value
         elif isinstance(queried_message, SQLAUserMessage):
-            assert sender_type == "user"
+            assert sender_type == MessageSenderTypeEnum.USER.value
         else:
             assert False
 
@@ -83,26 +84,26 @@ def test_new_message_controller(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user_with_conversation: SQLAUser,
+    fake_client_with_conversation: SQLAClient,
 ) -> None:
     controller: NewMessageController = app_initialization_container.new_message_feature.controller()
 
     assert controller is not None
 
-    user_with_conv = fake_user_with_conversation
+    client_with_conv = fake_client_with_conversation
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user_with_conv.research_contexts,
+        research_contexts=client_with_conv.research_contexts,
     )
 
-    researchContext = random.choice(user_with_conv.research_contexts)
+    researchContext = random.choice(client_with_conv.research_contexts)
     conversation = random.choice(researchContext.conversations)
     # Make it unique to query it later
     conversation_title = f"{conversation.title}-{uuid.uuid4()}"
     conversation.title = conversation_title
 
     with db_session() as session:
-        user_with_conv.save(session=session, flush=True)
+        client_with_conv.save(session=session, flush=True)
         session.commit()
 
     with db_session() as session:
@@ -112,7 +113,7 @@ def test_new_message_controller(
 
         message_content = f"{fake.text()}-{uuid.uuid4()}"
         timestamp = fake.unix_time()
-        sender_type = random.choice(["user", "agent"])
+        sender_type = random.choice([p.value for p in MessageSenderTypeEnum])
 
         controller_parameters = NewMessageControllerParameters(
             conversation_id=queried_conversation.id,
@@ -133,8 +134,8 @@ def test_new_message_controller(
         assert queried_message.timestamp == datetime.fromtimestamp(timestamp)
 
         if isinstance(queried_message, SQLAAgentMessage):
-            assert sender_type == "agent"
+            assert sender_type == MessageSenderTypeEnum.AGENT.value
         elif isinstance(queried_message, SQLAUserMessage):
-            assert sender_type == "user"
+            assert sender_type == MessageSenderTypeEnum.USER.value
         else:
             assert False

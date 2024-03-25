@@ -26,8 +26,8 @@ class ListMessagesViewModel(BaseViewModel):
                             "id": 1,
                             "conversation_id": 1,
                             "content": "Hello, world!",
-                            "sender": "user_1",
-                            "sender_type": "user",
+                            "sender": "client_1",
+                            "sender_type": "client",
                         },
                         {
                             "created_at": "2021-01-01T00:00:01Z",

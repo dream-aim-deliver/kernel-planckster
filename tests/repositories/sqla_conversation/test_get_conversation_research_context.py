@@ -9,7 +9,7 @@ from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
-    SQLAUser,
+    SQLAClient,
 )
 
 
@@ -17,17 +17,17 @@ def test_get_research_context_from_conversation(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user_with_conversation: SQLAUser,
+    fake_client_with_conversation: SQLAClient,
 ) -> None:
     conversation_repository = app_initialization_container.sqla_conversation_repository()
 
-    user_with_conv = fake_user_with_conversation
+    client_with_conv = fake_client_with_conversation
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user_with_conv.research_contexts,
+        research_contexts=client_with_conv.research_contexts,
     )
 
-    researchContext = random.choice(user_with_conv.research_contexts)
+    researchContext = random.choice(client_with_conv.research_contexts)
     researchContext_title = researchContext.title
     conversation = random.choice(researchContext.conversations)
     conversation_title = conversation.title
@@ -88,7 +88,7 @@ def test_error_sqla_get_research_context_(
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_conversation: SQLAConversation,
-    fake_user_with_conversation: SQLAUser,
+    fake_client_with_conversation: SQLAClient,
 ) -> None:
     """
     TODO: not sure how to test the case where the error comes from SQLA

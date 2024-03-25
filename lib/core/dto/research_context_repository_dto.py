@@ -1,5 +1,5 @@
 from typing import List
-from lib.core.entity.models import Conversation, ResearchContext, SourceData, User
+from lib.core.entity.models import Conversation, ResearchContext, SourceData, Client
 from lib.core.sdk.dto import BaseDTO
 
 
@@ -13,15 +13,15 @@ class GetResearchContextDTO(BaseDTO[ResearchContext]):
     data: ResearchContext | None = None
 
 
-class GetResearchContextUserDTO(BaseDTO[User]):
+class GetResearchContextClientDTO(BaseDTO[Client]):
     """
-    A DTO for getting the user of a research context
+    A DTO for getting the client that created a research context
 
-    @param data: The user of the research context
-    @type data: User | None
+    @param data: The client that created the research context
+    @type data: Client | None
     """
 
-    data: User | None = None
+    data: Client | None = None
 
 
 class NewResearchContextConversationDTO(BaseDTO[Conversation]):

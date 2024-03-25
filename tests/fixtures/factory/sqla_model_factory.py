@@ -8,7 +8,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAConversation,
     SQLAUserMessage,
     SQLAResearchContext,
-    SQLAUser,
+    SQLAClient,
 )
 from sqlalchemy.orm import Session
 
@@ -29,15 +29,15 @@ class SQLATemporaryModelFactory:
 
     def make_conversation(self, n_messages: int) -> SQLAConversation:
         fake = Faker().unique
-        user_name = fake.name()
-        research_context_name = f"Research Context {user_name} {fake.name()}"
+        client_name = fake.name()
+        research_context_name = f"Research Context {client_name} {fake.name()}"
         research_context_description = fake.text()
-        conversation_name = f"Conversation {user_name} {fake.name()}"
-        sqla_user = SQLAUser(sid=user_name)
+        conversation_name = f"Conversation {client_name} {fake.name()}"
+        sqla_client = SQLAClient(sub=client_name)
         sqla_research_context = SQLAResearchContext(
             title=research_context_name,
             description=research_context_description,
-            user=sqla_user,
+            client=sqla_client,
         )
         llm = SQLALLM(
             llm_name=fake.name(),
@@ -50,12 +50,12 @@ class SQLATemporaryModelFactory:
         )
         for x in range(n_messages):
             dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
-            sqla_user_message = SQLAUserMessage(
+            sqla_client_message = SQLAUserMessage(
                 content=fake.text(max_nb_chars=70)[:-1] + "?",
                 timestamp=dt1,
                 conversation=sqla_conversation,
             )
-            self.session.add(sqla_user_message)
+            self.session.add(sqla_client_message)
             self.session.commit()
-            self.managed_sqla_model_objects.add(sqla_user_message)
+            self.managed_sqla_model_objects.add(sqla_client_message)
         return sqla_conversation

@@ -40,13 +40,19 @@ class GetClientDataForDownloadFastAPIFeature(
         @self.router.get(
             name=self.name,
             description=self.descriptor.description,
-            path="/get_client_data_for_download",
+            path="/client/{id}/download-credentials",
             responses=self.responses,
         )
         def endpoint(
-            lfn: str,
+            id: int,
+            protocol: str,
+            relative_path: str,
         ) -> GetClientDataForDownloadViewModel | None:
-            controller_parameters = GetClientDataForDownloadControllerParameters(lfn_str=lfn)
+            controller_parameters = GetClientDataForDownloadControllerParameters(
+                client_id=id,
+                protocol=protocol,
+                relative_path=relative_path,
+            )
 
             view_model: GetClientDataForDownloadViewModel = self.execute(
                 controller_parameters=controller_parameters,

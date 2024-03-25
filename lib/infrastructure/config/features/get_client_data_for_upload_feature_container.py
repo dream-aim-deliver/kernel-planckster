@@ -13,12 +13,13 @@ from lib.infrastructure.presenter.get_client_data_for_upload_presenter import Ge
 
 
 class GetClientDataForUploadFeatureContainer(BaseFeatureContainer):
+    client_repository: Any = providers.Dependency()
     file_repository: Any = providers.Dependency()
 
     presenter = providers.Factory[GetClientDataForUploadOutputPort](GetClientDataForUploadPresenter)
 
     usecase = providers.Factory[GetClientDataForUploadInputPort](
-        GetClientDataForUploadUsecase, file_repository=file_repository
+        GetClientDataForUploadUsecase, client_repository=client_repository, file_repository=file_repository
     )
 
     controller = providers.Factory(

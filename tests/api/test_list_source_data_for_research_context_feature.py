@@ -16,15 +16,15 @@ from lib.infrastructure.presenter.list_source_data_for_research_context_presente
     ListSourceDataForResearchContextPresenter,
 )
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
-from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAKnowledgeSource, SQLAUser
+from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAClient
 
 
 def test_list_source_data_for_research_context_presenter(
     app_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_knowledge_source_with_source_data_list: List[SQLAKnowledgeSource],
-    fake_user_with_conversation: SQLAUser,
+    fake_client_with_source_data_list: List[SQLAClient],
+    fake_client_with_conversation: SQLAClient,
 ) -> None:
     presenter: ListSourceDataForResearchContextPresenter = (
         app_container.list_source_data_for_research_context_feature.presenter()
@@ -36,21 +36,18 @@ def test_list_source_data_for_research_context_presenter(
 
     assert usecase is not None
 
-    user = fake_user_with_conversation
-    ks_list = fake_knowledge_source_with_source_data_list
+    sqla_client_with_conv = fake_client_with_conversation
+    sqla_client_with_sd_list = fake_client_with_source_data_list
 
-    research_context = random.choice(user.research_contexts)
+    research_context = random.choice(sqla_client_with_conv.research_contexts)
 
-    for ks in ks_list:
-        for source_datum in ks.source_data:
+    for client_with_sd in sqla_client_with_sd_list:
+        for source_datum in client_with_sd.source_data:
             research_context.source_data.append(source_datum)
-
-    source_data = research_context.source_data
-    lfns = [source_datum.lfn for source_datum in source_data]
 
     llm = SQLALLM(
         llm_name=fake.word(),
-        research_contexts=user.research_contexts,
+        research_contexts=sqla_client_with_conv.research_contexts,
     )
 
     with db_session() as session:

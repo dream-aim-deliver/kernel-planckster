@@ -3,32 +3,32 @@ from faker import Faker
 from lib.core.dto.research_context_repository_dto import ListSourceDataDTO
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
-from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAKnowledgeSource, SQLAResearchContext, SQLAUser
+from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAResearchContext, SQLAClient
+from lib.infrastructure.repository.sqla.utils import convert_sqla_source_data_to_core_source_data
 
 
 def test_list_source_data_of_research_context(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user_with_conversation: SQLAUser,
-    fake_knowledge_source_with_source_data: SQLAKnowledgeSource,
+    fake_client_with_conversation: SQLAClient,
+    fake_client_with_source_data: SQLAClient,
 ) -> None:
     research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    user = fake_user_with_conversation
-    ks = fake_knowledge_source_with_source_data
+    client_with_conv = fake_client_with_conversation
+    client_with_sd = fake_client_with_source_data
 
-    research_context = random.choice(user.research_contexts)
+    research_context = random.choice(client_with_conv.research_contexts)
 
-    for source_datum in ks.source_data:
+    for source_datum in client_with_sd.source_data:
         research_context.source_data.append(source_datum)
 
     source_data = research_context.source_data
-    lfns = [source_datum.lfn for source_datum in source_data]
 
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user.research_contexts,
+        research_contexts=client_with_conv.research_contexts,
     )
 
     with db_session() as session:
@@ -37,30 +37,28 @@ def test_list_source_data_of_research_context(
 
         dto: ListSourceDataDTO = research_context_repository.list_source_data(research_context.id)
 
-    assert dto.status == True
-    assert dto.errorCode == None
+        assert dto.status == True
+        assert dto.errorCode == None
 
-    assert dto.data is not None
-    assert len(dto.data) == len(source_data)
+        assert dto.data is not None
 
-    dto_lfns = [source_datum.lfn.to_json() for source_datum in dto.data]
+        core_sd_list = [convert_sqla_source_data_to_core_source_data(sd) for sd in source_data]
 
-    for dto_lfn in dto_lfns:
-        assert dto_lfn in lfns
+        assert dto.data == core_sd_list
 
 
 def test_empty_list_source_data_of_research_context(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user: SQLAUser,
+    fake_client: SQLAClient,
 ) -> None:
     research_context_repository = app_initialization_container.sqla_research_context_repository()
 
     research_context = SQLAResearchContext(
         title=fake.name(),
         description=fake.text(),
-        user=fake_user,
+        client=fake_client,
     )
 
     llm = SQLALLM(
@@ -74,10 +72,10 @@ def test_empty_list_source_data_of_research_context(
 
         dto: ListSourceDataDTO = research_context_repository.list_source_data(research_context.id)
 
-    assert dto.status == True
-    assert dto.data == []
-    assert dto.errorCode == None
-    assert dto.errorMessage == None
+        assert dto.status == True
+        assert dto.data == []
+        assert dto.errorCode == None
+        assert dto.errorMessage == None
 
 
 def test_error_list_source_data_research_context_id_is_None(

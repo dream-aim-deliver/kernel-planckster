@@ -17,7 +17,6 @@ class GetClientDataForDownloadPresenter(GetClientDataForDownloadOutputPort):
             errorMessage=response.errorMessage,
             errorName=response.errorName,
             errorType=response.errorType,
-            lfn=None,
             signed_url="",
         )
 
@@ -27,6 +26,5 @@ class GetClientDataForDownloadPresenter(GetClientDataForDownloadOutputPort):
         return GetClientDataForDownloadViewModel(
             status=True,
             code=200,
-            lfn=response.lfn,
             signed_url=response.credentials,
         )

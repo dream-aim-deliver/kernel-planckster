@@ -7,7 +7,7 @@ from lib.core.sdk.viewmodel import BaseViewModel
 
 class ListSourceDataViewModel(BaseViewModel):
     """
-    View Model for the List Source Data Feature. Represents all source data in the database if no knowledge_source_id was passed, or all source data for a given knowledge_source_id if it was provided as a parameter.
+    View Model for the List Source Data Feature. Represents all source data in the database if no client_id was passed, or all source data for a given client_id if it was provided as a parameter.
     """
 
     source_data_list: List[SourceData] = Field(description="List of source data in the database.")

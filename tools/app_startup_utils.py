@@ -69,7 +69,7 @@ def cleanup_handler(signum, frame) -> None:  # type: ignore
     raise SystemExit(0)
 
 
-def start_depdendencies(
+def start_dependencies(
     project_root_dir: Path,
     compose_rel_path: Path = Path("docker-compose.yml"),
     alemibc_ini_rel_path: Path = Path("alembic.ini"),
@@ -126,6 +126,9 @@ def start_depdendencies(
         db_name=pg_db,
     )
 
+    if storage:
+        print("Testing connection to MinIO...")
+
 
 def stop_dependencies(
     project_root_dir: Path,
@@ -165,7 +168,7 @@ def docker_compose_context(  # type: ignore
     signal.signal(signal.SIGTERM, cleanup_handler)
     signal.signal(signal.SIGINT, cleanup_handler)
     try:
-        start_depdendencies(
+        start_dependencies(
             project_root_dir=project_root_dir,
             compose_rel_path=compose_rel_path,
             alemibc_ini_rel_path=alemibc_ini_rel_path,

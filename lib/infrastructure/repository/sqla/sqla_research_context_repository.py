@@ -1,7 +1,7 @@
 from typing import List
 from lib.core.dto.research_context_repository_dto import (
     GetResearchContextDTO,
-    GetResearchContextUserDTO,
+    GetResearchContextClientDTO,
     ListResearchContextConversationsDTO,
     ListSourceDataDTO,
     NewResearchContextConversationDTO,
@@ -11,12 +11,12 @@ from lib.core.ports.secondary.research_context_repository import ResearchContext
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from sqlalchemy.orm import Session
 
-from lib.infrastructure.repository.sqla.models import SQLAConversation, SQLAResearchContext, SQLAUser
+from lib.infrastructure.repository.sqla.models import SQLAConversation, SQLAResearchContext, SQLAClient
 from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_conversation_to_core_conversation,
     convert_sqla_research_context_to_core_research_context,
     convert_sqla_source_data_to_core_source_data,
-    convert_sqla_user_to_core_user,
+    convert_sqla_client_to_core_client,
 )
 
 
@@ -71,18 +71,18 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
 
         return GetResearchContextDTO(status=True, data=core_research_context)
 
-    def get_research_context_user(self, research_context_id: int) -> GetResearchContextUserDTO:
+    def get_research_context_client(self, research_context_id: int) -> GetResearchContextClientDTO:
         """
         Gets the user of a research context.
 
         @param research_context_id: The ID of the research context to get the user for.
         @type research_context_id: int
         @return: A DTO containing the result of the operation.
-        @rtype: GetResearchContextUserDTO
+        @rtype: GetResearchContextClientDTO
         """
 
         if research_context_id is None:
-            errorDTO = GetResearchContextUserDTO(
+            errorDTO = GetResearchContextClientDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="Research Context ID cannot be None",
@@ -96,7 +96,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
 
         if sqla_research_context is None:
             self.logger.error(f"Research context {research_context_id} not found.")
-            errorDTO = GetResearchContextUserDTO(
+            errorDTO = GetResearchContextClientDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage=f"Research Context with ID {research_context_id} not found in the database.",
@@ -106,23 +106,23 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_user: SQLAUser | None = sqla_research_context.user
+        sqla_client: SQLAClient | None = sqla_research_context.client
 
-        if sqla_user is None:
-            self.logger.error(f"User of research context {research_context_id} not found in the database.")
-            errorDTO = GetResearchContextUserDTO(
+        if sqla_client is None:
+            self.logger.error(f"Client of research context {research_context_id} not found in the database.")
+            errorDTO = GetResearchContextClientDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage=f"User of research context with ID {research_context_id} not found in the database.",
-                errorName="User not found",
-                errorType="UserNotFound",
+                errorMessage=f"Client of research context with ID {research_context_id} not found in the database.",
+                errorName="Client not found",
+                errorType="ClientNotFound",
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        core_user = convert_sqla_user_to_core_user(sqla_user)
+        core_user = convert_sqla_client_to_core_client(sqla_client)
 
-        return GetResearchContextUserDTO(status=True, data=core_user)
+        return GetResearchContextClientDTO(status=True, data=core_user)
 
     def new_conversation(self, research_context_id: int, conversation_title: str) -> NewResearchContextConversationDTO:
         """

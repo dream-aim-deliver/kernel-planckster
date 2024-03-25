@@ -1,5 +1,4 @@
 from typing import Any
-from lib.core.entity.models import KnowledgeSource
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.new_source_data_view_model import NewSourceDataViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -36,16 +35,20 @@ class NewSourceDataFastAPIFeature(FastAPIEndpoint[NewSourceDataControllerParamet
         @self.router.post(
             name=self.name,
             description=self.descriptor.description,
-            path="/knowledge_source/{id}/source_data",
+            path="/client/{id}/source",
             responses=self.responses,
         )
         def endpoint(
             id: int,
-            lfn: str,
             source_data_name: str,
+            source_data_relative_path: str,
+            source_data_protocol: str,
         ) -> NewSourceDataViewModel | None:
             controller_parameters = NewSourceDataControllerParameters(
-                knowledge_source_id=id, lfn=lfn, source_data_name=source_data_name
+                client_id=id,
+                source_data_name=source_data_name,
+                protocol=source_data_protocol,
+                relative_path=source_data_relative_path,
             )
             view_model: NewSourceDataViewModel = self.execute(
                 controller_parameters=controller_parameters,

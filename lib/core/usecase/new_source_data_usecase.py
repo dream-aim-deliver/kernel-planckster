@@ -1,8 +1,5 @@
-import datetime
-import os
-from typing import List
-from lib.core.dto.knowledge_source_repository_dto import NewSourceDataDTO
-from lib.core.entity.models import LFN, ProtocolEnum, SourceData, SourceDataStatusEnum
+from lib.core.dto.client_repository_dto import NewSourceDataDTO
+from lib.core.entity.models import ProtocolEnum, SourceData
 from lib.core.ports.primary.new_source_data_primary_ports import NewSourceDataInputPort
 from lib.core.usecase_models.new_source_data_usecase_models import (
     NewSourceDataError,
@@ -13,84 +10,129 @@ from lib.core.usecase_models.new_source_data_usecase_models import (
 
 class NewSourceDataUseCase(NewSourceDataInputPort):
     def execute(self, request: NewSourceDataRequest) -> NewSourceDataResponse | NewSourceDataError:
-        knowledge_source_repository = self.knowledge_source_repository
-        file_repository = self.file_repository
-
-        knowledge_source_id = request.knowledge_source_id
-        req_lfn = request.lfn
-        req_source_data_name = request.source_data_name
-
-        # 1. First check if the lfn passed is valid
         try:
-            core_lfn = LFN.from_json(req_lfn)
-        except Exception as e:
-            return NewSourceDataError(
-                errorType="Invalid LFN",
-                errorCode=400,
-                errorMessage=f"The lfn '{req_lfn}' is invalid. Please provide a valid lfn. It should be a JSON object with the following fields: 'protocol', 'tracer_id', 'source', 'job_id', 'relative_path'. Example: {{'protocol': 's3', 'tracer_id': 'user_uploads', 'source': 'user', 'job_id': 1234567890, 'relative_path': 'path/to/file'}}. Ideally, it should be one provided by Kernel Planckster, for example when asking to upload a file. Error:\n{e}",
-                errorName="InvalidLFN",
-            )
+            client_repository = self.client_repository
+            file_repository = self.file_repository
 
-        # 2. Then check if the lfn is present as a file in the file storage
-        existence_dto = file_repository.lfn_exists(core_lfn)
+            client_id = request.client_id
 
-        if not existence_dto.status:
-            return NewSourceDataError(
-                errorType=existence_dto.errorType,
-                errorCode=existence_dto.errorCode,
-                errorMessage=existence_dto.errorMessage,
-                errorName=existence_dto.errorName,
-            )
-
-        if not existence_dto.existence:
-            return NewSourceDataError(
-                errorType="File Not Found",
-                errorCode=404,
-                errorMessage=f"The lfn '{core_lfn}' doesn't exist as a file in the file storage. Please upload your file before attempting to register its lfn.",
-                errorName="FileNotFound",
-            )
-
-        # 3. Populate a core source data object
-        status = SourceDataStatusEnum.AVAILABLE
-        type = os.path.splitext(core_lfn.relative_path)[1].replace(".", "")
-
-        core_source_data = SourceData(
-            name=req_source_data_name,
-            type=type,
-            lfn=core_lfn,
-            status=status,
-            # The fields below will be ignored by the repository
-            # and handled automatically by SQLA
-            created_at=datetime.datetime.now(),
-            updated_at=datetime.datetime.now(),
-            deleted=False,
-            deleted_at=None,
-            id=-1,
-        )
-
-        # 4. Register the source data in the database
-        dto: NewSourceDataDTO = knowledge_source_repository.new_source_data(
-            knowledge_source_id=knowledge_source_id,
-            source_data=core_source_data,
-        )
-
-        if dto.status:
-            if dto.data:
-                return NewSourceDataResponse(
-                    source_data=dto.data,
+            # 1. First validate fields
+            try:
+                relative_path = SourceData.relative_path_validation(request.relative_path)
+            except Exception as e:
+                return NewSourceDataError(
+                    errorCode=400,
+                    errorMessage=f"Coudn't validate the relative path: {e}",
+                    errorName="Relative Path Validation Error",
+                    errorType="RelativePathValidationError",
                 )
 
+            try:
+                protocol = SourceData.protocol_validation(request.protocol)
+            except Exception as e:
+                return NewSourceDataError(
+                    errorCode=400,
+                    errorMessage=f"Coudn't validate the protocol: {e}",
+                    errorName="Protocol Validation Error",
+                    errorType="ProtocolValidationError",
+                )
+
+            try:
+                source_data_name = SourceData.name_validation(request.source_data_name)
+            except Exception as e:
+                return NewSourceDataError(
+                    errorCode=400,
+                    errorMessage=f"Coudn't validate the source data name: {e}",
+                    errorName="Source Data Name Validation Error",
+                    errorType="SourceDataNameValidationError",
+                )
+
+            # 2. Then get the client from the database
+            client_query_dto = client_repository.get_client(client_id)
+
+            if not client_query_dto.status:
+                return NewSourceDataError(
+                    errorType=client_query_dto.errorType,
+                    errorCode=client_query_dto.errorCode,
+                    errorMessage=client_query_dto.errorMessage,
+                    errorName=client_query_dto.errorName,
+                )
+
+            if not client_query_dto.data:
+                return NewSourceDataError(
+                    errorType="Client Not Found",
+                    errorCode=404,
+                    errorMessage=f"Client with id {client_id} not found.",
+                    errorName="ClientNotFound",
+                )
+
+            client = client_query_dto.data
+
+            # 3. Then check if the is present as a file in the file storage
+            # NOTE: handle different protocols here, whenever the need arises
+            if protocol == ProtocolEnum.S3:
+                existence_dto = file_repository.composite_index_of_source_data_exists_as_file(
+                    client=client,
+                    protocol=protocol,
+                    relative_path=relative_path,
+                )
+
+                if not existence_dto.status:
+                    return NewSourceDataError(
+                        errorType=existence_dto.errorType,
+                        errorCode=existence_dto.errorCode,
+                        errorMessage=existence_dto.errorMessage,
+                        errorName=existence_dto.errorName,
+                    )
+
+                if existence_dto.existence == False:
+                    return NewSourceDataError(
+                        errorCode=404,
+                        errorMessage=f"Source data with protocol '{protocol}', and relative path '{relative_path}' doesn't exist in the file storage for client '{client.sub}'.",
+                        errorName="Source Data Not Found In File Storage",
+                        errorType="SourceDataNotFoundInFileStorage",
+                    )
             else:
                 return NewSourceDataError(
-                    errorType="Registered Source Data Not Found",
-                    errorCode=404,
-                    errorMessage="The new source data seems to have been registered in the database, but it couldn't be retrieved. Please contact the system administrator.",
-                    errorName="RegisteredSourceDataNotFound",
+                    errorCode=501,
+                    errorMessage=f"Protocol '{protocol}' is not supported.",
+                    errorName="ProtocolNotSupported",
+                    errorType="ProtocolNotSupported",
                 )
 
-        return NewSourceDataError(
-            errorType=dto.errorType,
-            errorCode=dto.errorCode,
-            errorMessage=dto.errorMessage,
-            errorName=dto.errorName,
-        )
+            # 4. Register the source data in the database
+            dto: NewSourceDataDTO = client_repository.new_source_data(
+                client_id=client_id,
+                source_data_name=source_data_name,
+                protocol=protocol,
+                relative_path=relative_path,
+            )
+
+            if dto.status:
+                if dto.data:
+                    return NewSourceDataResponse(
+                        source_data=dto.data,
+                    )
+
+                else:
+                    return NewSourceDataError(
+                        errorType="Registered Source Data Not Found",
+                        errorCode=404,
+                        errorMessage="The new source data seems to have been registered in the database, but it couldn't be retrieved. Please contact the system administrator.",
+                        errorName="RegisteredSourceDataNotFound",
+                    )
+
+            return NewSourceDataError(
+                errorType=dto.errorType,
+                errorCode=dto.errorCode,
+                errorMessage=dto.errorMessage,
+                errorName=dto.errorName,
+            )
+
+        except Exception as e:
+            return NewSourceDataError(
+                errorCode=500,
+                errorMessage=f"Internal Server Error: {e}",
+                errorName="Internal Server Error",
+                errorType="InternalServerError",
+            )

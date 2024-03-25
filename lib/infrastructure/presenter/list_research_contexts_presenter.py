@@ -13,7 +13,7 @@ class ListResearchContextsPresenter(ListResearchContextsOutputPort):
         return ListResearchContextsViewModel(
             status=False,
             research_contexts=[],
-            user_id=response.user_id,
+            client_id=response.client_id,
             code=response.errorCode,
             errorCode=response.errorCode,
             errorMessage=response.errorMessage,
@@ -24,7 +24,7 @@ class ListResearchContextsPresenter(ListResearchContextsOutputPort):
     def convert_response_to_view_model(self, response: ListResearchContextsResponse) -> ListResearchContextsViewModel:
         return ListResearchContextsViewModel(
             status=True,
-            user_id=response.user_id,
+            client_id=response.client_id,
             research_contexts=response.research_contexts,
             code=200,
         )

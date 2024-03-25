@@ -12,7 +12,7 @@ from lib.infrastructure.presenter.list_research_contexts_presenter import ListRe
 
 
 class ListResearchContextsControllerParameters(BaseControllerParameters):
-    user_id: int = Field(description="User ID for which the research contexts are to be listed.")
+    client_id: int = Field(description="Client ID for which the research contexts are to be listed.")
 
 
 class ListResearchContextsController(
@@ -33,4 +33,4 @@ class ListResearchContextsController(
         if parameters is None:
             raise HTTPException(status_code=400, detail="Invalid request parameters.")
         else:
-            return ListResearchContextsRequest(user_id=parameters.user_id)
+            return ListResearchContextsRequest(client_id=parameters.client_id)

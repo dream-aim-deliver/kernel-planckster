@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import HTTPException
 
 from pydantic import Field
@@ -14,16 +13,20 @@ from lib.infrastructure.presenter.new_source_data_presenter import NewSourceData
 
 
 class NewSourceDataControllerParameters(BaseControllerParameters):
-    knowledge_source_id: int = Field(
+    client_id: int = Field(
         title="Knowledge Source ID", description="Research context id for which the source data is to be registered."
-    )
-    lfn: str = Field(
-        title="LFN",
-        description="LFN of the source data to be registered. Must be already present as a file in the file storage.",
     )
     source_data_name: str = Field(
         title="Source Data Name",
         description="Name of the source data to be registered. Should be something meaningful that can be shown to end users.",
+    )
+    protocol: str = Field(
+        title="Protocol",
+        description="The protocol used to access the source data.",
+    )
+    relative_path: str = Field(
+        title="Relative Path",
+        description="The relative path to the source data.",
     )
 
 
@@ -44,7 +47,8 @@ class NewSourceDataController(
             raise HTTPException(status_code=400, detail="Invalid request parameters.")
         else:
             return NewSourceDataRequest(
-                knowledge_source_id=parameters.knowledge_source_id,
-                lfn=parameters.lfn,
+                client_id=parameters.client_id,
                 source_data_name=parameters.source_data_name,
+                protocol=parameters.protocol,
+                relative_path=parameters.relative_path,
             )

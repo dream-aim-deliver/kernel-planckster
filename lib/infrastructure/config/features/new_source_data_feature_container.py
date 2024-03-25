@@ -10,13 +10,13 @@ from lib.infrastructure.presenter.new_source_data_presenter import NewSourceData
 
 
 class NewSourceDataFeatureContainer(BaseFeatureContainer):
-    knowledge_source_repository: Any = providers.Dependency()
+    client_repository: Any = providers.Dependency()
     file_repository: Any = providers.Dependency()
 
     presenter = providers.Factory[NewSourceDataOutputPort](NewSourceDataPresenter)
 
     usecase = providers.Factory[NewSourceDataInputPort](
-        NewSourceDataUseCase, knowledge_source_repository=knowledge_source_repository, file_repository=file_repository
+        NewSourceDataUseCase, client_repository=client_repository, file_repository=file_repository
     )
 
     controller = providers.Factory(

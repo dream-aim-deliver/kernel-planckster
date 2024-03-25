@@ -1,4 +1,3 @@
-from typing import Dict
 from fastapi import HTTPException
 
 from pydantic import Field
@@ -15,7 +14,7 @@ from lib.infrastructure.presenter.create_default_data_presenter import CreateDef
 
 
 class CreateDefaultDataControllerParameters(BaseControllerParameters):
-    user_sid: str | None = Field(title="User String ID", description="SID of the new default user.")
+    client_sub: str | None = Field(title="Client SUB", description="SUB of the new default client.")
 
     llm_name: str | None = Field(title="LLM Name", description="Name of the new default llm.")
 
@@ -33,21 +32,21 @@ class CreateDefaultDataController(
         self,
         usecase: CreateDefaultDataUseCase,
         presenter: CreateDefaultDataPresenter,
-        default_user_sid: str | None = None,
+        default_client_sub: str | None = None,
         default_llm_name: str | None = None,
     ) -> None:
         super().__init__(usecase=usecase, presenter=presenter)
-        self.default_user_sid = default_user_sid if default_user_sid is not None else "admin"
+        self.default_client_sub = default_client_sub if default_client_sub is not None else "SDA"
         self.default_llm_name = default_llm_name if default_llm_name is not None else "gpt4"
 
     def create_request(self, parameters: CreateDefaultDataControllerParameters | None) -> CreateDefaultDataRequest:
         if parameters is None:
             raise HTTPException(status_code=400, detail="Invalid request parameters.")
         else:
-            default_user_sid = self.default_user_sid
+            default_client_sub = self.default_client_sub
             default_llm_name = self.default_llm_name
 
-            user_sid = parameters.user_sid if parameters.user_sid is not None else default_user_sid
+            client_sub = parameters.client_sub if parameters.client_sub is not None else default_client_sub
             llm_name = parameters.llm_name if parameters.llm_name is not None else default_llm_name
 
-            return CreateDefaultDataRequest(user_sid=user_sid, llm_name=llm_name)
+            return CreateDefaultDataRequest(client_sub=client_sub, llm_name=llm_name)

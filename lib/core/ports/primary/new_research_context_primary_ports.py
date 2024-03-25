@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from lib.core.ports.secondary.user_repository import UserRepositoryOutputPort
+from lib.core.ports.secondary.client_repository import ClientRepositoryOutputPort
 from lib.core.sdk.presenter import BasePresenter
 from lib.core.sdk.usecase import BaseUseCase
 from lib.core.usecase_models.new_research_context_usecase_models import (
@@ -13,12 +13,12 @@ from lib.core.view_model.new_research_context_view_mode import NewResearchContex
 class NewResearchContextInputPort(
     BaseUseCase[NewResearchContextRequest, NewResearchContextResponse, NewResearchContextError]
 ):
-    def __init__(self, user_repository: UserRepositoryOutputPort) -> None:
-        self._user_repository = user_repository
+    def __init__(self, client_repository: ClientRepositoryOutputPort) -> None:
+        self._client_repository = client_repository
 
     @property
-    def user_repository(self) -> UserRepositoryOutputPort:
-        return self._user_repository
+    def client_repository(self) -> ClientRepositoryOutputPort:
+        return self._client_repository
 
     @abstractmethod
     def execute(self, request: NewResearchContextRequest) -> NewResearchContextResponse | NewResearchContextError:

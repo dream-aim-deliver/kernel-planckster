@@ -3,31 +3,31 @@ from faker import Faker
 from lib.core.dto.research_context_repository_dto import ListResearchContextConversationsDTO
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
-from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAResearchContext, SQLAUser
+from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAResearchContext, SQLAClient
 
 
 def test_list_conversations_in_research_context(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user_with_conversation: SQLAUser,
+    fake_client_with_conversation: SQLAClient,
 ) -> None:
     sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    user_with_conv = fake_user_with_conversation
+    client_with_conv = fake_client_with_conversation
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user_with_conv.research_contexts,
+        research_contexts=client_with_conv.research_contexts,
     )
 
-    research_context = random.choice(user_with_conv.research_contexts)
+    research_context = random.choice(client_with_conv.research_contexts)
     research_context_title = research_context.title
 
     conversations = research_context.conversations
     conversation_titles = [conversation.title for conversation in conversations]
 
     with db_session() as session:
-        user_with_conv.save(session=session, flush=True)
+        client_with_conv.save(session=session, flush=True)
         session.commit()
 
     with db_session() as session:
@@ -52,7 +52,7 @@ def test_empty_list_conversations_in_research_context(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_user: SQLAUser,
+    fake_client: SQLAClient,
 ) -> None:
     sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
 
@@ -61,18 +61,18 @@ def test_empty_list_conversations_in_research_context(
         description=fake.text(),
     )
 
-    user = fake_user
-    user.research_contexts.append(research_context)
+    client = fake_client
+    client.research_contexts.append(research_context)
 
     llm = SQLALLM(
         llm_name=fake.name(),
-        research_contexts=user.research_contexts,
+        research_contexts=client.research_contexts,
     )
 
-    research_context_title = user.research_contexts[0].title
+    research_context_title = client.research_contexts[0].title
 
     with db_session() as session:
-        user.save(session=session, flush=True)
+        client.save(session=session, flush=True)
         session.commit()
 
     with db_session() as session:
