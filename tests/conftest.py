@@ -349,16 +349,14 @@ def fake_client() -> SQLAClient:
 
 
 def client_with_conversation(number_of_research_contexts: int = 2) -> SQLAClient:
-    fake = Faker().unique
-
-    fake_sub = fake.name()
+    client = sqla_client()
 
     fake_research_contexts_init = tuple(research_context() for _ in range(number_of_research_contexts + 1))
     fake_research_contexts = list(fake_research_contexts_init)
     #    fake_research_context = research_context()
 
     return SQLAClient(
-        sub=fake_sub,
+        sub=client.sub,
         research_contexts=fake_research_contexts,
     )
 
@@ -390,7 +388,7 @@ def source_data() -> SQLASourceData:
     sd_status = SourceDataStatusEnum(sd_status_choice)
 
     sd_name = fake.name()  # Name can be anything
-    sd_relative_path = fake.file_name()
+    sd_relative_path = "".join(f"{uuid.uuid4()}-{fake.file_name()}".replace("-", "/").split())
 
     core_sd = SourceData(  # use the pydantic model to generate a proper one
         id=random.randint(1, 1000),
@@ -468,7 +466,7 @@ def fake_citations() -> List[SQLACitation]:
 def llm() -> SQLALLM:
     fake = Faker().unique
 
-    fake_name = fake.name()
+    fake_name = f"{fake.name()}-{uuid.uuid4()}"
 
     return SQLALLM(
         llm_name=fake_name,

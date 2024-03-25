@@ -16,7 +16,7 @@ def test_new_source_data_feature_is_successful(
 
     fake_sd = fake_source_data
     fake_sd_name = fake_sd.name
-    fake_protocol = fake_sd.protocol
+    fake_protocol = fake_sd.protocol.value
     fake_relative_path = fake_sd.relative_path
 
     controller_parameters = NewSourceDataControllerParameters(

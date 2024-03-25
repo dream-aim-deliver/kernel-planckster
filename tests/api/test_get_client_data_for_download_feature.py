@@ -57,7 +57,7 @@ def test_get_client_data_for_download_feature(
         # Now ask for the download information using the usecase
         request = GetClientDataForDownloadRequest(
             client_id=sqla_client.id,
-            protocol=sqla_source_data.protocol,
+            protocol=sqla_source_data.protocol.value,
             relative_path=sqla_source_data.relative_path,
         )
         response = usecase.execute(request=request)
