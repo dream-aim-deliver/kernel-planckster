@@ -28,9 +28,9 @@ class FastAPIEndpoint(ABC, Generic[TBaseControllerParameters, TBaseViewModel]):
         tags: list[str | Enum] = [name]
         tags.extend(descriptor.tags)
         if self._descriptor.auth:
-            tags.append("Protectected Endpoints")
+            tags.append("protected")
         else:
-            tags.append("Public Endpoints")
+            tags.append("public")
 
         self.prefix = f"/api/v1"
         router: APIRouter = APIRouter(
