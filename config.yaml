@@ -37,7 +37,7 @@ features:
     name: "Sum Feature"
     description: "Adds 2 numbers"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: false
   
@@ -45,7 +45,7 @@ features:
     name: "List Conversations"
     description: "List all conversations in a research context"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -53,7 +53,7 @@ features:
     name: "Create Default Data"
     description: "Create default data for testing: one user with a hard-coded SUB; one llm with a hardcoded name. This is meant to be executed first to setup the necessary components to (1) register new source data, (2) create a new research context selecting from the available source data"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -61,7 +61,7 @@ features:
     name: "Register Source Data"
     description: "Register a new source data in the database"
     version: "1.0.0"
-    tags: ["client: service"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -69,7 +69,7 @@ features:
     name: "List Source Data"
     description: "List all source data registered in the database for a given Client"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -77,7 +77,7 @@ features:
     name: "Create Research Context"
     description: "Create a new research context from a subset of the available source data for a client"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -85,7 +85,7 @@ features:
     name: "Create Conversation"
     description: "Create a new conversation in a research context"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
   
@@ -93,7 +93,7 @@ features:
     name: "List Research Contexts"
     description: "List all research contexts in the database for a given user"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -101,7 +101,7 @@ features:
     name: "List Source Data for Research Context"
     description: "List all source data registered in the database for a given research context"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -109,7 +109,7 @@ features:
     name: "Get Client Data for Upload"
     description: "Get the data required to upload a file to one of the storage services"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -117,7 +117,7 @@ features:
     name: "Get Client Data for Download"
     description: "Get the data required to download a file from one of the storage services"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -125,7 +125,7 @@ features:
     name: "List Messages"
     description: "List all messages in a conversation"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true
 
@@ -133,6 +133,6 @@ features:
     name: "Create Message"
     description: "Create a new message in a conversation"
     version: "1.0.0"
-    tags: ["client: websat"]
+    tags: ["client"]
     enabled: true
     auth: true

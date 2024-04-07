@@ -36,7 +36,24 @@ source .venv/bin/activate
 
 # Install poetry
 pip install poetry
+```
 
+On ARM architectures ( like Apple Silicone), you might need to install `psycopg2` with the following command:
+
+```bash
+brew install libpq --build-from-source
+brew install openssl
+
+export LDFLAGS="-L/opt/homebrew/opt/openssl@1.1/lib -L/opt/homebrew/opt/libpq/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/openssl@1.1/include -I/opt/homebrew/opt/libpq/include"
+
+pip3 install psycopg2
+
+```
+
+Continue with the setup as follows:
+
+```bash
 # Install dependencies
 poetry install
 
