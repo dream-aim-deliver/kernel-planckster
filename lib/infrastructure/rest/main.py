@@ -1,10 +1,8 @@
-import argparse
 import importlib
 import os
 from pathlib import Path
 import signal
 from typing import Any
-from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI
 
 import uvicorn
@@ -16,7 +14,7 @@ from lib.infrastructure.controller.create_default_data_controller import (
     CreateDefaultDataControllerParameters,
 )
 import lib.infrastructure.rest.endpoints as endpoints
-from tools.app_startup_utils import cleanup_handler, docker_compose_context, start_dependencies, stop_dependencies
+from tools.app_startup_utils import cleanup_handler, start_dependencies, stop_dependencies
 
 
 def create_app() -> FastAPI:
@@ -66,30 +64,17 @@ def dev_server() -> None:
     signal.signal(signal.SIGTERM, cleanup_handler)
     signal.signal(signal.SIGINT, cleanup_handler)
 
-    parser = argparse.ArgumentParser(description="Kernel Planchester Development Server")
-    parser.add_argument("--storage", action="store_true", help="Start the server with storage")
-    args = parser.parse_args()
-
-    storage = False
-    if args.storage:
-        # Start the server with storage and load the .env.development file
-        storage = True
-        dev_env_file = "../../../.env.development"
-        load_dotenv(dev_env_file)
-
     start_dependencies(
         project_root_dir=Path(__file__).parent.parent.parent.parent,
         compose_rel_path=Path("docker-compose.yml"),
         alemibc_ini_rel_path=Path("alembic.ini"),
-        pg_host=os.getenv("KP_PG_HOST", "0.0.0.0"),
-        pg_port=int(os.getenv("KP_PG_PORT", "5432")),
-        pg_user=os.getenv("KP_PG_USER", "postgres"),
-        pg_password=os.getenv("KP_PG_PASSWORD", "postgres"),
-        pg_db=os.getenv("KP_PG_DB", "kp-db"),
-        storage=storage,
+        pg_host=os.getenv("KP_RDBMS_HOST", "0.0.0.0"),
+        pg_port=int(os.getenv("KP_RDBMS_PORT", "5432")),
+        pg_user=os.getenv("KP_RDBMS_USERNAME", "postgres"),
+        pg_password=os.getenv("KP_RDBMS_PASSWORD", "postgres"),
+        pg_db=os.getenv("KP_RDBMS_DBNAME", "kp-db"),
     )
     app = create_app()
-
     host = app.container.config.fastapi.host()  # type: ignore
     port = app.container.config.fastapi.port()  # type: ignore
     uvicorn.run("lib.infrastructure.rest.main:create_app", host=host, port=port, reload=True)
@@ -100,11 +85,49 @@ def dev_server() -> None:
     )
 
 
+def dev_server_with_storage() -> None:
+    signal.signal(signal.SIGTERM, cleanup_handler)
+    signal.signal(signal.SIGINT, cleanup_handler)
+
+    start_dependencies(
+        project_root_dir=Path(__file__).parent.parent.parent.parent,
+        compose_rel_path=Path("docker-compose.yml"),
+        alemibc_ini_rel_path=Path("alembic.ini"),
+        pg_host=os.getenv("KP_RDBMS_HOST", "0.0.0.0"),
+        pg_port=int(os.getenv("KP_RDBMS_PORT", "5432")),
+        pg_user=os.getenv("KP_RDBMS_USERNAME", "postgres"),
+        pg_password=os.getenv("KP_RDBMS_PASSWORD", "postgres"),
+        pg_db=os.getenv("KP_RDBMS_DBNAME", "kp-db"),
+        enable_storage=True,
+        object_store_host=os.getenv("KP_OBJECT_STORE_HOST", "localhost"),
+        object_store_port=int(os.getenv("KP_OBJECT_STORE_PORT", "9001")),
+        object_store_access_key=os.getenv("KP_OBJECT_STORE_ACCESS_KEY", "minio"),
+        object_store_secret_key=os.getenv("KP_OBJECT_STORE_SECRET_KEY", "minio123"),
+        object_store_default_bucket=os.getenv("KP_OBJECT_STORE_DEFAULT_BUCKET", "default"),
+    )
+    app = create_app()
+    host = app.container.config.fastapi.host()  # type: ignore
+    port = app.container.config.fastapi.port()  # type: ignore
+    uvicorn.run("lib.infrastructure.rest.main:create_app", host=host, port=port, reload=True)
+
+    stop_dependencies(
+        project_root_dir=Path(__file__).parent.parent.parent.parent,
+        compose_rel_path=Path("docker-compose.yml"),
+    )
+
+
+def start() -> None:
+    app = create_app()
+    host = app.container.config.fastapi.host()  # type: ignore
+    port = app.container.config.fastapi.port()  # type: ignore
+    uvicorn.run("lib.infrastructure.rest.main:create_app", host=host, port=port, proxy_headers=True, reload=False)
+
+
 if __name__ == "__main__":
     if os.getenv("KP_MODE") == "development":
         dev_server()
+    elif os.getenv("KP_MODE") == "development_with_storage":
+        dev_server_with_storage()
     else:
-        app = create_app()
-        host = app_container.config.fastapi.host()  # type: ignore
-        port = app_container.config.fastapi.port()  # type: ignore
-        uvicorn.run(app, host=host, port=port)
+        # Production mode
+        start()

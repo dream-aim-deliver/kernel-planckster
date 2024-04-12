@@ -5,7 +5,7 @@ services:
   db:
     image: postgres
     restart: always
-    container_name: kp-test
+    container_name: kp-db
     # IMPORTANT: ensure pytest's environment config matches in pyproject.toml with the environment config here 
     environment:
       POSTGRES_PASSWORD: postgres
