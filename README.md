@@ -61,12 +61,29 @@ poetry install
 pre-commit install
 pre-commit run --all-files
 
-# Create a .env file
-cp .env.example .env
-
 # Set up environment variables for pytest in pyproject.toml as needed, but the defaults should work
 ```
 
+### Configuration
+
+Kernel Planckster is configured via environment variables directly. These environment variables are NOT loaded from any `.env` file. You can set these environment variables in your shell or in your IDE.
+
+| Name                          | Default Value |
+| ----------------------------- | ------------- |
+| KP_ROOT_DIRECTORY             | ./tests/mocks |
+| KP_SOURCE_DATA_DIR            | source_data   |
+| KP_RDBMS_HOST                 | localhost     |
+| KP_RDBMS_PORT                 | 5435          |
+| KP_RDBMS_DBNAME               | kp-db         |
+| KP_RDBMS_USERNAME             | postgres      |
+| KP_RDBMS_PASSWORD             | postgres      |
+| KP_FASTAPI_PORT               | 8005          |
+| KP_OBJECT_STORE_HOST          | localhost     |
+| KP_OBJECT_STORE_PORT          | 9002          |
+| KP_OBJECT_STORE_ACCESS_KEY    | minio         |
+| KP_OBJECT_STORE_SECRET_KEY    | minio123      |
+| KP_OBJECT_STORE_BUCKET        | default       |
+| KP_OBJECT_STORE_SIGNED_URL_EXPIRY | 60        |
 
 ### Autogenerate Alembic Migrations
 
@@ -118,7 +135,7 @@ Database: kp-db
 To test the object store in dev mode, you can run:
 
 ```bash
-poetry run dev --storage
+poetry run dev:storage
 ```
 
 This will do the same as `poetry run dev` but also start a minio container:
@@ -175,17 +192,41 @@ You can also access `MinIO` at `http://localhost:9002` to check the object stora
 
 
 
-### Running the production server (FastAPI/Socket.IO)
+### Running the production server (FastAPI)
+In production mode, you must configure the dependencies like MinIO, Postgres, Kafka, etc. via environment variables.
 
-You can start the FastAPI production server with:
+See the configuration section above for the list of environment variables.
+
+Below is an example of environment variables that you can set in your shell if you are starting the provided `docker-compose.yml` file
 
 ```bash
- cd lib/infrastructure/rest
  export KP_MODE=production
- export KP_DB_URL=postgresql://postgres:postgres@localhost:5432/kp-db
- poetry run dev
+ export KP_FASTAPI_HOST=0.0.0.0
+ export KP_FASTAPI_PORT=80
+ export KP_FASTAPI_RELOAD=false
+ export KP_RDBMS_HOST=localhost
+ export KP_RDBMS_PORT=5435
+ export KP_RDBMS_DBNAME=kp-db
+ export KP_RDBMS_USERNAME=postgres
+ export KP_RDBMS_PASSWORD=postgres
+ export KP_OBJECT_STORE_HOST=localhost
+ export KP_OBJECT_STORE_PORT=9002
+ export KP_OBJECT_STORE_ACCESS_KEY=minio
+ export KP_OBJECT_STORE_SECRET_KEY=minio123
+ export KP_OBJECT_STORE_BUCKET=default
+ export KP_OBJECT_STORE_SIGNED_URL_EXPIRY=60
+
 ```
 
+Then you can run the server with:
+
+```bash
+poetry run start
+```
+
+In production mode, the Uvicorn server is not started with the `--reload` flag, so you will have to restart the server manually if you make any changes to the code.
+
+Additionally, the `--proxy-headers` flag is set to `True` by default in production mode. This is to ensure that the correct client IP address is logged in the server logs. This will tell Uvicorn to trust the headers sent by that proxy telling it that the application is running behind HTTPS, etc.
 
 ## Contributing
 
