@@ -124,7 +124,6 @@ def dev_server_with_storage() -> None:
 
 
 def start() -> None:
-
     # check is provided RDBMS is reachable
 
     # check if RDBMS env vars are set
