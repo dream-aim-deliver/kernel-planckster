@@ -16,12 +16,8 @@ class ListMessagesPresenter(ListMessagesOutputPort):
         )
 
     def convert_response_to_view_model(self, response: ListMessagesResponse) -> ListMessagesViewModel:
-        message_list = []
-        if len(response.message_list) > 0:
-            message_list = [msg.to_json() for msg in response.message_list]
-
         return ListMessagesViewModel(
             status=True,
             code=200,
-            message_list=message_list,
+            message_list=response.message_list,
         )
