@@ -14,7 +14,14 @@ from lib.infrastructure.controller.create_default_data_controller import (
     CreateDefaultDataControllerParameters,
 )
 import lib.infrastructure.rest.endpoints as endpoints
-from tools.app_startup_utils import cleanup_handler, start_dependencies, stop_dependencies
+from tools.app_startup_utils import (
+    cleanup_handler,
+    run_alembic_migrations,
+    start_dependencies,
+    stop_dependencies,
+    wait_for_minio_to_be_responsive,
+    wait_for_postgres_to_be_responsive,
+)
 
 
 def create_app() -> FastAPI:
@@ -117,6 +124,73 @@ def dev_server_with_storage() -> None:
 
 
 def start() -> None:
+
+    # check is provided RDBMS is reachable
+
+    # check if RDBMS env vars are set
+    rdbms_host = os.getenv("KP_RDBMS_HOST")
+    rdbms_port = os.getenv("KP_RDBMS_PORT")
+    rdbms_user = os.getenv("KP_RDBMS_USERNAME")
+    rdbms_password = os.getenv("KP_RDBMS_PASSWORD")
+    rdbms_db_name = os.getenv("KP_RDBMS_DBNAME")
+    if not rdbms_host or not rdbms_port or not rdbms_user or not rdbms_password or not rdbms_db_name:
+        raise Exception("RDBMS env vars are not set")
+
+    wait_for_postgres_to_be_responsive(
+        db_host=rdbms_host,
+        db_port=int(rdbms_port),
+        db_user=rdbms_user,
+        db_password=rdbms_password,
+        db_name=rdbms_db_name,
+        max_retries=10,
+        wait_seconds=5,
+    )
+
+    # Apply migrations
+    project_root_dir = Path(__file__).parent.parent.parent.parent
+    alemibc_ini_rel_path = Path("alembic.ini")
+    alembic_ini_path = str(project_root_dir / alemibc_ini_rel_path)
+    print(f"Alembic ini file: {alembic_ini_path}")
+    alembic_scripts_path = str(project_root_dir / "alembic")
+    run_alembic_migrations(
+        alembic_ini_path=alembic_ini_path,
+        alembic_scripts_path=alembic_scripts_path,
+        db_host=rdbms_host,
+        db_port=int(rdbms_port),
+        db_user=rdbms_user,
+        db_password=rdbms_password,
+        db_name=rdbms_db_name,
+    )
+
+    # check if env vars for object store are set
+    object_store_host = os.getenv("KP_OBJECT_STORE_HOST")
+    object_store_port = os.getenv("KP_OBJECT_STORE_PORT")
+    object_store_access_key = os.getenv("KP_OBJECT_STORE_ACCESS_KEY")
+    object_store_secret_key = os.getenv("KP_OBJECT_STORE_SECRET_KEY")
+    object_store_default_bucket = os.getenv("KP_OBJECT_STORE_BUCKET")
+
+    if (
+        not object_store_host
+        or not object_store_port
+        or not object_store_access_key
+        or not object_store_secret_key
+        or not object_store_default_bucket
+    ):
+        raise Exception("Object store env vars are not set")
+
+    # check if provided object store is reachable
+    wait_for_minio_to_be_responsive(
+        host=object_store_host,
+        port=int(object_store_port),
+        access_key=object_store_access_key,
+        secret_key=object_store_secret_key,
+        default_bucket=object_store_default_bucket,
+        max_retries=10,
+        wait_seconds=5,
+    )
+
+    # TODO: check if provided Kafka is reachable
+
     app = create_app()
     host = app.container.config.fastapi.host()  # type: ignore
     port = app.container.config.fastapi.port()  # type: ignore
