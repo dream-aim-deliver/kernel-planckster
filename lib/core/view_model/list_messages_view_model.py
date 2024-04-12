@@ -10,7 +10,9 @@ class ListMessagesViewModel(BaseViewModel):
     View Model for the List Messages Feature. Represents all messages in the database for a given conversation.
     """
 
-    message_list: List[str] = Field(description="List of all messages in the database for a given conversation.")
+    message_list: List[MessageBase] = Field(
+        description="List of all messages in the database for a given conversation."
+    )
 
     model_config = {
         "json_schema_extra": {
