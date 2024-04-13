@@ -19,6 +19,10 @@ class MinIOObjectStore:
     @type host: str
     @ivar port: The port of the MinIO S3 Object Store.
     @type port: str
+    @ivar secure: Whether the connection to MinIO is secure. ( HTTP or HTTPS )
+    @type secure: bool
+    @ivar cert_check: Whether to check the certificate of the MinIO S3 Object Store.
+    @type cert_check: bool
     @ivar signed_url_expiry: The expiry time for signed URLs in minutes.
     @type signed_url_expiry: int
     """
@@ -29,6 +33,8 @@ class MinIOObjectStore:
         port: str,
         access_key: str,
         secret_key: str,
+        secure: bool = False,
+        cert_check: bool = False,
         signed_url_expiry: int = 60,
     ) -> None:
         self._access_key = access_key
@@ -36,6 +42,8 @@ class MinIOObjectStore:
         self._host = host
         self._port = port
         self._signed_url_expiry = signed_url_expiry
+        self._secure = secure
+        self._cert_check = cert_check
         self._client = self._get_client()
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -64,7 +72,8 @@ class MinIOObjectStore:
             self.url,
             access_key=self._access_key,
             secret_key=self._secret_key,
-            secure=False,  # TODO: make this configurable
+            secure=self._secure,
+            cert_check=self._cert_check,
         )
         return client
 

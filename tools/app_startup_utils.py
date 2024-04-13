@@ -26,20 +26,25 @@ def is_minio_responsive(
     port: int,
     access_key: str,
     secret_key: str,
+    secure: bool,
+    cert_check: bool,
     default_bucket: str,
 ) -> bool:
     try:
+        print(f"Trying to connect to MinIO at {host}:{port}")
         minio = Minio(
             f"{host}:{port}",
             access_key=access_key,
             secret_key=secret_key,
-            secure=False,  # TODO: make this configurable
+            secure=secure,
+            cert_check=cert_check,
         )
         if not minio.bucket_exists(default_bucket):
             minio.make_bucket(default_bucket)
         minio.remove_bucket(default_bucket)
         return True
     except Exception as e:
+        print(f"Failed to connect to MinIO with error: {e}")
         return False
 
 
@@ -67,6 +72,8 @@ def wait_for_minio_to_be_responsive(
     access_key: str,
     secret_key: str,
     default_bucket: str,
+    secure: bool = False,
+    cert_check: bool = False,
     max_retries: int = 10,
     wait_seconds: int = 5,
 ) -> None:
@@ -77,6 +84,8 @@ def wait_for_minio_to_be_responsive(
             access_key=access_key,
             secret_key=secret_key,
             default_bucket=default_bucket,
+            secure=secure,
+            cert_check=cert_check,
         ):
             return
         else:
@@ -128,6 +137,8 @@ def start_dependencies(
     object_store_port: int = 9001,
     object_store_access_key: str = "minio",
     object_store_secret_key: str = "minio123",
+    object_store_secure: bool = False,
+    object_store_cert_check: bool = False,
     object_store_default_bucket: str = "default",
 ) -> None:
     print("Starting Docker Compose service...")
@@ -173,6 +184,8 @@ def start_dependencies(
             access_key=object_store_access_key,
             secret_key=object_store_secret_key,
             default_bucket=object_store_default_bucket,
+            secure=object_store_secure,
+            cert_check=object_store_cert_check,
             max_retries=10,
             wait_seconds=5,
         )

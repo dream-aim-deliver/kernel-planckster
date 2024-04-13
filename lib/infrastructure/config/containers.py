@@ -60,6 +60,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
         port=config.object_store.port.as_int(),
         access_key=config.object_store.access_key,
         secret_key=config.object_store.secret_key,
+        secure=config.object_store.secure,
+        cert_check=config.object_store.cert_check,
         signed_url_expiry=config.object_store.signed_url_expiry.as_int(),
     )
 

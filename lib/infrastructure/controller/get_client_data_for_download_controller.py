@@ -12,7 +12,7 @@ from lib.infrastructure.presenter.get_client_data_for_download_presenter import 
 
 
 class GetClientDataForDownloadControllerParameters(BaseControllerParameters):
-    client_id: str = Field(title="Client ID", description="The ID of the client requesting the download.")
+    client_id: int = Field(title="Client ID", description="The ID of the client requesting the download.")
 
     protocol: str = Field(title="Protocol", description="The protocol of the file to be downloaded.")
 

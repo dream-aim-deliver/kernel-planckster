@@ -4,6 +4,7 @@ from pathlib import Path
 import signal
 from typing import Any
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 import uvicorn
 from lib.core.sdk.fastapi import FastAPIEndpoint
@@ -112,6 +113,7 @@ def dev_server_with_storage() -> None:
         object_store_secret_key=os.getenv("KP_OBJECT_STORE_SECRET_KEY", "minio123"),
         object_store_default_bucket=os.getenv("KP_OBJECT_STORE_DEFAULT_BUCKET", "default"),
     )
+
     app = create_app()
     host = app.container.config.fastapi.host()  # type: ignore
     port = app.container.config.fastapi.port()  # type: ignore
@@ -167,6 +169,8 @@ def start() -> None:
     object_store_access_key = os.getenv("KP_OBJECT_STORE_ACCESS_KEY")
     object_store_secret_key = os.getenv("KP_OBJECT_STORE_SECRET_KEY")
     object_store_default_bucket = os.getenv("KP_OBJECT_STORE_BUCKET")
+    object_store_secure = os.getenv("KP_OBJECT_STORE_SECURE", "true").lower() == "true"
+    object_store_cert_check = os.getenv("KP_OBJECT_STORE_CERT_CHECK", "false").lower() == "true"
 
     if (
         not object_store_host
@@ -183,6 +187,8 @@ def start() -> None:
         port=int(object_store_port),
         access_key=object_store_access_key,
         secret_key=object_store_secret_key,
+        secure=object_store_secure,
+        cert_check=object_store_cert_check,
         default_bucket=object_store_default_bucket,
         max_retries=10,
         wait_seconds=5,
@@ -191,6 +197,19 @@ def start() -> None:
     # TODO: check if provided Kafka is reachable
 
     app = create_app()
+
+    # Add CORS middleware
+    default_origins = ["http://localhost", "http://localhost:3000", "http://localhost:8080"]
+    allowed_origins = os.getenv("KP_ALLOWED_ORIGINS", "").split(",")
+    final_origins = default_origins + [x.strip() for x in allowed_origins if x.strip() != ""]
+    print(f"Allowed origins: {final_origins}")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=final_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     host = app.container.config.fastapi.host()  # type: ignore
     port = app.container.config.fastapi.port()  # type: ignore
     uvicorn.run("lib.infrastructure.rest.main:create_app", host=host, port=port, proxy_headers=True, reload=False)

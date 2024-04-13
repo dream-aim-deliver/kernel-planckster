@@ -20,6 +20,8 @@ object_store:
   port: ${KP_OBJECT_STORE_PORT:9001}
   access_key: ${KP_OBJECT_STORE_ACCESS_KEY:minio}
   secret_key: ${KP_OBJECT_STORE_SECRET_KEY:minio123}
+  secure: ${KP_OBJECT_STORE_SECURE:false}
+  cert_check: ${KP_OBJECT_STORE_CERT_CHECK:false}
   signed_url_expiry: ${KP_OBJECT_STORE_SIGNED_URL_EXPIRY:60}
 
 fastapi:
