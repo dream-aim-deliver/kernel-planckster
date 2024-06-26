@@ -83,6 +83,14 @@ features:
     enabled: true
     auth: true
 
+  Extend_research_context:
+    name: "Extend Research Context"
+    description: "Create a new research context incorporating source data from an existing context with new source data from the client"
+    version: "1.0.0"
+    tags: ["client"]
+    enabled: true
+    auth: true
+
   new_conversation:
     name: "Create Conversation"
     description: "Create a new conversation in a research context"
