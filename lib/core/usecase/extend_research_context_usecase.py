@@ -53,43 +53,47 @@ class ExtendResearchContextUseCase(ExtendResearchContextInputPort):
                 )
 
             # 2. Check if the client has access to the source data
-            new_client_source_data_list_dto: ListSourceDataDTO = client_repository.list_source_data(
+            client_source_data_list_dto: ListSourceDataDTO = client_repository.list_source_data(
                 client_id=retrieved_client.id
             )
 
-            if not new_client_source_data_list_dto.status:
+            if not client_source_data_list_dto.status:
                 return ExtendResearchContextError(
-                    errorCode=new_client_source_data_list_dto.errorCode,
-                    errorMessage=new_client_source_data_list_dto.errorMessage,
-                    errorName=new_client_source_data_list_dto.errorName,
-                    errorType=new_client_source_data_list_dto.errorType,
+                    errorCode=client_source_data_list_dto.errorCode,
+                    errorMessage=client_source_data_list_dto.errorMessage,
+                    errorName=client_source_data_list_dto.errorName,
+                    errorType=client_source_data_list_dto.errorType,
                 )
 
-            new_client_source_data_list = new_client_source_data_list_dto.data
+            client_source_data_list = client_source_data_list_dto.data
 
-            if len(new_client_source_data_list) == 0:
+            if len(client_source_data_list) == 0:
                 return ExtendResearchContextError(
                     errorCode=404,
-                    errorMessage=f"New Source Data couldn't be retrieved for client with SUB {retrieved_client.sub}.",
-                    errorName="NewSourceDataNotRetrieved",
-                    errorType="NewSourceDataNotRetrieved",
+                    errorMessage=f"Source Data couldn't be retrieved for client with SUB {retrieved_client.sub}.",
+                    errorName="SourceDataNotRetrieved",
+                    errorType="SourceDataNotRetrieved",
                 )
 
-            authorized_new_source_data_ids = [sd.id for sd in new_client_source_data_list]
+            authorized_source_data_ids = [sd.id for sd in client_source_data_list]
 
-            unauthorized_new_source_data_ids = [
-                sd_id for sd_id in new_source_data_ids_req if sd_id not in authorized_new_source_data_ids
+            unauthorized_source_data_ids = [
+                sd_id for sd_id in new_source_data_ids_req if sd_id not in authorized_source_data_ids
             ]
 
-            if len(unauthorized_new_source_data_ids) > 0:
+            if len(unauthorized_source_data_ids) > 0:
                 return ExtendResearchContextError(
                     errorCode=403,
-                    errorMessage=f"Client with SUB {retrieved_client.sub} is not authorized to access the following source data ids: {unauthorized_new_source_data_ids}",
+                    errorMessage=f"Client with SUB {retrieved_client.sub} is not authorized to access the following source data ids: {unauthorized_source_data_ids}",
                     errorName="UnauthorizedSourceData",
                     errorType="UnauthorizedSourceData",
                 )
 
             # 3. Ensure that there are actually new data sources, and deduplicate as needed
+
+            new_authorized_source_data_ids = [
+                sd_id for sd_id in new_source_data_ids_req if sd_id in authorized_source_data_ids
+            ]
 
             existing_client_source_data_list_dto: ResearchContextListSourceDataDTO = (
                 research_context_repository.list_source_data(research_context_id=existing_research_context_id)
@@ -108,7 +112,7 @@ class ExtendResearchContextUseCase(ExtendResearchContextInputPort):
             existing_client_source_data_ids = [sd.id for sd in existing_client_source_data_list]
 
             extending_client_source_data_ids = [
-                sd_id for sd_id in existing_client_source_data_ids if sd_id not in authorized_new_source_data_ids
+                sd_id for sd_id in new_authorized_source_data_ids if sd_id not in existing_client_source_data_ids
             ]
 
             if len(extending_client_source_data_ids) == 0:
@@ -119,7 +123,7 @@ class ExtendResearchContextUseCase(ExtendResearchContextInputPort):
                     errorType="NoNewSourceData",
                 )
 
-            final_source_data_list = authorized_new_source_data_ids + extending_client_source_data_ids
+            final_source_data_list = existing_client_source_data_ids + extending_client_source_data_ids
 
             # 4. Create the new research context including all (deduplicated) data sources, new and old
             dto: NewResearchContextDTO = client_repository.new_research_context(
