@@ -16,7 +16,12 @@ from lib.infrastructure.repository.sqla.models import (
 )
 
 
-def test_extend_research_context(
+def test_extend_research_context_presenter(app_container: ApplicationContainer) -> None:
+    presenter = app_container.extend_research_context_feature.presenter()
+    assert presenter is not None
+
+
+def test_extend_research_context_usecase(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
