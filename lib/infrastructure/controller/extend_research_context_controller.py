@@ -7,7 +7,7 @@ from lib.core.usecase_models.extend_research_context_usecase_models import (
     ExtendResearchContextRequest,
     ExtendResearchContextResponse,
 )
-from lib.core.view_model.new_research_context_view_mode import NewResearchContextViewModel
+from lib.core.view_model.extend_research_context_view_model import ExtendResearchContextViewModel
 from lib.infrastructure.presenter.extend_research_context_presenter import ExtendResearchContextPresenter
 
 
@@ -44,7 +44,7 @@ class ExtendResearchContextController(
         ExtendResearchContextRequest,
         ExtendResearchContextResponse,
         ExtendResearchContextError,
-        NewResearchContextViewModel,
+        ExtendResearchContextViewModel,
     ]
 ):
     def __init__(

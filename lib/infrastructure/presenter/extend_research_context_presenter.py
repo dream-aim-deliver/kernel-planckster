@@ -3,12 +3,14 @@ from lib.core.usecase_models.extend_research_context_usecase_models import (
     ExtendResearchContextError,
     ExtendResearchContextResponse,
 )
-from lib.core.view_model.new_research_context_view_mode import NewResearchContextViewModel
+from lib.core.view_model.extend_research_context_view_model import ExtendResearchContextViewModel
 
 
 class ExtendResearchContextPresenter(ExtendResearchContextOutputPort):
-    def convert_error_response_to_view_model(self, response: ExtendResearchContextError) -> NewResearchContextViewModel:
-        return NewResearchContextViewModel(
+    def convert_error_response_to_view_model(
+        self, response: ExtendResearchContextError
+    ) -> ExtendResearchContextViewModel:
+        return ExtendResearchContextViewModel(
             status=False,
             code=response.errorCode,
             errorCode=response.errorCode,
@@ -21,12 +23,12 @@ class ExtendResearchContextPresenter(ExtendResearchContextOutputPort):
             llm_name="",
         )
 
-    def convert_response_to_view_model(self, response: ExtendResearchContextResponse) -> NewResearchContextViewModel:
+    def convert_response_to_view_model(self, response: ExtendResearchContextResponse) -> ExtendResearchContextViewModel:
         research_context_id = response.research_context.id
         research_context_title = response.research_context.title
         llm_name = response.llm.llm_name
 
-        return NewResearchContextViewModel(
+        return ExtendResearchContextViewModel(
             status=True,
             code=200,
             research_context_id=research_context_id,
