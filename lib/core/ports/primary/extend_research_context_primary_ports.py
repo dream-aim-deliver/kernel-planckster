@@ -8,7 +8,7 @@ from lib.core.usecase_models.extend_research_context_usecase_models import (
     ExtendResearchContextRequest,
     ExtendResearchContextResponse,
 )
-from lib.core.view_model.new_research_context_view_mode import NewResearchContextViewModel
+from lib.core.view_model.extend_research_context_view_model import ExtendResearchContextViewModel
 
 
 class ExtendResearchContextInputPort(
@@ -38,14 +38,16 @@ class ExtendResearchContextInputPort(
 
 
 class ExtendResearchContextOutputPort(
-    BasePresenter[ExtendResearchContextResponse, ExtendResearchContextError, NewResearchContextViewModel]
+    BasePresenter[ExtendResearchContextResponse, ExtendResearchContextError, ExtendResearchContextViewModel]
 ):
     @abstractmethod
-    def convert_error_response_to_view_model(self, response: ExtendResearchContextError) -> NewResearchContextViewModel:
+    def convert_error_response_to_view_model(
+        self, response: ExtendResearchContextError
+    ) -> ExtendResearchContextViewModel:
         raise NotImplementedError(
             "You must implement the convert_error_response_to_view_model method in your presenter"
         )
 
     @abstractmethod
-    def convert_response_to_view_model(self, response: ExtendResearchContextResponse) -> NewResearchContextViewModel:
+    def convert_response_to_view_model(self, response: ExtendResearchContextResponse) -> ExtendResearchContextViewModel:
         raise NotImplementedError("You must implement the convert_response_to_view_model method in your presenter")

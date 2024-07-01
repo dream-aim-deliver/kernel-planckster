@@ -12,7 +12,7 @@ from lib.infrastructure.controller.extend_research_context_controller import (
     ExtendResearchContextController,
     ExtendResearchContextControllerParameters,
 )
-from lib.core.view_model.new_research_context_view_mode import NewResearchContextViewModel
+from lib.core.view_model.extend_research_context_view_model import ExtendResearchContextViewModel
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
@@ -31,14 +31,14 @@ def test_extend_research_context_usecase(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_client_with_research_context_and_new_sources: SQLAClient,  # Fake client with Research Context
+    fake_client_with_research_context_and_sources: SQLAClient,  # Fake client with Research Context
     fake_source_data_list: list[SQLAResearchContext],
 ) -> None:
     usecase: ExtendResearchContextUseCase = app_initialization_container.extend_research_context_feature.usecase()
 
     assert usecase is not None
 
-    client_with_context = fake_client_with_research_context_and_new_sources
+    client_with_context = fake_client_with_research_context_and_sources
     llm_name = fake.name()
 
     existing_research_context = random.choice(client_with_context.research_contexts)
@@ -120,7 +120,7 @@ def test_extend_research_context_usecase(
             if sd_id not in queried_existing_source_data_ids
         ]
 
-        assert len(extending_source_data_check) != 0
+        assert len(extending_source_data_check) > 0
 
         new_source_data_overlap_check = [
             sd_id for sd_id in new_source_data_ids if sd_id not in queried_new_research_context_source_data_ids
@@ -138,7 +138,7 @@ def test_extend_research_context_controller(
     app_initialization_container: ApplicationContainer,
     db_session: TDatabaseFactory,
     fake: Faker,
-    fake_client_with_research_context_and_new_sources: SQLAClient,
+    fake_client_with_research_context_and_sources: SQLAClient,
     fake_source_data_list: list[SQLAResearchContext],
 ) -> None:
     controller: ExtendResearchContextController = (
@@ -147,7 +147,7 @@ def test_extend_research_context_controller(
 
     assert controller is not None
 
-    client_with_context = fake_client_with_research_context_and_new_sources
+    client_with_context = fake_client_with_research_context_and_sources
     llm_name = fake.name()
 
     existing_research_context = random.choice(client_with_context.research_contexts)
@@ -161,7 +161,7 @@ def test_extend_research_context_controller(
     new_source_data_list: List[SQLASourceData] = []
     for source_data in incoming_source_data_list:
         while source_data.id is None or source_data.id in existing_source_data_ids + new_source_data_list:
-            source_data.id = random.randint(1001, 2000)
+            source_data.id = random.randint(2001, 3000)
         new_source_data_list.append(source_data)
 
     client_with_context.source_data.extend(new_source_data_list)
@@ -210,7 +210,7 @@ def test_extend_research_context_controller(
         view_model = controller.execute(parameters=controller_parameters)
 
         assert view_model is not None
-        assert isinstance(view_model, NewResearchContextViewModel)
+        assert isinstance(view_model, ExtendResearchContextViewModel)
 
         assert view_model.research_context_id is not None
 
@@ -229,7 +229,7 @@ def test_extend_research_context_controller(
             if sd_id not in queried_existing_source_data_ids
         ]
 
-        assert len(extending_source_data_check) == 0
+        assert len(extending_source_data_check) > 0
 
         new_source_data_overlap_check = [
             sd_id for sd_id in new_source_data_ids if sd_id not in queried_new_research_context_source_data_ids
