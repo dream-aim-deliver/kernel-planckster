@@ -455,9 +455,13 @@ def client_with_research_context_and_new_sources(
     fake_source_data_init = tuple(source_data() for _ in range(number_of_new_source_data + 1))
     fake_source_data = list(fake_source_data_init)
 
-    client.source_data.extend(fake_source_data)
+    # client.source_data.extend(fake_source_data)
 
-    return client
+    return SQLAClient(
+        sub=client.sub,
+        research_contexts=fake_research_contexts,
+        source_data=fake_source_data,
+    )
 
 
 @pytest.fixture(scope="function")

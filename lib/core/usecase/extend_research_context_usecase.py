@@ -89,7 +89,7 @@ class ExtendResearchContextUseCase(ExtendResearchContextInputPort):
                     errorType="UnauthorizedSourceData",
                 )
 
-            # 3. Ensure that there are actually new data sources, and deduplicate as needed
+            # 3. Ensure that there's actually a research context, new data sources, and deduplicate as needed
 
             new_authorized_source_data_ids = [
                 sd_id for sd_id in new_source_data_ids_req if sd_id in authorized_source_data_ids
@@ -104,9 +104,9 @@ class ExtendResearchContextUseCase(ExtendResearchContextInputPort):
             if not isinstance(existing_client_source_data_list, list):
                 return ExtendResearchContextError(
                     errorCode=404,
-                    errorMessage=f"Source Data for existing research context couldn't be retrieved for client with SUB {retrieved_client.sub}.",
-                    errorName="Existing Source Data Not Retrieved",
-                    errorType="ExistingSourceDataNotRetrieved",
+                    errorMessage=f"Research context {existing_research_context_id} not found. Please provide a valid ID for an existing research context.",
+                    errorName="Existing Research Context Not Found",
+                    errorType="ExistingResearchContectNotFound",
                 )
 
             existing_client_source_data_ids = [sd.id for sd in existing_client_source_data_list]
