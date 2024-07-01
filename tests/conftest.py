@@ -443,6 +443,32 @@ def fake_client_with_source_data_list() -> List[SQLAClient]:
     return [client_with_source_data() for _ in range(10)]
 
 
+def client_with_research_context_and_sources(
+    number_of_research_contexts: int = 2,
+    number_of_new_source_data: int = 3,
+) -> SQLAClient:
+    client = sqla_client()
+
+    fake_research_contexts_init = tuple(research_context() for _ in range(number_of_research_contexts + 1))
+    fake_research_contexts = list(fake_research_contexts_init)
+
+    fake_source_data_init = tuple(source_data() for _ in range(number_of_new_source_data + 1))
+    fake_source_data = list(fake_source_data_init)
+
+    # client.source_data.extend(fake_source_data)
+
+    return SQLAClient(
+        sub=client.sub,
+        research_contexts=fake_research_contexts,
+        source_data=fake_source_data,
+    )
+
+
+@pytest.fixture(scope="function")
+def fake_client_with_research_context_and_sources() -> SQLAClient:
+    return client_with_research_context_and_sources()
+
+
 def citation() -> SQLACitation:
     fake = Faker().unique
 
