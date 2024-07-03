@@ -6,6 +6,7 @@ from lib.core.usecase.extend_research_context_usecase import ExtendResearchConte
 from lib.core.usecase_models.extend_research_context_usecase_models import (
     ExtendResearchContextRequest,
     ExtendResearchContextResponse,
+    ExtendResearchContextError,
 )
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.controller.extend_research_context_controller import (
@@ -133,6 +134,20 @@ def test_extend_research_context_usecase(
             set(queried_new_research_context_source_data_ids)
         )
 
+        redundant_request = ExtendResearchContextRequest(
+            new_research_context_title=new_research_context_title,
+            new_research_context_description=new_research_context_description,
+            client_sub=queried_client.sub,
+            llm_name=llm_name,
+            new_source_data_ids=queried_existing_source_data_ids,
+            existing_research_context_id=queried_existing_research_context.id,
+        )
+        redundant_response = usecase.execute(request=redundant_request)
+
+        assert redundant_response is not None
+        assert isinstance(redundant_response, ExtendResearchContextError)
+        assert redundant_response.errorType == "NoNewSourceData"
+
 
 def test_extend_research_context_controller(
     app_initialization_container: ApplicationContainer,
@@ -241,3 +256,17 @@ def test_extend_research_context_controller(
         assert len(queried_new_research_context_source_data_ids) == len(
             set(queried_new_research_context_source_data_ids)
         )
+
+        redundant_controller_parameters = ExtendResearchContextControllerParameters(
+            new_research_context_title=new_research_context_title,
+            new_research_context_description=new_research_context_description,
+            client_sub=queried_client.sub,
+            llm_name=llm_name,
+            new_source_data_ids=queried_existing_source_data_ids,
+            existing_research_context_id=queried_existing_research_context.id,
+        )
+        redundant_view_model = controller.execute(parameters=redundant_controller_parameters)
+
+        assert redundant_view_model is not None
+        assert isinstance(redundant_view_model, ExtendResearchContextViewModel)
+        assert redundant_view_model.errorType == "NoNewSourceData"
