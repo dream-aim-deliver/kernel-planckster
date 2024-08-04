@@ -31,7 +31,7 @@ fastapi:
   reload: ${KP_FASTAPI_RELOAD:false}
 
 default_data:
-  client_sub: "SDA"
+  client_sub: "planckster-example@mpi-sws.org"
   llm_name: "gpt4"
 
 features:
