@@ -17,7 +17,7 @@ docker build --rm -t maany/kernel-planckster .
 
 ## Bring up the dependencies
 ```
-docker-compose -f docker-compose.yml --profile storage up -d
+docker compose -f docker-compose.yml --profile storage up -d
 ```
 
 ## Run the Docker container
@@ -56,5 +56,5 @@ docker stop kernel-planckster && docker rm kernel-planckster
 
 ## Bring down the dependencies
 ```bash
-docker-compose -f docker-compose.yml --profile storage down
+docker compose -f docker-compose.yml --profile storage down
 ```
