@@ -34,10 +34,10 @@ jobs:
 
     - name: Test Containers
       run: |
-        docker-compose -f tests/docker-compose.yml up -d
+        docker compose -f tests/docker-compose.yml up -d
         sleep 30
         docker ps -a
-        docker-compose -f tests/docker-compose.yml down
+        docker compose -f tests/docker-compose.yml down
     - name: Run pytest
       run: |
         poetry run pytest -s
