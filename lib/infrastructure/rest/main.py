@@ -83,6 +83,18 @@ def dev_server() -> None:
         pg_db=os.getenv("KP_RDBMS_DBNAME", "kp-db"),
     )
     app = create_app()
+    # Add CORS middleware
+    default_origins = ["http://localhost", "http://localhost:3000", "http://localhost:8080"]
+    allowed_origins = os.getenv("KP_ALLOWED_ORIGINS", "").split(",")
+    final_origins = default_origins + [x.strip() for x in allowed_origins if x.strip() != ""]
+    print(f"Allowed origins: {final_origins}")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=final_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     host = app.container.config.fastapi.host()  # type: ignore
     port = app.container.config.fastapi.port()  # type: ignore
     uvicorn.run("lib.infrastructure.rest.main:create_app", host=host, port=port, reload=True)
@@ -115,6 +127,18 @@ def dev_server_with_storage() -> None:
     )
 
     app = create_app()
+    # Add CORS middleware
+    default_origins = ["http://localhost", "http://localhost:3000", "http://localhost:8080"]
+    allowed_origins = os.getenv("KP_ALLOWED_ORIGINS", "").split(",")
+    final_origins = default_origins + [x.strip() for x in allowed_origins if x.strip() != ""]
+    print(f"Allowed origins: {final_origins}")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=final_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     host = app.container.config.fastapi.host()  # type: ignore
     port = app.container.config.fastapi.port()  # type: ignore
     uvicorn.run("lib.infrastructure.rest.main:create_app", host=host, port=port, reload=True)
