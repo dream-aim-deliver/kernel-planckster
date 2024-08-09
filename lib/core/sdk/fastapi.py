@@ -2,10 +2,15 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Annotated, Any, Dict, Generic
 from fastapi import APIRouter, Depends, HTTPException, Header
+from pydantic import ValidationError
 from lib.core.sdk.controller import BaseController, TBaseControllerParameters
 from lib.core.sdk.feature_descriptor import BaseFeatureDescriptor
+import logging
+
+logger = logging.getLogger(__name__)
 
 from lib.core.sdk.viewmodel import (
+    BaseViewModel,
     TBaseViewModel,
 )
 
@@ -81,7 +86,19 @@ class FastAPIEndpoint(ABC, Generic[TBaseControllerParameters, TBaseViewModel]):
                 raise HTTPException(status_code=500, detail="Internal Server Error. Did not receive a view model")
             else:
                 return view_model
+        except ValidationError as ve:
+            return self.controller.presenter.present_error(
+                BaseViewModel(
+                    status=False,
+                    code=400,
+                    errorCode=400,
+                    errorMessage="Bad Request",
+                    errorName="Bad Request",
+                    errorType=f"ValidationError: {ve}",
+                )
+            )
         except Exception as e:
+            logger.error(f"Critical Error in {self.name} endpoint. See the following exception: {e}")
             raise e
 
     def check_auth(self, x_auth_token: Annotated[str, Header()]) -> None:
