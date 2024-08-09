@@ -92,9 +92,9 @@ class FastAPIEndpoint(ABC, Generic[TBaseControllerParameters, TBaseViewModel]):
                     status=False,
                     code=400,
                     errorCode=400,
-                    errorMessage="Bad Request",
-                    errorName="Bad Request",
-                    errorType=f"ValidationError: {ve}",
+                    errorMessage=f"ValidationError: {ve}",
+                    errorName="Controller Parameter Validation Error",
+                    errorType=f"ControllerParameterValidationError",
                 )
             )
         except Exception as e:
