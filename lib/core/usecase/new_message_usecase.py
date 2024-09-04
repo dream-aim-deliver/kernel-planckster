@@ -9,9 +9,10 @@ class NewMessageUseCase(NewMessageInputPort):
     def execute(self, request: NewMessageRequest) -> NewMessageResponse | NewMessageError:
         try:
             conversation_id = request.conversation_id
-            message_content = request.message_content
+            message_contents = request.message_contents
             sender_type_str_raw = request.sender_type
             timestamp_int = request.unix_timestamp
+            thread_id = request.thread_id
 
             try:
                 sender_type_str = "".join(sender_type_str_raw.lower().split())
@@ -38,9 +39,10 @@ class NewMessageUseCase(NewMessageInputPort):
 
             dto: NewMessageDTO = self.conversation_repository.new_message(
                 conversation_id=conversation_id,
-                message_content=message_content,
+                message_contents=message_contents,
                 sender_type=sender_type,
                 timestamp=timestamp,
+                thread_id=thread_id,
             )
 
             if dto.status:

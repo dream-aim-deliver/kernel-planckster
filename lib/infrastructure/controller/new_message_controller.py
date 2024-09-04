@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from pydantic import Field
+from typing import List
 from lib.core.sdk.controller import BaseController, BaseControllerParameters
 from lib.core.usecase.new_message_usecase import NewMessageUseCase
 from lib.core.usecase_models.new_message_usecase_models import NewMessageError, NewMessageRequest, NewMessageResponse
@@ -13,9 +14,9 @@ class NewMessageControllerParameters(BaseControllerParameters):
         description="The ID of the conversation to which the message is to be added.",
     )
 
-    message_content: str = Field(
-        title="Message Content",
-        description="The content of the message to be added.",
+    message_contents: List[str] = Field(
+        title="Message Contents",
+        description="The pieces of content connected to the new message.",
     )
 
     sender_type: str = Field(
@@ -26,6 +27,11 @@ class NewMessageControllerParameters(BaseControllerParameters):
     unix_timestamp: int = Field(
         title="Unix Timestamp",
         description="The timestamp of the message. Needs to be a valid timestamp in Unix time.",
+    )
+
+    thread_id: int | None = Field(
+        title="Thread ID",
+        description="The ID of the thread to which the message belongs. Only passed when message is in response to an existing message.",
     )
 
 
@@ -51,7 +57,8 @@ class NewMessageController(
         else:
             return NewMessageRequest(
                 conversation_id=parameters.conversation_id,
-                message_content=parameters.message_content,
+                message_contents=parameters.message_contents,
                 sender_type=parameters.sender_type,
                 unix_timestamp=parameters.unix_timestamp,
+                thread_id=parameters.thread_id,
             )

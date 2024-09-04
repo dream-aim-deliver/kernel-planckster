@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.new_message_view_model import NewMessageViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -40,15 +40,17 @@ class NewMessageFastAPIFeature(FastAPIEndpoint[NewMessageControllerParameters, N
         )
         def endpoint(
             id: int,
-            message_content: str,
+            message_contents: List[str],
             sender_type: str,
             unix_timestamp: int,
+            thread_id: int | None,
         ) -> NewMessageViewModel | None:
             controller_parameters = NewMessageControllerParameters(
                 conversation_id=id,
-                message_content=message_content,
+                message_contents=message_contents,
                 sender_type=sender_type,
                 unix_timestamp=unix_timestamp,
+                thread_id=thread_id,
             )
 
             view_model: NewMessageViewModel = self.execute(

@@ -2,7 +2,7 @@ from enum import Enum
 import os
 import re
 from pydantic import BaseModel, field_validator, model_validator
-from typing import TypeVar
+from typing import TypeVar, List
 from datetime import datetime
 
 
@@ -273,27 +273,42 @@ class MessageSenderTypeEnum(Enum):
     AGENT = "agent"
 
 
+class MessageContent(BaseSoftDeleteKernelPlancksterModel):
+    """
+    Represents the pieces of content that can comprise a message
+
+    @param id: the ID of the message content
+    @type id: int
+    @param ontent: the content of the message
+    @type content: str
+    """
+
+    id: int
+    content: str
+
+
 class MessageBase(BaseSoftDeleteKernelPlancksterModel):
     """
     Base class for user queries and agent responses
 
     @param id: the id of the message
     @type id: int
-    @param content: the content of the message
-    @type content: str
     @param timestamp: the datetime when the message was sent
     @type timestamp: datetime
     @param sender: the name of the sender of the message
     @type sender: str
     @param sender_type: the type of the sender of the message
     @type sender_type: MessageSenderTypeEnum
+    @param message_contents: A list of the content pieces of the message
+    @type message_contents: List[MessageContent]
     """
 
     id: int
-    content: str
     timestamp: datetime
+    thread_id: int
     sender: str
     sender_type: MessageSenderTypeEnum
+    message_contents: List[MessageContent]
 
 
 TMessageBase = TypeVar("TMessageBase", bound=MessageBase)

@@ -346,8 +346,8 @@ class SQLAConversation(Base, SoftModelBase):  # type: ignore
     @type title: str
     @param research_context_id: The ID of the research context of the conversation
     @type research_context_id: int
-    @param messages: The messages of the conversation
-    @type messages: List[SQLAMessageBase]
+    @param message_segments: The message segments of the conversation
+    @type message_segments: List[SQLAMessageBase]
     """
 
     __tablename__ = "conversation"
@@ -386,22 +386,28 @@ class SQLAMessageBase(Base, SoftModelBase):  # type: ignore
 
     @param id: The ID of the message
     @type id: int
-    @param content: The content of the message
-    @type content: str
+    @param thread_id: The ID of the thread of the message
+    @type thread_id: int
     @param timestamp: The timestamp of the message
     @type timestamp: datetime
     @param type: The type of the message
     @type type: str
-    @param conversation_id: The ID of the conversation of the message
+    @param message_contents: A list of the content pieces of the message
+    @type message_contents: List[SQLAMessageContent]
+    @param conversation_id: The ID of the conversation containing the message
     @type conversation_id: int
     """
 
     __tablename__ = "message_base"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    content: Mapped[str] = mapped_column(String, nullable=False)
+    thread_id: Mapped[int] = mapped_column(Integer, nullable=False)
     timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     type: Mapped[str]
+
+    message_contents: Mapped[List["SQLAMessageContent"]] = relationship(
+        "SQLAMessageContent", backref="message_base"
+    )
     conversation_id: Mapped[int] = mapped_column(ForeignKey("conversation.id"), nullable=False)
 
     __mapper_args__ = {
@@ -416,13 +422,15 @@ class SQLAUserMessage(SQLAMessageBase):
 
     @param id: The ID of the message
     @type id: int
-    @param content: The content of the message
-    @type content: str
-    @param timestamp: The timestamp of the message
-    @type timestamp: datetime
+    @param thread_id: The ID of the thread of the message
+    @type thread_id: int
+    @param message_timestamp: The timestamp of the message
+    @type message_timestamp: datetime
     @param type: The type of the message
     @type type: str
-    @param conversation_id: The ID of the conversation of the message
+    @param message_contents: The content pieces of the message
+    @type message_contents: List[SQLAMessageContent]
+    @param conversation_id: The ID of the conversation containing the message
     @type conversation_id: int
     """
 
@@ -441,13 +449,13 @@ class SQLAAgentMessage(SQLAMessageBase):
 
     @param id: The ID of the message
     @type id: int
-    @param content: The content of the message
-    @type content: str
-    @param timestamp: The timestamp of the message
-    @type timestamp: datetime
+    @param thread_id: The ID of the thread of the message
+    @type thread_id: int
     @param type: The type of the message
     @type type: str
-    @param conversation_id: The ID of the conversation of the message
+    @param message_contents: The content pieces of the message
+    @type message_contents: List[SQLAMessageContent]
+    @param conversation_id: The ID of the conversation containing the message
     @type conversation_id: int
     @param citations: The citations from source data used to produce the message
     @type citations: List[SQLACitation]
@@ -458,7 +466,9 @@ class SQLAAgentMessage(SQLAMessageBase):
     __tablename__ = "agent_message"
 
     id: Mapped[int] = mapped_column(ForeignKey("message_base.id"), primary_key=True)
-    citations: Mapped[List["SQLACitation"]] = relationship("SQLACitation", backref="agent_message")
+    citations: Mapped[List["SQLACitation"]] = relationship(
+        "SQLACitation", backref="agent_message"
+    )
     source_data: Mapped[List["SQLASourceData"]] = relationship(
         "SQLASourceData", secondary=SQLACitation.__tablename__, backref="agent_message"
     )
@@ -466,3 +476,22 @@ class SQLAAgentMessage(SQLAMessageBase):
     __mapper_args__ = {
         "polymorphic_identity": "agent_message",
     }
+
+class SQLAMessageContent(Base, SoftModelBase): # type: ignore
+    """
+    SQLAlchemy Message Content model
+
+    @param id: The ID of the message content
+    @type id: int
+    @param content: The piece of content of the message
+    @type content: str
+    @param message_id: The ID of the message containing the message content
+    @type message_segments: int
+    """
+
+    __tablename__ = "message_content"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    content: Mapped[str] = mapped_column(String, nullable=False)
+
+    message_id: Mapped[int] = mapped_column(ForeignKey("message_base.id"), nullable=False)

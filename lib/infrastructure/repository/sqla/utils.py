@@ -3,6 +3,7 @@ from lib.core.entity.models import (
     Conversation,
     UserMessage,
     AgentMessage,
+    MessageContent,
     ResearchContext,
     SourceData,
     Client,
@@ -12,6 +13,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAConversation,
     SQLAUserMessage,
     SQLAAgentMessage,
+    SQLAMessageContent,
     SQLAResearchContext,
     SQLASourceData,
     SQLAClient,
@@ -78,7 +80,9 @@ def convert_sqla_conversation_to_core_conversation(sqla_conversation: SQLAConver
     )
 
 
-def convert_sqla_client_message_to_core_user_message(sqla_client_message: SQLAUserMessage) -> UserMessage:
+def convert_sqla_client_message_to_core_user_message(
+    sqla_client_message: SQLAUserMessage,
+) -> UserMessage:
     """
     Converts a SQLAUserMessage to a (core) UserMessage
 
@@ -95,8 +99,9 @@ def convert_sqla_client_message_to_core_user_message(sqla_client_message: SQLAUs
         deleted=sqla_client_message.deleted,
         deleted_at=sqla_client_message.deleted_at,
         id=sqla_client_message.id,
-        content=sqla_client_message.content,
+        message_contents=sqla_client_message.message_contents,
         timestamp=sqla_client_message.timestamp,
+        thread_id=sqla_client_message.thread_id,
         sender=sender,
     )
 
@@ -120,9 +125,30 @@ def convert_sqla_agent_message_to_core_agent_message(
         deleted=sqla_agent_message.deleted,
         deleted_at=sqla_agent_message.deleted_at,
         id=sqla_agent_message.id,
-        content=sqla_agent_message.content,
+        message_contents=sqla_agent_message.message_contents,
         timestamp=sqla_agent_message.timestamp,
+        thread_id=sqla_agent_message.thread_id,
         sender=sender,
+    )
+
+def convert_sqla_message_content_to_core_message_content(
+    sqla_message_content: SQLAMessageContent,
+) -> MessageContent:
+    """
+    Converts a SQLAMessageContent to a (core) MessageContent
+
+    @param sqla_message_content: The SQLAMessageContent to convert
+    @type sqla_source_data: SQLAMessageContent
+    @return: The converted MessageContent
+    @rtype: MessageContent
+    """
+    return MessageContent(
+        created_at=sqla_message_content.created_at,
+        updated_at=sqla_message_content.updated_at,
+        deleted=sqla_message_content.deleted,
+        deleted_at=sqla_message_content.deleted_at,
+        id=sqla_message_content.id,
+        content=sqla_message_content.content,
     )
 
 
