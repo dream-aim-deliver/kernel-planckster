@@ -36,7 +36,12 @@ def test_list_conversation_messages(
     conversation.title = conversation_title
 
     messages = conversation.messages
-    message_contents = tuple([message.content for message in messages])
+    messages_contents = tuple(
+        [
+            piece.content for message in messages
+            for piece in message.message_contents
+        ]
+    )
 
     with db_session() as session:
         client_with_conv.save(session=session, flush=True)
@@ -59,7 +64,11 @@ def test_list_conversation_messages(
 
     for message in list_conv_msgs_DTO.data:
         assert message is not None
-        assert message.content in message_contents
+        message_contents = message.message_contents
+        assert message_contents is not None
+
+        for piece in message_contents:
+            assert piece.content in messages_contents
 
 
 def test_error_list_conversation_messages_none_conversation_id(

@@ -9,6 +9,7 @@ from lib.core.entity.models import (
     SourceData,
     TMessageBase,
     UserMessage,
+    MessageContent,
 )
 
 
@@ -78,3 +79,13 @@ class NewMessageDTO(BaseDTO[MessageBase]):
     """
 
     data: UserMessage | AgentMessage | None = None
+
+class NewMessageContentDTO(BaseDTO[MessageContent]):
+    """
+    A DTO for adding a piece of content to a message
+
+    @param data: The new content to add to the message
+    @type data: MessageContent | None
+    """
+
+    data: MessageContent | None = None

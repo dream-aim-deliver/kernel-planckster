@@ -8,6 +8,7 @@ from lib.core.dto.conversation_repository_dto import (
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
     NewMessageDTO,
+    NewMessageContentDTO,
     UpdateConversationDTO,
 )
 from lib.core.entity.models import (
@@ -17,6 +18,7 @@ from lib.core.entity.models import (
     SourceData,
     TMessageBase,
     UserMessage,
+    MessageContent,
 )
 from lib.core.ports.secondary.conversation_repository import ConversationRepository
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
@@ -25,15 +27,18 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAMessageBase,
     SQLAUserMessage,
     SQLAAgentMessage,
+    SQLAMessageContent,
     SQLAResearchContext,
     SQLASourceData,
 )
 from sqlalchemy.orm import Session
+from sqlalchemy import Select, Result, select, func
 
 from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_conversation_to_core_conversation,
     convert_sqla_client_message_to_core_user_message,
     convert_sqla_agent_message_to_core_agent_message,
+    convert_sqla_message_content_to_core_message_content,
     convert_sqla_research_context_to_core_research_context,
     convert_sqla_source_data_to_core_source_data,
 )
@@ -366,22 +371,124 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_source_data,
         )
 
+    # def new_message_content(self, message_id: int, content: str) -> NewMessageContentDTO:
+    #     """
+    #     Creates a piece of content for a message.
+
+    #     @param content: The piece of content of the message
+    #     @type content: str
+    #     @param message_id: The ID of the message containing the message content
+    #     @return: A DTO containing the result of the operation.
+    #     @rtype: NewMessageContentDTO
+    #     """
+
+    #     if message_id is None:
+    #         errorDTO = NewMessageContentDTO(
+    #             status=False,
+    #             errorCode=-1,
+    #             errorMessage="Message ID cannot be None",
+    #             errorName="Message ID not provided",
+    #             errorType="MessageIdNotProvided",
+    #         )
+    #         self.logger.error(f"{errorDTO}")
+    #         return errorDTO
+
+    #     if content is None:
+    #         errorDTO = NewMessageContentDTO(
+    #             status=False,
+    #             errorCode=-1,
+    #             errorMessage="Content cannot be None",
+    #             errorName="Content not provided",
+    #             errorType="ContentNotProvided",
+    #         )
+    #         self.logger.error(f"{errorDTO}")
+    #         return errorDTO
+
+    #     # 1. Obtain the message and check if it exists
+
+    #     try:
+    #         sqla_message: SQLAMessageBase | None = self.session.get(SQLAMessageBase, message_id)
+
+    #     except Exception as e:
+    #         self.logger.error(f"Error while querying the database for message with ID {message_id}: {e}")
+    #         errorDTO = NewMessageContentDTO(
+    #             status=False,
+    #             errorCode=-1,
+    #             errorMessage=f"Error while querying the database for message with ID {message_id}: {e}",
+    #             errorName="ErrorWhileQueryingDatabase",
+    #             errorType="ErrorWhileQueryingDatabase",
+    #         )
+    #         self.logger.error(f"{errorDTO}")
+    #         return errorDTO
+
+    #     if sqla_message is None:
+    #         self.logger.error(f"Message with ID {message_id} not found in the database.")
+    #         errorDTO = NewMessageContentDTO(
+    #             status=False,
+    #             errorCode=-1,
+    #             errorMessage=f"Message with ID {message_id} not found in the database.",
+    #             errorName="Message not found",
+    #             errorType="MessageNotFound",
+    #         )
+    #         self.logger.error(f"{errorDTO}")
+    #         return errorDTO
+
+    #     # 2. Create the message content object
+
+    #     sqla_message_content: SQLAMessageContent = SQLAMessageContent(
+    #         content=content,
+    #         message_id=message_id,
+    #         # message_id=SQLAMessageBase(message_id=message_id),
+    #     )
+
+    #     try:
+    #         sqla_message_content.save(session=self.session)
+    #         self.session.commit()
+
+    #         core_message_content: MessageContent
+
+    #         core_message_content = convert_sqla_message_content_to_core_message_content(
+    #             sqla_message_content
+    #         )
+
+    #         return NewMessageContentDTO(status=True, data=core_message_content)
+
+    #     except Exception as e:
+    #         self.logger.error(f"Error while creating content for message: {e}")
+    #         errorDTO = NewMessageContentDTO(
+    #             status=False,
+    #             errorCode=-1,
+    #             errorMessage=f"Error while creating content for message: {e}",
+    #             errorName="Error while creating content for message",
+    #             errorType="ErrorWhileCreatingContentForMessage",
+    #         )
+    #         self.logger.error(f"{errorDTO}")
+    #         return errorDTO
+
+
     def new_message(
-        self, conversation_id: int, message_content: str, sender_type: MessageSenderTypeEnum, timestamp: datetime
+        self,
+        conversation_id: int,
+        message_contents: List[str],
+        sender_type: MessageSenderTypeEnum,
+        timestamp: datetime,
+        thread_id: int | None = None,
     ) -> NewMessageDTO:
         """
         Sends a message to a conversation.
 
         @param conversation_id: The ID of the conversation to send the message to.
         @type conversation_id: int
-        @param message_content: The content of the message.
-        @type message_content: str
+        @param thread_id: The ID of the thread of the message
+        @type thread_id: int
+        @param message_contents: A list of the content pieces of the message
+        @type message_contents: List[MessageContent]
         @return: A DTO containing the result of the operation.
-        @rtype: SendMessageToConversationDTO
+        @rtype: NewMessageDTO
         """
 
         if conversation_id is None:
-            errorDTO = ListConversationSourcesDTO(
+            errorDTO = NewMessageDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="Conversation ID cannot be None",
@@ -391,19 +498,19 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        if message_content is None:
-            errorDTO = ListConversationSourcesDTO(
+        if not message_contents:
+            errorDTO = NewMessageDTO(
                 status=False,
                 errorCode=-1,
-                errorMessage="Message content cannot be None",
-                errorName="Message content not provided",
-                errorType="MessageContentNotProvided",
+                errorMessage="Message contents must be a list with at least one item",
+                errorName="Message contents not provided",
+                errorType="MessageContentsNotProvided",
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
         if sender_type is None:
-            errorDTO = ListConversationSourcesDTO(
+            errorDTO = NewMessageDTO(
                 status=False,
                 errorCode=-1,
                 errorMessage="Sender type cannot be None",
@@ -443,17 +550,51 @@ class SQLAConversationRepository(ConversationRepository):
 
         sqla_message: SQLAAgentMessage | SQLAUserMessage
 
-        # 2. Create the message object based on its type
+        # 2. If thread ID not provided, get the highest thread ID and increment by one
+
+        max_thread_result: int = 0
+
+        if thread_id is None:
+            # max_thread_query: Select = select(
+            #     func.max(SQLAMessageBase.thread_id).label("max_thread_id")
+            # )
+            # max_thread_result: Result = self._session.execute(max_thread_query).all()
+            # max_thread_result = self._session.query(
+            #     func.max(SQLAMessageBase.thread_id).label("max_thread_id")
+            # ).first()
+
+            max_thread_result = self._session.query(
+                func.max(SQLAMessageBase.thread_id)
+            ).first()
+
+            # max_thread_id: int = [
+            #     row.max_thread_id for row in max_thread_result
+            # ] if max_thread_result else 0
+
+            # max_thread_id: int = max_thread_result.max_thread_id if max_thread_result else 0
+            if max_thread_result and max_thread_result > 0:
+                max_thread_id = max_thread_result
+
+        thread_id = max_thread_id + 1
+
+        # 3. Create the message object based on its type
+
         if sender_type == MessageSenderTypeEnum.AGENT:
             sqla_message = SQLAAgentMessage(
-                content=message_content,
+                thread_id=thread_id,
+                message_contents=[SQLAMessageContent(
+                    content=content
+                ) for content in message_contents],
                 timestamp=timestamp,
                 conversation_id=conversation_id,
             )
 
         elif sender_type == MessageSenderTypeEnum.USER:
             sqla_message = SQLAUserMessage(
-                content=message_content,
+                thread_id=thread_id,
+                message_contents=[SQLAMessageContent(
+                    content=content
+                ) for content in message_contents],
                 timestamp=timestamp,
                 conversation_id=conversation_id,
             )
@@ -469,9 +610,34 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
+        # 4. Add the contents and commit
+
         try:
             sqla_message.save(session=self.session)
+
+            # sqla_message_content: SQLAMessageContent = SQLAMessageContent(
+            #     content=content,
+            #     message_id=message_id,
+            # )
             self.session.commit()
+
+            # for content in message_contents:
+            #     message_content_dto: NewMessageContentDTO = self.new_message_content(
+            #         sqla_message.id,
+            #         content,
+            #     )
+
+            #     if not message_content_dto.status:
+            #         errorDTO = NewMessageDTO(
+            #             status=False,
+            #             errorCode=message_content_dto.errorCode,
+            #             errorMessage=message_content_dto.errorMessage,
+            #             errorName=message_content_dto.errorName,
+            #             errorType=message_content_dto.errorType,
+            #         )
+            #         return errorDTO
+
+            #     sqla_message.message_contents.append(message_content_dto.data)
 
             core_message: UserMessage | AgentMessage
 

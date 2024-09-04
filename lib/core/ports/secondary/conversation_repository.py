@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import List
 import logging
 
 from lib.core.dto.conversation_repository_dto import (
@@ -8,6 +9,7 @@ from lib.core.dto.conversation_repository_dto import (
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
     NewMessageDTO,
+    NewMessageContentDTO,
     UpdateConversationDTO,
 )
 from lib.core.entity.models import MessageSenderTypeEnum, TMessageBase
@@ -89,22 +91,38 @@ class ConversationRepository(ABC):
         """
         raise NotImplementedError
 
+    # @abstractmethod
+    # def new_message_content(self, message_id: int, content: str) -> NewMessageContentDTO:
+    #     """
+    #     Creates a piece of content for a message.
+
+    #     @param content: The piece of content of the message
+    #     @type content: str
+    #     @param message_id: The ID of the message containing the message content
+    #     @return: A DTO containing the result of the operation.
+    #     @rtype: NewMessageContentDTO | ListConversationMessagesDTO
+    #     """
+    #     raise NotImplementedError
+
     @abstractmethod
     def new_message(
-        self, conversation_id: int, message_content: str, sender_type: MessageSenderTypeEnum, timestamp: datetime
+        self,
+        conversation_id: int,
+        message_contents: List[str],
+        sender_type: MessageSenderTypeEnum,
+        timestamp: datetime,
+        thread_id: int | None = None,
     ) -> NewMessageDTO:
         """
         Sends a message to a conversation.
 
         @param conversation_id: The ID of the conversation to send the message to.
         @type conversation_id: int
-        @param message_content: The content of the message.
-        @type message_content: str
-        @param sender_type: The type of the sender of the message.
-        @type sender_type: MessageSenderTypeEnum
-        @param unix_timestamp: The timestamp of the message.
-        @type unix_timestamp: int
+        @param thread_id: The ID of the thread of the message
+        @type thread_id: int
+        @param message_contents: A list of the content pieces of the message
+        @type message_contents: List[MessageContent]
         @return: A DTO containing the result of the operation.
-        @rtype: SendMessageToConversationDTO
+        @rtype: NewMessageDTO | ListConversationSourcesDTO
         """
         raise NotImplementedError

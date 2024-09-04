@@ -55,9 +55,10 @@ def test_new_message_usecase(
 
         request = NewMessageRequest(
             conversation_id=queried_conversation.id,
-            message_content=message_content,
+            message_contents=[message_content],
             sender_type=sender_type,
             unix_timestamp=timestamp,
+            thread_id=None,
         )
         response = usecase.execute(request=request)
 
@@ -69,7 +70,10 @@ def test_new_message_usecase(
         queried_message = session.get(SQLAMessageBase, response.message_id)
 
         assert queried_message is not None
-        assert queried_message.content == message_content
+
+        queried_message_contents = queried_message.message_contents
+        assert queried_message_contents is not None
+        assert queried_message_contents[0].content == message_content
         assert queried_message.timestamp == datetime.fromtimestamp(timestamp)
 
         if isinstance(queried_message, SQLAAgentMessage):
@@ -117,9 +121,10 @@ def test_new_message_controller(
 
         controller_parameters = NewMessageControllerParameters(
             conversation_id=queried_conversation.id,
-            message_content=message_content,
+            message_contents=[message_content],
             sender_type=sender_type,
             unix_timestamp=timestamp,
+            thread_id=None,
         )
 
         view_model = controller.execute(parameters=controller_parameters)
@@ -130,7 +135,10 @@ def test_new_message_controller(
         queried_message = session.get(SQLAMessageBase, view_model.message_id)
 
         assert queried_message is not None
-        assert queried_message.content == message_content
+
+        queried_message_contents = queried_message.message_contents
+        assert queried_message_contents is not None
+        assert queried_message_contents[0].content == message_content
         assert queried_message.timestamp == datetime.fromtimestamp(timestamp)
 
         if isinstance(queried_message, SQLAAgentMessage):

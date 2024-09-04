@@ -5,6 +5,7 @@ from faker import Faker
 from lib.core.dto.conversation_repository_dto import (
     ListConversationSourcesDTO,
     NewMessageDTO,
+    NewMessageContentDTO,
 )
 from lib.core.entity.models import MessageSenderTypeEnum
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -14,6 +15,8 @@ from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
     SQLAUserMessage,
+    SQLAMessageBase,
+    SQLAMessageContent,
     SQLAClient,
 )
 
@@ -59,9 +62,10 @@ def test_new_message_repository_function(
 
         dto: NewMessageDTO = conversation_repository.new_message(
             conversation_id=conv_id,
-            message_content=new_message_content,
+            message_contents=[new_message_content],
             sender_type=MessageSenderTypeEnum.USER,
             timestamp=datetime.now(),
+            thread_id=None,
         )
 
         assert dto.data is not None
@@ -74,12 +78,49 @@ def test_new_message_repository_function(
 
         sqla_message_id = sqla_message.id
 
-        assert dto.data is not None
-
         assert dto.status == True
         assert dto.errorCode == None
         assert dto.data.id == sqla_message_id
-        assert dto.data.content == new_message_content
+
+        dto_thread_id = dto.data.thread_id
+        sqla_thread_id = sqla_message.thread_id
+
+        assert dto_thread_id is not None
+        assert dto_thread_id == sqla_thread_id
+
+        # message_content_dto: NewMessageContentDTO = conversation_repository.new_message_content(
+        #     message_id=dto_message_id,
+        #     content=new_message_content,
+        # )
+
+        # assert message_content_dto is not None
+        # assert message_content_dto.status == True
+        # assert message_content_dto.errorCode == None
+
+        dto_message_contents = dto.data.message_contents
+        dto_message_content_id = dto_message_contents[0].id
+
+        sqla_message_content = session.query(SQLAMessageContent).filter_by(
+            id=dto_message_content_id
+        ).first()
+
+        assert sqla_message_content is not None
+
+        sqla_message_content_id = sqla_message_content.id
+
+        assert dto_message_content_id == sqla_message_content_id
+        assert dto_message_contents[0].content == sqla_message_content.content
+
+        # sqla_message_requery = session.query(SQLAMessageBase).filter_by(id=dto_message_id).first()
+
+        # assert sqla_message_requery is not None
+
+        # sqla_message_contents = sqla_message_requery.message_contents
+
+        # assert sqla_message_contents is not None
+        # assert len(sqla_message_contents) == 1
+
+        # assert dto_message_content_id == sqla_message_contents[0].id
 
 
 def test_error_new_message_no_conversation_id(
@@ -88,7 +129,7 @@ def test_error_new_message_no_conversation_id(
     conversation_repository = app_container.sqla_conversation_repository()
 
     list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
-        conversation_id=None, message_content="abc", sender_type=MessageSenderTypeEnum.USER, timestamp=datetime.now()  # type: ignore
+        conversation_id=None, message_contents=["abc"], sender_type=MessageSenderTypeEnum.USER, timestamp=datetime.now()  # type: ignore
     )
 
     assert list_conv_srcs_DTO.status == False
@@ -104,14 +145,14 @@ def test_error_new_message_no_message_content(
     conversation_repository = app_container.sqla_conversation_repository()
 
     list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
-        conversation_id=1, message_content=None, sender_type=MessageSenderTypeEnum.USER, timestamp=datetime.now()  # type: ignore
+        conversation_id=1, message_contents=None, sender_type=MessageSenderTypeEnum.USER, timestamp=datetime.now()  # type: ignore
     )
 
     assert list_conv_srcs_DTO.status == False
     assert list_conv_srcs_DTO.errorCode == -1
-    assert list_conv_srcs_DTO.errorMessage == "Message content cannot be None"
-    assert list_conv_srcs_DTO.errorName == "Message content not provided"
-    assert list_conv_srcs_DTO.errorType == "MessageContentNotProvided"
+    assert list_conv_srcs_DTO.errorMessage == "Message contents must be a list with at least one item"
+    assert list_conv_srcs_DTO.errorName == "Message contents not provided"
+    assert list_conv_srcs_DTO.errorType == "MessageContentsNotProvided"
 
 
 def test_error_new_message_no_sqla_conversation(
@@ -122,7 +163,7 @@ def test_error_new_message_no_sqla_conversation(
     irrealistic_ID = 99999999
     list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
         conversation_id=irrealistic_ID,
-        message_content="abc",
+        message_contents=["abc"],
         sender_type=MessageSenderTypeEnum.USER,
         timestamp=datetime.now(),
     )  # type: ignore

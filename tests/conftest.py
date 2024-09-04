@@ -223,7 +223,7 @@ def user_message() -> SQLAUserMessage:
     dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
 
     return SQLAUserMessage(
-        content=fake.text(max_nb_chars=70)[:-1] + "?",
+        message_contents=[fake.text(max_nb_chars=70)[:-1] + "?"],
         timestamp=dt1,
     )
 
@@ -239,7 +239,7 @@ def agent_message() -> SQLAAgentMessage:
     dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
 
     return SQLAAgentMessage(
-        content=fake.text(max_nb_chars=70)[:-1],
+        message_contents=[fake.text(max_nb_chars=70)[:-1]],
         timestamp=dt1,
     )
 
@@ -257,11 +257,11 @@ def message_pair() -> Tuple[SQLAUserMessage, SQLAAgentMessage]:
     dt2 = fake.date_time_between_dates(datetime_start=dt1, datetime_end=datetime.datetime.now())
 
     user_message = SQLAUserMessage(
-        content=fake.text(max_nb_chars=70)[:-1] + "?",
+        message_contents=[fake.text(max_nb_chars=70)[:-1] + "?"],
         timestamp=dt1,
     )
     agent_message = SQLAAgentMessage(
-        content=fake.text(max_nb_chars=70)[:-1],
+        message_contents=[fake.text(max_nb_chars=70)[:-1]],
         timestamp=dt2,
     )
 

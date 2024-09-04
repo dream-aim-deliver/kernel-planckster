@@ -27,7 +27,9 @@ class ListMessagesViewModel(BaseViewModel):
                             "timestamp": "2021-01-01T00:00:00Z",
                             "id": 1,
                             "conversation_id": 1,
-                            "content": "Hello, world!",
+                            "message_contents": [
+                                {"id": 1, "content": "Hello, world!"},
+                            ],
                             "sender": "client_1",
                             "sender_type": "client",
                         },
@@ -39,7 +41,9 @@ class ListMessagesViewModel(BaseViewModel):
                             "timestamp": "2021-01-01T00:00:01Z",
                             "id": 2,
                             "conversation_id": 1,
-                            "content": "Hi, there!",
+                            "message_contents": [
+                                {"id": 2, "content": "Hi, there!"},
+                            ],
                             "sender": "llama2",
                             "sender_type": "agent",
                         },
