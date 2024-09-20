@@ -80,6 +80,7 @@ class NewMessageDTO(BaseDTO[MessageBase]):
 
     data: UserMessage | AgentMessage | None = None
 
+
 class NewMessageContentDTO(BaseDTO[MessageContent]):
     """
     A DTO for adding a piece of content to a message

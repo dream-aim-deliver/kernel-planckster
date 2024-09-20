@@ -88,21 +88,10 @@ def test_new_message_repository_function(
         assert dto_thread_id is not None
         assert dto_thread_id == sqla_thread_id
 
-        # message_content_dto: NewMessageContentDTO = conversation_repository.new_message_content(
-        #     message_id=dto_message_id,
-        #     content=new_message_content,
-        # )
-
-        # assert message_content_dto is not None
-        # assert message_content_dto.status == True
-        # assert message_content_dto.errorCode == None
-
         dto_message_contents = dto.data.message_contents
         dto_message_content_id = dto_message_contents[0].id
 
-        sqla_message_content = session.query(SQLAMessageContent).filter_by(
-            id=dto_message_content_id
-        ).first()
+        sqla_message_content = session.query(SQLAMessageContent).filter_by(id=dto_message_content_id).first()
 
         assert sqla_message_content is not None
 
@@ -110,17 +99,6 @@ def test_new_message_repository_function(
 
         assert dto_message_content_id == sqla_message_content_id
         assert dto_message_contents[0].content == sqla_message_content.content
-
-        # sqla_message_requery = session.query(SQLAMessageBase).filter_by(id=dto_message_id).first()
-
-        # assert sqla_message_requery is not None
-
-        # sqla_message_contents = sqla_message_requery.message_contents
-
-        # assert sqla_message_contents is not None
-        # assert len(sqla_message_contents) == 1
-
-        # assert dto_message_content_id == sqla_message_contents[0].id
 
 
 def test_error_new_message_no_conversation_id(

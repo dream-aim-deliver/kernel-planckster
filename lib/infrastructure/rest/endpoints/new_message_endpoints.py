@@ -43,7 +43,7 @@ class NewMessageFastAPIFeature(FastAPIEndpoint[NewMessageControllerParameters, N
             message_contents: List[str],
             sender_type: str,
             unix_timestamp: int,
-            thread_id: int | None,
+            thread_id: int | None = None,
         ) -> NewMessageViewModel | None:
             controller_parameters = NewMessageControllerParameters(
                 conversation_id=id,

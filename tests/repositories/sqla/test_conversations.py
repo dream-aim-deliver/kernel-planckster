@@ -24,15 +24,13 @@ def test_add_conversation_to_research_context(
     conversation = researchContext.conversations[0]
     conversation_title = conversation.title
 
-    message_1 = conversation.messages[0]
-    message_2 = conversation.messages[1]
+    assert len(conversation.messages) >= 2
+    messages = conversation.messages[:2]
+    assert set(messages) != {None}
 
-    message_1_contents = message_1.message_contents
-    message_2_contents = message_2.message_contents
-    message_1_id = message_1.id
-    message_2_id = message_2.id
-    message_1_type = message_1.type
-    message_2_type = message_2.type
+    messages_contents = [piece.content for message in messages for piece in message.message_contents]
+    messages_ids = [message.id for message in messages if message.id is not None]
+    assert len(messages_ids) == 2
 
     with db_session() as session:
         researchContext.save(session=session, flush=True)
@@ -44,27 +42,14 @@ def test_add_conversation_to_research_context(
         if conv is None:
             raise Exception("Conversation not found")
 
-        messages = conv.messages
+        queried_messages = [message for message in conv.messages if message.id in messages_ids]
 
-        messages_contents = tuple([piece.content for message in messages for piece in message.message_contents])
-        # index_msg_1 = messages_contents.index(message_1_contents)
-        # index_msg_2 = messages_contents.index(message_2_contents)
-        message_1_contents_extra = [content for content in message_1_contents if content not in messages_contents]
-        message_2_contents_extra = [content for content in message_2_contents if content not in messages_contents]
-        missing_content = [
-            content for content in messages_contents if content not in message_1_contents + message_2_contents
+        assert set(messages_ids) == set([message.id for message in queried_messages])
+
+        queried_messages_contents = [
+            piece.content for message in queried_messages for piece in message.message_contents
         ]
 
-        # assert message_1_contents in messages_contents
-        # assert message_2_contents in messages_contents
-        assert message_1_contents_extra == []
-        assert message_2_contents_extra == []
-        assert missing_content == []
-        # assert messages[index_msg_1].type == message_1_type
-        # assert messages[index_msg_2].type == message_2_type
-        message_ids = [message.id for message in messages]
-        assert message_1_id in message_ids
-        assert message_2_id in message_ids
+        assert set(messages_contents) == set(queried_messages_contents)
 
-        # assert messages[index_msg_1].conversation.research_context.client.sub == client_sub
-        assert message_1.conversation.research_context.client.sub == client_sub
+        assert queried_messages[0].conversation.research_context.client.sub == client_sub
