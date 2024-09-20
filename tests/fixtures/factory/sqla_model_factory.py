@@ -51,18 +51,16 @@ class SQLATemporaryModelFactory:
         )
         for x in range(n_messages):
             dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
-            sqla_client_message = SQLAUserMessage(
-                # message_contents=[fake.text(max_nb_chars=70)[:-1] + "?"],
-                timestamp=dt1,
-                conversation=sqla_conversation,
-            )
-            self.session.add(sqla_client_message)
             sqla_message_content = SQLAMessageContent(
-                message_id=sqla_client_message.id,
                 content=fake.text(max_nb_chars=70)[:-1] + "?",
+                message_base=SQLAUserMessage(
+                    timestamp=dt1,
+                    conversation=sqla_conversation,
+                    thread_id=x,
+                ),
             )
+
             self.session.add(sqla_message_content)
             self.session.commit()
-            self.managed_sqla_model_objects.add(sqla_client_message)
             self.managed_sqla_model_objects.add(sqla_message_content)
         return sqla_conversation

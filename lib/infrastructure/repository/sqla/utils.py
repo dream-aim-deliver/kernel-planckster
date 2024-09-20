@@ -93,13 +93,26 @@ def convert_sqla_client_message_to_core_user_message(
     """
     sender = sqla_client_message.conversation.research_context.client.sub
 
+    message_contents = [
+        MessageContent(
+            created_at=sqla_client_message.created_at,
+            updated_at=sqla_client_message.updated_at,
+            deleted=sqla_client_message.deleted,
+            deleted_at=sqla_client_message.deleted_at,
+            id=piece.id,
+            content=piece.content,
+            message_id=sqla_client_message.id,
+        )
+        for piece in sqla_client_message.message_contents
+    ]
+
     return UserMessage(
         created_at=sqla_client_message.created_at,
         updated_at=sqla_client_message.updated_at,
         deleted=sqla_client_message.deleted,
         deleted_at=sqla_client_message.deleted_at,
         id=sqla_client_message.id,
-        message_contents=sqla_client_message.message_contents,
+        message_contents=message_contents,
         timestamp=sqla_client_message.timestamp,
         thread_id=sqla_client_message.thread_id,
         sender=sender,
@@ -119,17 +132,31 @@ def convert_sqla_agent_message_to_core_agent_message(
     """
     sender = sqla_agent_message.conversation.research_context.llm.llm_name
 
+    message_contents = [
+        MessageContent(
+            created_at=sqla_agent_message.created_at,
+            updated_at=sqla_agent_message.updated_at,
+            deleted=sqla_agent_message.deleted,
+            deleted_at=sqla_agent_message.deleted_at,
+            id=piece.id,
+            content=piece.content,
+            message_id=sqla_agent_message.id,
+        )
+        for piece in sqla_agent_message.message_contents
+    ]
+
     return AgentMessage(
         created_at=sqla_agent_message.created_at,
         updated_at=sqla_agent_message.updated_at,
         deleted=sqla_agent_message.deleted,
         deleted_at=sqla_agent_message.deleted_at,
         id=sqla_agent_message.id,
-        message_contents=sqla_agent_message.message_contents,
+        message_contents=message_contents,
         timestamp=sqla_agent_message.timestamp,
         thread_id=sqla_agent_message.thread_id,
         sender=sender,
     )
+
 
 def convert_sqla_message_content_to_core_message_content(
     sqla_message_content: SQLAMessageContent,
