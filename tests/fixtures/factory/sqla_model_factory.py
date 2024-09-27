@@ -11,6 +11,7 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAResearchContext,
     SQLAClient,
 )
+from lib.core.entity.models import MessageContentTypeEnum
 from sqlalchemy.orm import Session
 
 
@@ -53,6 +54,7 @@ class SQLATemporaryModelFactory:
             dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
             sqla_message_content = SQLAMessageContent(
                 content=fake.text(max_nb_chars=70)[:-1] + "?",
+                content_type=MessageContentTypeEnum.TEXT,
                 message_base=SQLAUserMessage(
                     timestamp=dt1,
                     conversation=sqla_conversation,

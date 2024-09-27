@@ -36,12 +36,7 @@ def test_list_messages_usecase(
     conversation.title = conversation_title
 
     messages = conversation.messages
-    messages_contents = tuple(
-        [
-            piece.content for message in messages
-            for piece in message.message_contents
-        ]
-    )
+    messages_contents = tuple([piece.content for message in messages for piece in message.message_contents])
 
     with db_session() as session:
         client_with_conv.save(session=session, flush=True)
@@ -60,10 +55,7 @@ def test_list_messages_usecase(
         assert response.message_list is not None
         assert len(response.message_list) != 0
 
-        queried_messages_contents = [
-            piece.content for msg in response.message_list
-            for piece in msg.message_contents
-        ]
+        queried_messages_contents = [piece.content for msg in response.message_list for piece in msg.message_contents]
 
         assert set(queried_messages_contents) == set(messages_contents)
 

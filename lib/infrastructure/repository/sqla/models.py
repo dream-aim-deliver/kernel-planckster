@@ -19,7 +19,7 @@ from sqlalchemy.orm import mapped_column, object_mapper, relationship, Mapped, M
 from sqlalchemy.orm.session import Session
 
 from lib.infrastructure.repository.sqla.database import Base
-from lib.core.entity.models import ProtocolEnum, SourceDataStatusEnum
+from lib.core.entity.models import ProtocolEnum, SourceDataStatusEnum, MessageContentTypeEnum
 
 
 class ModelBase(object):
@@ -405,9 +405,7 @@ class SQLAMessageBase(Base, SoftModelBase):  # type: ignore
     timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     type: Mapped[str]
 
-    message_contents: Mapped[List["SQLAMessageContent"]] = relationship(
-        "SQLAMessageContent", backref="message_base"
-    )
+    message_contents: Mapped[List["SQLAMessageContent"]] = relationship("SQLAMessageContent", backref="message_base")
     conversation_id: Mapped[int] = mapped_column(ForeignKey("conversation.id"), nullable=False)
 
     __mapper_args__ = {
@@ -466,9 +464,7 @@ class SQLAAgentMessage(SQLAMessageBase):
     __tablename__ = "agent_message"
 
     id: Mapped[int] = mapped_column(ForeignKey("message_base.id"), primary_key=True)
-    citations: Mapped[List["SQLACitation"]] = relationship(
-        "SQLACitation", backref="agent_message"
-    )
+    citations: Mapped[List["SQLACitation"]] = relationship("SQLACitation", backref="agent_message")
     source_data: Mapped[List["SQLASourceData"]] = relationship(
         "SQLASourceData", secondary=SQLACitation.__tablename__, backref="agent_message"
     )
@@ -477,7 +473,8 @@ class SQLAAgentMessage(SQLAMessageBase):
         "polymorphic_identity": "agent_message",
     }
 
-class SQLAMessageContent(Base, SoftModelBase): # type: ignore
+
+class SQLAMessageContent(Base, SoftModelBase):  # type: ignore
     """
     SQLAlchemy Message Content model
 
@@ -493,5 +490,6 @@ class SQLAMessageContent(Base, SoftModelBase): # type: ignore
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     content: Mapped[str] = mapped_column(String, nullable=False)
+    content_type: Mapped[MessageContentTypeEnum] = mapped_column(SAEnum(MessageContentTypeEnum), nullable=False)
 
     message_id: Mapped[int] = mapped_column(ForeignKey("message_base.id"), nullable=False)

@@ -36,12 +36,7 @@ def test_list_conversation_messages(
     conversation.title = conversation_title
 
     messages = conversation.messages
-    messages_contents = tuple(
-        [
-            piece.content for message in messages
-            for piece in message.message_contents
-        ]
-    )
+    messages_contents = tuple([piece.content for message in messages for piece in message.message_contents])
 
     with db_session() as session:
         client_with_conv.save(session=session, flush=True)
