@@ -12,7 +12,11 @@ from lib.core.dto.conversation_repository_dto import (
     NewMessageContentDTO,
     UpdateConversationDTO,
 )
-from lib.core.entity.models import MessageSenderTypeEnum, TMessageBase
+from lib.core.entity.models import (
+    MessageSenderTypeEnum,
+    TMessageBase,
+    MessageContent,
+)
 
 
 class ConversationRepository(ABC):
@@ -91,24 +95,11 @@ class ConversationRepository(ABC):
         """
         raise NotImplementedError
 
-    # @abstractmethod
-    # def new_message_content(self, message_id: int, content: str) -> NewMessageContentDTO:
-    #     """
-    #     Creates a piece of content for a message.
-
-    #     @param content: The piece of content of the message
-    #     @type content: str
-    #     @param message_id: The ID of the message containing the message content
-    #     @return: A DTO containing the result of the operation.
-    #     @rtype: NewMessageContentDTO | ListConversationMessagesDTO
-    #     """
-    #     raise NotImplementedError
-
     @abstractmethod
     def new_message(
         self,
         conversation_id: int,
-        message_contents: List[str],
+        message_contents: List[str | MessageContent],
         sender_type: MessageSenderTypeEnum,
         timestamp: datetime,
         thread_id: int | None = None,

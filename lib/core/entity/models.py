@@ -273,6 +273,18 @@ class MessageSenderTypeEnum(Enum):
     AGENT = "agent"
 
 
+class MessageContentTypeEnum(Enum):
+    """
+    Enum for the different types of message content
+
+    TEXT: the message content is text
+    IMAGE: the message content is an image
+    """
+
+    TEXT = "text"
+    IMAGE = "image"
+
+
 class MessageContent(BaseSoftDeleteKernelPlancksterModel):
     """
     Represents the pieces of content that can comprise a message
@@ -285,6 +297,7 @@ class MessageContent(BaseSoftDeleteKernelPlancksterModel):
 
     id: int
     content: str
+    content_type: MessageContentTypeEnum
 
 
 class MessageBase(BaseSoftDeleteKernelPlancksterModel):

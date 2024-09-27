@@ -15,6 +15,7 @@ from lib.core.entity.models import (
     AgentMessage,
     MessageBase,
     MessageSenderTypeEnum,
+    MessageContentTypeEnum,
     SourceData,
     TMessageBase,
     UserMessage,
@@ -38,7 +39,7 @@ from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_conversation_to_core_conversation,
     convert_sqla_client_message_to_core_user_message,
     convert_sqla_agent_message_to_core_agent_message,
-    convert_sqla_message_content_to_core_message_content,
+    # convert_sqla_message_content_to_core_message_content,
     convert_sqla_research_context_to_core_research_context,
     convert_sqla_source_data_to_core_source_data,
 )
@@ -374,7 +375,7 @@ class SQLAConversationRepository(ConversationRepository):
     def new_message(
         self,
         conversation_id: int,
-        message_contents: List[str],
+        message_contents: List[str | MessageContent],
         sender_type: MessageSenderTypeEnum,
         timestamp: datetime,
         thread_id: int | None = None,
@@ -387,7 +388,7 @@ class SQLAConversationRepository(ConversationRepository):
         @param thread_id: The ID of the thread of the message
         @type thread_id: int
         @param message_contents: A list of the content pieces of the message
-        @type message_contents: List[MessageContent]
+        @type message_contents: List[str | MessageContent]
         @return: A DTO containing the result of the operation.
         @rtype: NewMessageDTO
         """
@@ -460,7 +461,6 @@ class SQLAConversationRepository(ConversationRepository):
         max_thread_id: int = 0
 
         if not isinstance(thread_id, int):
-
             max_thread_result = self._session.query(func.max(SQLAMessageBase.thread_id).label("max_thread_id")).first()
 
             if max_thread_result and max_thread_result.max_thread_id > 0:
@@ -469,12 +469,16 @@ class SQLAConversationRepository(ConversationRepository):
         thread_id = max_thread_id + 1
         assert isinstance(thread_id, int)
 
-        # 3. Create the message object based on its type, including the contents
-
         if sender_type == MessageSenderTypeEnum.AGENT:
             sqla_message = SQLAAgentMessage(
                 thread_id=thread_id,
-                message_contents=[SQLAMessageContent(content=content) for content in message_contents],
+                message_contents=[
+                    SQLAMessageContent(
+                        content=piece if isinstance(piece, str) else piece.content,
+                        content_type=MessageContentTypeEnum.TEXT if isinstance(piece, str) else piece.content_type,
+                    )
+                    for piece in message_contents
+                ],
                 timestamp=timestamp,
                 conversation_id=conversation_id,
             )
@@ -482,7 +486,13 @@ class SQLAConversationRepository(ConversationRepository):
         elif sender_type == MessageSenderTypeEnum.USER:
             sqla_message = SQLAUserMessage(
                 thread_id=thread_id,
-                message_contents=[SQLAMessageContent(content=content) for content in message_contents],
+                message_contents=[
+                    SQLAMessageContent(
+                        content=piece if isinstance(piece, str) else piece.content,
+                        content_type=MessageContentTypeEnum.TEXT if isinstance(piece, str) else piece.content_type,
+                    )
+                    for piece in message_contents
+                ],
                 timestamp=timestamp,
                 conversation_id=conversation_id,
             )

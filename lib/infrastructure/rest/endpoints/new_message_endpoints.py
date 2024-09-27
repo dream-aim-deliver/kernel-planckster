@@ -1,6 +1,7 @@
 from typing import Any, List
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.new_message_view_model import NewMessageViewModel
+from lib.core.entity.models import MessageContent, MessageSenderTypeEnum
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.controller.new_message_controller import NewMessageControllerParameters
 
@@ -40,7 +41,7 @@ class NewMessageFastAPIFeature(FastAPIEndpoint[NewMessageControllerParameters, N
         )
         def endpoint(
             id: int,
-            message_contents: List[str],
+            message_contents: List[str | MessageContent],
             sender_type: str,
             unix_timestamp: int,
             thread_id: int | None = None,
