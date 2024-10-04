@@ -463,7 +463,7 @@ class SQLAConversationRepository(ConversationRepository):
         if not isinstance(thread_id, int):
             max_thread_result = self._session.query(func.max(SQLAMessageBase.thread_id).label("max_thread_id")).first()
 
-            if max_thread_result and max_thread_result.max_thread_id > 0:
+            if max_thread_result.max_thread_id and max_thread_result.max_thread_id > 0:
                 max_thread_id = max_thread_result.max_thread_id
 
         thread_id = max_thread_id + 1
