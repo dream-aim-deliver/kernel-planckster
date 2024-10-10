@@ -1,4 +1,7 @@
 from typing import Any
+
+from fastapi import HTTPException
+from pydantic import ValidationError
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.list_source_data_view_model import ListSourceDataViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -41,9 +44,15 @@ class ListSourceDataFastAPIFeature(FastAPIEndpoint[ListSourceDataControllerParam
         def endpoint(
             id: int | None = None,
         ) -> ListSourceDataViewModel | None:
-            controller_parameters = ListSourceDataControllerParameter(
-                client_id=id,
-            )
+            try:
+                controller_parameters = ListSourceDataControllerParameter(
+                    client_id=id,
+                )
+            except ValidationError as ve:
+                raise HTTPException(status_code=400, detail=ve.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
             view_model: ListSourceDataViewModel = self.execute(
                 controller_parameters=controller_parameters,
             )

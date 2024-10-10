@@ -1,5 +1,8 @@
 from typing import Any
 
+from fastapi import HTTPException
+from pydantic import ValidationError
+
 from lib.core.sdk.fastapi import FastAPIEndpoint
 
 from lib.core.view_model.demo_view_model import DemoViewModel
@@ -41,7 +44,13 @@ class DemoFastAPIFeature(FastAPIEndpoint[DemoControllerParameters, DemoViewModel
             responses=self.responses,
         )
         def endpoint(num1: int, num2: int) -> DemoViewModel | None:
-            controller_parameters = DemoControllerParameters(num1=num1, num2=num2)
+            try:
+                controller_parameters = DemoControllerParameters(num1=num1, num2=num2)
+            except ValidationError as ve:
+                raise HTTPException(status_code=400, detail=ve.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
             view_model: DemoViewModel = self.execute(
                 controller_parameters=controller_parameters,
             )

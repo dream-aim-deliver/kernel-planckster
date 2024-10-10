@@ -9,10 +9,10 @@ from lib.core.dto.conversation_repository_dto import (
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
     NewMessageDTO,
-    NewMessageContentDTO,
     UpdateConversationDTO,
 )
 from lib.core.entity.models import (
+    BaseMessageContent,
     MessageSenderTypeEnum,
     TMessageBase,
     MessageContent,
@@ -99,7 +99,7 @@ class ConversationRepository(ABC):
     def new_message(
         self,
         conversation_id: int,
-        message_contents: List[str | MessageContent],
+        message_contents: List[BaseMessageContent],
         sender_type: MessageSenderTypeEnum,
         timestamp: datetime,
         thread_id: int | None = None,

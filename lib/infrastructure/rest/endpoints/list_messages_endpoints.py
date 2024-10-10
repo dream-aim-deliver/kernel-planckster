@@ -1,5 +1,7 @@
 from typing import Any
 from dependency_injector.wiring import inject, Provide
+from fastapi import HTTPException
+from pydantic import ValidationError
 
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.list_messages_view_model import ListMessagesViewModel
@@ -41,9 +43,14 @@ class ListMessagesFastAPIFeature(FastAPIEndpoint[ListMessagesControllerParameter
         def endpoint(
             id: int,
         ) -> ListMessagesViewModel | None:
-            controller_parameters = ListMessagesControllerParameters(
-                conversation_id=id,
-            )
+            try:
+                controller_parameters = ListMessagesControllerParameters(
+                    conversation_id=id,
+                )
+            except ValidationError as ve:
+                raise HTTPException(status_code=400, detail=ve.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
 
             view_model: ListMessagesViewModel = self.execute(
                 controller_parameters=controller_parameters,

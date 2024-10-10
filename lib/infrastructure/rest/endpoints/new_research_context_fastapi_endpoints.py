@@ -1,4 +1,7 @@
 from typing import Any
+
+from fastapi import HTTPException
+from pydantic import ValidationError
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.new_research_context_view_mode import NewResearchContextViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -47,13 +50,18 @@ class NewResearchContextFastAPIFeature(
             client_sub: str | None = None,
             llm_name: str | None = None,
         ) -> NewResearchContextViewModel | None:
-            controller_parameters = NewResearchContextControllerParameters(
-                research_context_title=research_context_title,
-                research_context_description=research_context_description,
-                client_sub=client_sub,
-                llm_name=llm_name,
-                source_data_ids=source_data_ids,
-            )
+            try:
+                controller_parameters = NewResearchContextControllerParameters(
+                    research_context_title=research_context_title,
+                    research_context_description=research_context_description,
+                    client_sub=client_sub,
+                    llm_name=llm_name,
+                    source_data_ids=source_data_ids,
+                )
+            except ValidationError as ve:
+                raise HTTPException(status_code=400, detail=ve.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
 
             view_model: NewResearchContextViewModel = self.execute(
                 controller_parameters=controller_parameters,

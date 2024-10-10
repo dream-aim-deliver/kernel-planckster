@@ -7,7 +7,7 @@ from lib.core.dto.conversation_repository_dto import (
     NewMessageDTO,
     NewMessageContentDTO,
 )
-from lib.core.entity.models import MessageSenderTypeEnum
+from lib.core.entity.models import BaseMessageContent, MessageSenderTypeEnum
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
@@ -141,7 +141,7 @@ def test_error_new_message_no_sqla_conversation(
     irrealistic_ID = 99999999
     list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
         conversation_id=irrealistic_ID,
-        message_contents=["abc"],
+        message_contents=[BaseMessageContent(content="abc", content_type="text")],
         sender_type=MessageSenderTypeEnum.USER,
         timestamp=datetime.now(),
     )  # type: ignore

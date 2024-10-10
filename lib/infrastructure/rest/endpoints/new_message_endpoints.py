@@ -1,7 +1,10 @@
 from typing import Any, List
+
+from fastapi import HTTPException
+from pydantic import ValidationError
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.new_message_view_model import NewMessageViewModel
-from lib.core.entity.models import MessageContent, MessageSenderTypeEnum
+from lib.core.entity.models import BaseMessageContent
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.controller.new_message_controller import NewMessageControllerParameters
 
@@ -41,18 +44,23 @@ class NewMessageFastAPIFeature(FastAPIEndpoint[NewMessageControllerParameters, N
         )
         def endpoint(
             id: int,
-            message_contents: List[str | MessageContent],
+            message_contents: List[BaseMessageContent],
             sender_type: str,
             unix_timestamp: int,
             thread_id: int | None = None,
         ) -> NewMessageViewModel | None:
-            controller_parameters = NewMessageControllerParameters(
-                conversation_id=id,
-                message_contents=message_contents,
-                sender_type=sender_type,
-                unix_timestamp=unix_timestamp,
-                thread_id=thread_id,
-            )
+            try:
+                controller_parameters = NewMessageControllerParameters(
+                    conversation_id=id,
+                    message_contents=message_contents,
+                    sender_type=sender_type,
+                    unix_timestamp=unix_timestamp,
+                    thread_id=thread_id,
+                )
+            except ValidationError as ve:
+                raise HTTPException(status_code=400, detail=ve.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
 
             view_model: NewMessageViewModel = self.execute(
                 controller_parameters=controller_parameters,

@@ -1,4 +1,7 @@
 from typing import Any
+
+from fastapi import HTTPException
+from pydantic import ValidationError
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.get_client_data_for_download_view_model import GetClientDataForDownloadViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -48,11 +51,16 @@ class GetClientDataForDownloadFastAPIFeature(
             protocol: str,
             relative_path: str,
         ) -> GetClientDataForDownloadViewModel | None:
-            controller_parameters = GetClientDataForDownloadControllerParameters(
-                client_id=id,
-                protocol=protocol,
-                relative_path=relative_path,
-            )
+            try:
+                controller_parameters = GetClientDataForDownloadControllerParameters(
+                    client_id=id,
+                    protocol=protocol,
+                    relative_path=relative_path,
+                )
+            except ValidationError as ve:
+                raise HTTPException(status_code=400, detail=ve.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
 
             view_model: GetClientDataForDownloadViewModel = self.execute(
                 controller_parameters=controller_parameters,

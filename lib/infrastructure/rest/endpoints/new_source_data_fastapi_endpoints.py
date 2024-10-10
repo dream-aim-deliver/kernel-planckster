@@ -1,4 +1,7 @@
 from typing import Any
+
+from fastapi import HTTPException
+from pydantic import ValidationError
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.new_source_data_view_model import NewSourceDataViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -44,12 +47,17 @@ class NewSourceDataFastAPIFeature(FastAPIEndpoint[NewSourceDataControllerParamet
             source_data_relative_path: str,
             source_data_protocol: str,
         ) -> NewSourceDataViewModel | None:
-            controller_parameters = NewSourceDataControllerParameters(
-                client_id=id,
-                source_data_name=source_data_name,
-                protocol=source_data_protocol,
-                relative_path=source_data_relative_path,
-            )
+            try:
+                controller_parameters = NewSourceDataControllerParameters(
+                    client_id=id,
+                    source_data_name=source_data_name,
+                    protocol=source_data_protocol,
+                    relative_path=source_data_relative_path,
+                )
+            except ValidationError as e:
+                raise HTTPException(status_code=400, detail=e.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
             view_model: NewSourceDataViewModel = self.execute(
                 controller_parameters=controller_parameters,
             )

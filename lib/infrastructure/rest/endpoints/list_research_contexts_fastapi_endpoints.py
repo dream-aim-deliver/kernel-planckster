@@ -1,4 +1,7 @@
 from typing import Any
+
+from fastapi import HTTPException
+from pydantic import ValidationError
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.list_research_contexts_view_model import ListResearchContextsViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -43,9 +46,15 @@ class ListResearchContextsFastAPIFeature(
         def endpoint(
             id: int,
         ) -> ListResearchContextsViewModel | None:
-            controller_parameters = ListResearchContextsControllerParameters(
-                client_id=id,
-            )
+            try:
+                controller_parameters = ListResearchContextsControllerParameters(
+                    client_id=id,
+                )
+            except ValidationError as ve:
+                raise HTTPException(status_code=400, detail=ve.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
             view_model: ListResearchContextsViewModel = self.execute(
                 controller_parameters=controller_parameters,
             )

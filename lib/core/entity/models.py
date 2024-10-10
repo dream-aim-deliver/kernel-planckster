@@ -283,11 +283,12 @@ class MessageContentTypeEnum(Enum):
 
     TEXT = "text"
     IMAGE = "image"
+    CITATION = "citation"
 
 
-class MessageContent(BaseSoftDeleteKernelPlancksterModel):
+class BaseMessageContent(BaseModel):
     """
-    Represents the pieces of content that can comprise a message
+    Represents a piece of content that can be part of a message.
 
     @param id: the ID of the message content
     @type id: int
@@ -295,9 +296,16 @@ class MessageContent(BaseSoftDeleteKernelPlancksterModel):
     @type content: str
     """
 
-    id: int
     content: str
     content_type: MessageContentTypeEnum
+
+
+class MessageContent(BaseMessageContent, BaseSoftDeleteKernelPlancksterModel):
+    """
+    Represents the pieces of content that can comprise an existing message.
+    """
+
+    id: int
 
 
 class MessageBase(BaseSoftDeleteKernelPlancksterModel):

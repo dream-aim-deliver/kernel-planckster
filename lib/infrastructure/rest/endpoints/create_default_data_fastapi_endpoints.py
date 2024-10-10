@@ -1,4 +1,7 @@
 from typing import Any
+
+from fastapi import HTTPException
+from pydantic import ValidationError
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.create_default_data_view_model import CreateDefaultDataViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -45,10 +48,16 @@ class CreateDefaultDataFastAPIFeature(
             client_sub: str,
             llm_name: str,
         ) -> CreateDefaultDataViewModel | None:
-            controller_parameters = CreateDefaultDataControllerParameters(
-                client_sub=client_sub,
-                llm_name=llm_name,
-            )
+            try:
+                controller_parameters = CreateDefaultDataControllerParameters(
+                    client_sub=client_sub,
+                    llm_name=llm_name,
+                )
+            except ValidationError as ve:
+                raise HTTPException(status_code=400, detail=ve.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
             view_model: CreateDefaultDataViewModel = self.execute(
                 controller_parameters=controller_parameters,
             )

@@ -13,11 +13,15 @@ def test_new_message_fastapi_post_endpoint_returns_view_model(
     response = httpx_client.post(
         "/conversation/1/message",
         params={
-            "message_contents": "[Hello, World!]",
             "sender_type": "client",
             "unix_timestamp": 1633096800,
         },
-        json=["body"],
+        json=[
+            {
+                "content": "body",
+                "content_type": "text",
+            }
+        ],
         headers=headers,
     )
 
