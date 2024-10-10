@@ -2,7 +2,7 @@ from datetime import datetime
 import random
 import uuid
 from faker import Faker
-from lib.core.entity.models import MessageSenderTypeEnum
+from lib.core.entity.models import BaseMessageContent, MessageSenderTypeEnum
 from lib.core.usecase.new_message_usecase import NewMessageUseCase
 from lib.core.usecase_models.new_message_usecase_models import NewMessageRequest, NewMessageResponse
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -49,7 +49,7 @@ def test_new_message_usecase(
 
         assert queried_conversation is not None
 
-        message_content = f"{fake.text()}-{uuid.uuid4()}"
+        message_content = BaseMessageContent(content_type="text", content=f"{fake.text()}-{uuid.uuid4()}")
         timestamp = fake.unix_time()
         sender_type = random.choice([p.value for p in MessageSenderTypeEnum])
 
@@ -73,7 +73,7 @@ def test_new_message_usecase(
 
         queried_message_contents = queried_message.message_contents
         assert queried_message_contents is not None
-        assert queried_message_contents[0].content == message_content
+        assert queried_message_contents[0].content == message_content.content
         assert queried_message.timestamp == datetime.fromtimestamp(timestamp)
 
         if isinstance(queried_message, SQLAAgentMessage):
@@ -115,7 +115,7 @@ def test_new_message_controller(
 
         assert queried_conversation is not None
 
-        message_content = f"{fake.text()}-{uuid.uuid4()}"
+        message_content = BaseMessageContent(content_type="text", content=f"{fake.text()}-{uuid.uuid4()}")
         timestamp = fake.unix_time()
         sender_type = random.choice([p.value for p in MessageSenderTypeEnum])
 
@@ -138,7 +138,7 @@ def test_new_message_controller(
 
         queried_message_contents = queried_message.message_contents
         assert queried_message_contents is not None
-        assert queried_message_contents[0].content == message_content
+        assert queried_message_contents[0].content == message_content.content
         assert queried_message.timestamp == datetime.fromtimestamp(timestamp)
 
         if isinstance(queried_message, SQLAAgentMessage):

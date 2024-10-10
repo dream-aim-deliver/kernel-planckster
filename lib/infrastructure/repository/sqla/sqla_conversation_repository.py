@@ -13,6 +13,7 @@ from lib.core.dto.conversation_repository_dto import (
 )
 from lib.core.entity.models import (
     AgentMessage,
+    BaseMessageContent,
     MessageBase,
     MessageSenderTypeEnum,
     MessageContentTypeEnum,
@@ -375,7 +376,7 @@ class SQLAConversationRepository(ConversationRepository):
     def new_message(
         self,
         conversation_id: int,
-        message_contents: List[str | MessageContent],
+        message_contents: List[BaseMessageContent],
         sender_type: MessageSenderTypeEnum,
         timestamp: datetime,
         thread_id: int | None = None,

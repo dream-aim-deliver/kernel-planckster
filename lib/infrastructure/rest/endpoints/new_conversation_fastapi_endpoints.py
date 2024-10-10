@@ -1,4 +1,7 @@
 from typing import Any
+
+from fastapi import HTTPException
+from pydantic import ValidationError
 from lib.core.sdk.fastapi import FastAPIEndpoint
 from lib.core.view_model.new_conversation_view_model import NewConversationViewModel
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -42,9 +45,14 @@ class NewConversationFastAPIFeature(FastAPIEndpoint[NewConversationControllerPar
             id: int,
             conversation_title: str,
         ) -> NewConversationViewModel | None:
-            controller_parameters = NewConversationControllerParameters(
-                research_context_id=id, conversation_title=conversation_title
-            )
+            try:
+                controller_parameters = NewConversationControllerParameters(
+                    research_context_id=id, conversation_title=conversation_title
+                )
+            except ValidationError as ve:
+                raise HTTPException(status_code=400, detail=ve.errors())
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
 
             view_model: NewConversationViewModel = self.execute(
                 controller_parameters=controller_parameters,

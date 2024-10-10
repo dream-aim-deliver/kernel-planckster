@@ -1,6 +1,7 @@
 from fastapi import HTTPException
-from pydantic import Field
+from pydantic import BaseModel, Field
 from typing import List
+from lib.core.entity.models import BaseMessageContent, MessageContentTypeEnum
 from lib.core.sdk.controller import BaseController, BaseControllerParameters
 from lib.core.usecase.new_message_usecase import NewMessageUseCase
 from lib.core.usecase_models.new_message_usecase_models import NewMessageError, NewMessageRequest, NewMessageResponse
@@ -14,7 +15,7 @@ class NewMessageControllerParameters(BaseControllerParameters):
         description="The ID of the conversation to which the message is to be added.",
     )
 
-    message_contents: List[str] = Field(
+    message_contents: List[BaseMessageContent] = Field(
         title="Message Contents",
         description="The pieces of content connected to the new message.",
     )
