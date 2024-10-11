@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
 from typing import List
 import logging
 
@@ -101,7 +100,6 @@ class ConversationRepository(ABC):
         conversation_id: int,
         message_contents: List[BaseMessageContent],
         sender_type: MessageSenderTypeEnum,
-        timestamp: datetime,
         thread_id: int | None = None,
     ) -> NewMessageDTO:
         """

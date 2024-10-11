@@ -46,7 +46,6 @@ class NewMessageFastAPIFeature(FastAPIEndpoint[NewMessageControllerParameters, N
             id: int,
             message_contents: List[BaseMessageContent],
             sender_type: str,
-            unix_timestamp: int,
             thread_id: int | None = None,
         ) -> NewMessageViewModel | None:
             try:
@@ -54,7 +53,6 @@ class NewMessageFastAPIFeature(FastAPIEndpoint[NewMessageControllerParameters, N
                     conversation_id=id,
                     message_contents=message_contents,
                     sender_type=sender_type,
-                    unix_timestamp=unix_timestamp,
                     thread_id=thread_id,
                 )
             except ValidationError as ve:

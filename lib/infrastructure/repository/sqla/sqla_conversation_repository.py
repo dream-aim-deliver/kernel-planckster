@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Set
 
 
@@ -8,7 +7,6 @@ from lib.core.dto.conversation_repository_dto import (
     ListConversationMessagesDTO,
     ListConversationSourcesDTO,
     NewMessageDTO,
-    NewMessageContentDTO,
     UpdateConversationDTO,
 )
 from lib.core.entity.models import (
@@ -20,7 +18,6 @@ from lib.core.entity.models import (
     SourceData,
     TMessageBase,
     UserMessage,
-    MessageContent,
 )
 from lib.core.ports.secondary.conversation_repository import ConversationRepository
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
@@ -378,7 +375,6 @@ class SQLAConversationRepository(ConversationRepository):
         conversation_id: int,
         message_contents: List[BaseMessageContent],
         sender_type: MessageSenderTypeEnum,
-        timestamp: datetime,
         thread_id: int | None = None,
     ) -> NewMessageDTO:
         """
@@ -480,7 +476,6 @@ class SQLAConversationRepository(ConversationRepository):
                     )
                     for piece in message_contents
                 ],
-                timestamp=timestamp,
                 conversation_id=conversation_id,
             )
 
@@ -494,7 +489,6 @@ class SQLAConversationRepository(ConversationRepository):
                     )
                     for piece in message_contents
                 ],
-                timestamp=timestamp,
                 conversation_id=conversation_id,
             )
 

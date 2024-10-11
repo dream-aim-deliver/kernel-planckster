@@ -226,8 +226,6 @@ def fake_kp_datetimes() -> Tuple[str, str, bool, str]:
 def user_message() -> SQLAUserMessage:
     fake = Faker().unique
 
-    dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
-
     message_contents = SQLAMessageContent(
         content=fake.text(max_nb_chars=70)[:-1] + "?",
         content_type=MessageContentTypeEnum.TEXT,
@@ -236,7 +234,6 @@ def user_message() -> SQLAUserMessage:
     return SQLAUserMessage(
         id=int(str(fake.random_int(min=51, max=60)) + str(datetime.datetime.now().timestamp()).replace(".", "")[6:13]),
         message_contents=[message_contents],
-        timestamp=dt1,
         thread_id=1,
     )
 
@@ -249,8 +246,6 @@ def fake_user_message() -> SQLAUserMessage:
 def agent_message() -> SQLAAgentMessage:
     fake = Faker().unique
 
-    dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
-
     message_contents = SQLAMessageContent(
         content=fake.text(max_nb_chars=70)[:-1],
         content_type=MessageContentTypeEnum.TEXT,
@@ -259,7 +254,6 @@ def agent_message() -> SQLAAgentMessage:
     return SQLAAgentMessage(
         id=int(str(fake.random_int(min=41, max=50)) + str(datetime.datetime.now().timestamp()).replace(".", "")[6:13]),
         message_contents=[message_contents],
-        timestamp=dt1,
         thread_id=1,
     )
 
@@ -271,10 +265,6 @@ def fake_agent_message() -> SQLAAgentMessage:
 
 def message_pair() -> Tuple[SQLAUserMessage, SQLAAgentMessage]:
     fake = Faker().unique
-
-    dt1 = fake.date_time_between(start_date="-8y", end_date="-1m")
-
-    dt2 = fake.date_time_between_dates(datetime_start=dt1, datetime_end=datetime.datetime.now())
 
     user_message_contents = SQLAMessageContent(
         content=fake.text(max_nb_chars=70)[:-1] + "?",
@@ -289,13 +279,11 @@ def message_pair() -> Tuple[SQLAUserMessage, SQLAAgentMessage]:
     user_message = SQLAUserMessage(
         id=int(str(fake.random_int(min=21, max=30)) + str(datetime.datetime.now().timestamp()).replace(".", "")[6:13]),
         message_contents=[user_message_contents],
-        timestamp=dt1,
         thread_id=1,
     )
     agent_message = SQLAAgentMessage(
         id=int(str(fake.random_int(min=31, max=40)) + str(datetime.datetime.now().timestamp()).replace(".", "")[6:13]),
         message_contents=[agent_message_contents],
-        timestamp=dt2,
         thread_id=2,
     )
 

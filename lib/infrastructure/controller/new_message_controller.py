@@ -25,11 +25,6 @@ class NewMessageControllerParameters(BaseControllerParameters):
         description="The type of the sender of the message. Can be either 'user' or 'agent'.",
     )
 
-    unix_timestamp: int = Field(
-        title="Unix Timestamp",
-        description="The timestamp of the message. Needs to be a valid timestamp in Unix time.",
-    )
-
     thread_id: int | None = Field(
         title="Thread ID",
         description="The ID of the thread to which the message belongs. Only passed when message is in response to an existing message.",
@@ -60,6 +55,5 @@ class NewMessageController(
                 conversation_id=parameters.conversation_id,
                 message_contents=parameters.message_contents,
                 sender_type=parameters.sender_type,
-                unix_timestamp=parameters.unix_timestamp,
                 thread_id=parameters.thread_id,
             )
