@@ -14,7 +14,6 @@ def test_new_message_fastapi_post_endpoint_returns_view_model(
         "/conversation/1/message",
         params={
             "sender_type": "client",
-            "unix_timestamp": 1633096800,
         },
         json=[
             {

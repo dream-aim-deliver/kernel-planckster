@@ -314,8 +314,6 @@ class MessageBase(BaseSoftDeleteKernelPlancksterModel):
 
     @param id: the id of the message
     @type id: int
-    @param timestamp: the datetime when the message was sent
-    @type timestamp: datetime
     @param sender: the name of the sender of the message
     @type sender: str
     @param sender_type: the type of the sender of the message
@@ -325,7 +323,6 @@ class MessageBase(BaseSoftDeleteKernelPlancksterModel):
     """
 
     id: int
-    timestamp: datetime
     thread_id: int
     sender: str
     sender_type: MessageSenderTypeEnum

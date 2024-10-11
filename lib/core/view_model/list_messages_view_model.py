@@ -24,7 +24,6 @@ class ListMessagesViewModel(BaseViewModel):
                             "updated_at": "2021-01-01T00:00:00Z",
                             "deleted": False,
                             "deleted_at": None,
-                            "timestamp": "2021-01-01T00:00:00Z",
                             "id": 1,
                             "conversation_id": 1,
                             "message_contents": [
@@ -38,7 +37,6 @@ class ListMessagesViewModel(BaseViewModel):
                             "updated_at": "2021-01-01T00:00:01Z",
                             "deleted": False,
                             "deleted_at": None,
-                            "timestamp": "2021-01-01T00:00:01Z",
                             "id": 2,
                             "conversation_id": 1,
                             "message_contents": [

@@ -64,7 +64,6 @@ def test_new_message_repository_function(
             conversation_id=conv_id,
             message_contents=[new_message_content],
             sender_type=MessageSenderTypeEnum.USER,
-            timestamp=datetime.now(),
             thread_id=None,
         )
 
@@ -107,7 +106,9 @@ def test_error_new_message_no_conversation_id(
     conversation_repository = app_container.sqla_conversation_repository()
 
     list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
-        conversation_id=None, message_contents=["abc"], sender_type=MessageSenderTypeEnum.USER, timestamp=datetime.now()  # type: ignore
+        conversation_id=None,  # type: ignore
+        message_contents=[BaseMessageContent(content="abc", content_type="text")],
+        sender_type=MessageSenderTypeEnum.USER,
     )
 
     assert list_conv_srcs_DTO.status == False
@@ -123,7 +124,9 @@ def test_error_new_message_no_message_content(
     conversation_repository = app_container.sqla_conversation_repository()
 
     list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
-        conversation_id=1, message_contents=None, sender_type=MessageSenderTypeEnum.USER, timestamp=datetime.now()  # type: ignore
+        conversation_id=1,
+        message_contents=None,  # type: ignore
+        sender_type=MessageSenderTypeEnum.USER,
     )
 
     assert list_conv_srcs_DTO.status == False
@@ -139,12 +142,11 @@ def test_error_new_message_no_sqla_conversation(
     conversation_repository = app_container.sqla_conversation_repository()
 
     irrealistic_ID = 99999999
-    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(
+    list_conv_srcs_DTO: ListConversationSourcesDTO = conversation_repository.new_message(  # type: ignore
         conversation_id=irrealistic_ID,
         message_contents=[BaseMessageContent(content="abc", content_type="text")],
         sender_type=MessageSenderTypeEnum.USER,
-        timestamp=datetime.now(),
-    )  # type: ignore
+    )
 
     assert list_conv_srcs_DTO.status == False
     assert list_conv_srcs_DTO.errorCode == -1

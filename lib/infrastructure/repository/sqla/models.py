@@ -388,8 +388,6 @@ class SQLAMessageBase(Base, SoftModelBase):  # type: ignore
     @type id: int
     @param thread_id: The ID of the thread of the message
     @type thread_id: int
-    @param timestamp: The timestamp of the message
-    @type timestamp: datetime
     @param type: The type of the message
     @type type: str
     @param message_contents: A list of the content pieces of the message
@@ -402,7 +400,6 @@ class SQLAMessageBase(Base, SoftModelBase):  # type: ignore
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     thread_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     type: Mapped[str]
 
     message_contents: Mapped[List["SQLAMessageContent"]] = relationship("SQLAMessageContent", backref="message_base")
@@ -422,8 +419,6 @@ class SQLAUserMessage(SQLAMessageBase):
     @type id: int
     @param thread_id: The ID of the thread of the message
     @type thread_id: int
-    @param message_timestamp: The timestamp of the message
-    @type message_timestamp: datetime
     @param type: The type of the message
     @type type: str
     @param message_contents: The content pieces of the message
