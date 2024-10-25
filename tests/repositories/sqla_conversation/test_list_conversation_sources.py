@@ -89,7 +89,7 @@ def test_error_list_conversation_sources_none_conversation_id(
 ) -> None:
     conversation_repository = app_initialization_container.sqla_conversation_repository()
 
-    dto: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(conversation_id=None)  # type: ignore
+    dto: ListConversationSourcesDTO = conversation_repository.list_conversation_sources(conversation_id=None)
 
     assert dto.status == False
     assert dto.errorCode == -1

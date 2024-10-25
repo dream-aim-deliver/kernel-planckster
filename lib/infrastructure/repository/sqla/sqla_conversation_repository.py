@@ -1,5 +1,5 @@
-from typing import List, Set
-
+from typing import List, Set, Generator, Callable, Optional
+from contextlib import _GeneratorContextManager
 
 from lib.core.dto.conversation_repository_dto import (
     GetConversationDTO,
@@ -20,7 +20,8 @@ from lib.core.entity.models import (
     UserMessage,
 )
 from lib.core.ports.secondary.conversation_repository import ConversationRepository
-from lib.infrastructure.repository.sqla.database import TDatabaseFactory
+
+# from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 from lib.infrastructure.repository.sqla.models import (
     SQLAConversation,
     SQLAMessageBase,
@@ -37,28 +38,30 @@ from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_conversation_to_core_conversation,
     convert_sqla_client_message_to_core_user_message,
     convert_sqla_agent_message_to_core_agent_message,
-    # convert_sqla_message_content_to_core_message_content,
     convert_sqla_research_context_to_core_research_context,
     convert_sqla_source_data_to_core_source_data,
+    session_context,
 )
 
 
 class SQLAConversationRepository(ConversationRepository):
-    def __init__(self, session_factory: TDatabaseFactory) -> None:
+    def __init__(self, session_generator_factory: Callable[[], _GeneratorContextManager[Session]]) -> None:
         super().__init__()
-        with session_factory() as session:
-            self._session = session
+        self._session_generator = session_generator_factory()
 
-    @property
-    def session(self) -> Session:
-        return self._session
+    # @property
+    def session_generator(self) -> _GeneratorContextManager[Session]:
+        return self._session_generator
 
-    def get_conversation(self, conversation_id: int) -> GetConversationDTO:
+    @session_context(session_generator)
+    def get_conversation(self, session: Session, conversation_id: int) -> GetConversationDTO:
         """
         Gets a conversation by ID.
 
         @param conversation_id: The ID of the conversation to get.
         @type conversation_id: int
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @return: A DTO containing the result of the operation.
         @rtype: ConversationDTO
         """
@@ -74,7 +77,18 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+        if session is None:
+            errorDTO = GetConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Session cannot be None",
+                errorName="Session not provided",
+                errorType="SessionNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_conversation: SQLAConversation | None = session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -95,12 +109,20 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_conversation,
         )
 
-    def get_conversation_research_context(self, conversation_id: int) -> GetConversationResearchContextDTO:
+    @session_context(session_generator)
+    def get_conversation_research_context(
+        self,
+        session: Session,
+        conversation_id: int,
+        # session: Optional[Session],
+    ) -> GetConversationResearchContextDTO:
         """
         Gets the research context of a conversation.
 
         @param research_context_id: The ID of the research context to get the conversation for.
         @type research_context_id: int
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @return: A DTO containing the result of the operation.
         @rtype: GetConversationResearchContextDTO
         """
@@ -116,7 +138,18 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+        if session is None:
+            errorDTO = GetConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Session cannot be None",
+                errorName="Session not provided",
+                errorType="SessionNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_conversation: SQLAConversation | None = session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -153,13 +186,19 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_research_context,
         )
 
-    def list_conversation_messages(self, conversation_id: int) -> ListConversationMessagesDTO[TMessageBase]:
+    @session_context(session_generator)
+    def list_conversation_messages(
+        self, session: Session, conversation_id: int
+    ) -> ListConversationMessagesDTO[TMessageBase]:
         """
         Lists all messages in a conversation.
 
         @param conversation_id: The ID of the conversation to list messages for.
         @type conversation_id: int
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @return: A DTO containing the result of the operation.
+        @rtype: ListConversationMessagesDTO[TMessageBase]
         """
         if conversation_id is None:
             errorDTO = ListConversationMessagesDTO[TMessageBase](
@@ -172,8 +211,19 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
+        if session is None:
+            errorDTO = GetConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Session cannot be None",
+                errorName="Session not provided",
+                errorType="SessionNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
         try:
-            sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+            sqla_conversation: SQLAConversation | None = session.get(SQLAConversation, conversation_id)
 
         except Exception as e:
             self.logger.error(f"Error while querying the database for conversation with ID {conversation_id}: {e}")
@@ -215,7 +265,13 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_messages,
         )
 
-    def update_conversation(self, conversation_id: int, conversation_title: str) -> UpdateConversationDTO:
+    @session_context(session_generator)
+    def update_conversation(
+        self,
+        session: Session,
+        conversation_id: int,
+        conversation_title: str,
+    ) -> UpdateConversationDTO:
         """
         Updates a conversation in the research context.
 
@@ -223,6 +279,8 @@ class SQLAConversationRepository(ConversationRepository):
         @type conversation_id: int
         @param conversation_title: The title of the conversation.
         @type conversation_title: str
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @return: A DTO containing the result of the operation.
         @rtype: ConversationDTO
         """
@@ -248,7 +306,18 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+        if session is None:
+            errorDTO = GetConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Session cannot be None",
+                errorName="Session not provided",
+                errorType="SessionNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_conversation: SQLAConversation | None = session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -263,8 +332,8 @@ class SQLAConversationRepository(ConversationRepository):
             return errorDTO
 
         try:
-            sqla_conversation.update({"title": conversation_title}, session=self.session)
-            self.session.commit()
+            sqla_conversation.update({"title": conversation_title}, session=session)
+            session.commit()
 
             return UpdateConversationDTO(status=True, conversation_id=sqla_conversation.id)
 
@@ -280,12 +349,19 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-    def list_conversation_sources(self, conversation_id: int) -> ListConversationSourcesDTO:
+    @session_context(session_generator)
+    def list_conversation_sources(
+        self,
+        session: Session,
+        conversation_id: int,
+    ) -> ListConversationSourcesDTO:
         """
         Lists all data sources of the citations of a conversation.
 
         @param conversation_id: The ID of the conversation to list data sources for.
         @type conversation_id: int
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @return: A DTO containing the result of the operation.
         @rtype: ListConversationSourcesDTO
         """
@@ -300,7 +376,18 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+        if session is None:
+            errorDTO = GetConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Session cannot be None",
+                errorName="Session not provided",
+                errorType="SessionNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        sqla_conversation: SQLAConversation | None = session.get(SQLAConversation, conversation_id)
 
         if sqla_conversation is None:
             self.logger.error(f"Conversation with ID {conversation_id} not found in the database.")
@@ -321,10 +408,7 @@ class SQLAConversationRepository(ConversationRepository):
         for sqlamessage in sqlamessages:
             if isinstance(sqlamessage, SQLAAgentMessage):
                 queried_sqla_source_data_list = (
-                    self.session.query(SQLASourceData)
-                    .join(SQLASourceData.agent_message)
-                    .filter_by(id=sqlamessage.id)
-                    .all()
+                    session.query(SQLASourceData).join(SQLASourceData.agent_message).filter_by(id=sqlamessage.id).all()
                 )
 
                 if queried_sqla_source_data_list == []:
@@ -370,8 +454,10 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_source_data,
         )
 
+    @session_context(session_generator)
     def new_message(
         self,
+        session: Session,
         conversation_id: int,
         message_contents: List[BaseMessageContent],
         sender_type: MessageSenderTypeEnum,
@@ -386,6 +472,8 @@ class SQLAConversationRepository(ConversationRepository):
         @type thread_id: int
         @param message_contents: A list of the content pieces of the message
         @type message_contents: List[str | MessageContent]
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @return: A DTO containing the result of the operation.
         @rtype: NewMessageDTO
         """
@@ -423,9 +511,20 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
+        if session is None:
+            errorDTO = GetConversationDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="Session cannot be None",
+                errorName="Session not provided",
+                errorType="SessionNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
         # 1. Obtain the conversation and check if it exists
         try:
-            sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
+            sqla_conversation: SQLAConversation | None = session.get(SQLAConversation, conversation_id)
 
         except Exception as e:
             self.logger.error(f"Error while querying the database for conversation with ID {conversation_id}: {e}")
@@ -458,7 +557,7 @@ class SQLAConversationRepository(ConversationRepository):
         max_thread_id: int = 0
 
         if not isinstance(thread_id, int):
-            max_thread_result = self._session.query(func.max(SQLAMessageBase.thread_id).label("max_thread_id")).first()
+            max_thread_result = session.query(func.max(SQLAMessageBase.thread_id).label("max_thread_id")).first()
 
             if max_thread_result.max_thread_id and max_thread_result.max_thread_id > 0:
                 max_thread_id = max_thread_result.max_thread_id
@@ -504,9 +603,9 @@ class SQLAConversationRepository(ConversationRepository):
             return errorDTO
 
         try:
-            sqla_message.save(session=self.session)
+            sqla_message.save(session=session)
 
-            self.session.commit()
+            session.commit()
 
             core_message: UserMessage | AgentMessage
 

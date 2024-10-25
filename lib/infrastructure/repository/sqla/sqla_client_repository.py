@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Callable
+from contextlib import _GeneratorContextManager
 from lib.core.dto.client_repository_dto import (
     GetClientDTO,
     ListResearchContextsDTO,
@@ -24,6 +25,7 @@ from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_client_to_core_client,
     convert_core_source_data_to_sqla_source_data,
     convert_sqla_source_data_to_core_source_data,
+    session_context,
 )
 
 
@@ -32,19 +34,21 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
     A SQLAlchemy implementation of the client repository.
     """
 
-    def __init__(self, session_factory: TDatabaseFactory) -> None:
+    def __init__(self, session_generator_factory: Callable[[], _GeneratorContextManager[Session]]) -> None:
         super().__init__()
-        with session_factory() as session:
-            self._session = session
+        self._session_generator = session_generator_factory()
 
-    @property
-    def session(self) -> Session:
-        return self._session
+    # @property
+    def session_generator(self) -> _GeneratorContextManager[Session]:
+        return self._session_generator
 
-    def get_client(self, client_id: int) -> GetClientDTO:
+    @session_context(session_generator)
+    def get_client(self, session: Session, client_id: int) -> GetClientDTO:
         """
         Gets a client by ID.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param client_id: The ID of the client to get.
         @type client_id: int
         @return: A DTO containing the result of the operation.
@@ -63,7 +67,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_client: SQLAClient | None = self.session.get(SQLAClient, client_id)
+        sqla_client: SQLAClient | None = session.get(SQLAClient, client_id)
 
         if sqla_client is None:
             self.logger.error(f"Client with ID {client_id} not found in the database")
@@ -81,10 +85,13 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
         return GetClientDTO(status=True, data=core_user)
 
-    def get_client_by_sub(self, client_sub: str) -> GetClientDTO:
+    @session_context(session_generator)
+    def get_client_by_sub(self, session: Session, client_sub: str) -> GetClientDTO:
         """
         Gets a client by SUB.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param client_sub: The SUB of the client to get.
         @type client_sub: str
         @return: A DTO containing the result of the operation.
@@ -103,7 +110,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             return errorDTO
 
         try:
-            sqla_client = self.session.query(SQLAClient).filter_by(sub=client_sub).first()
+            sqla_client = session.query(SQLAClient).filter_by(sub=client_sub).first()
 
             if sqla_client is None:
                 self.logger.error(f"Client with SUB {client_sub} not found in the database")
@@ -133,8 +140,10 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
+    @session_context(session_generator)
     def new_research_context(
         self,
+        session: Session,
         research_context_title: str,
         research_context_description: str,
         client_sub: str,
@@ -144,6 +153,8 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
         """
         Creates a new research context for a client.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param research_context_title: The title of the research context.
         @type research_context_title: str
         @param research_context_description: The description of the research context.
@@ -209,7 +220,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             return errorDTO
 
         try:
-            queried_sqla_llm: SQLALLM | None = self.session.query(SQLALLM).filter_by(llm_name=llm_name).first()
+            queried_sqla_llm: SQLALLM | None = session.query(SQLALLM).filter_by(llm_name=llm_name).first()
 
         except Exception as e:
             self.logger.error(f"Error while querying for LLM: {e}")
@@ -236,7 +247,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             return errorDTO
 
         try:
-            queried_sqla_client: SQLAClient | None = self.session.query(SQLAClient).filter_by(sub=client_sub).first()
+            queried_sqla_client: SQLAClient | None = session.query(SQLAClient).filter_by(sub=client_sub).first()
 
         except Exception as e:
             self.logger.error(f"Error while querying for user: {e}")
@@ -296,7 +307,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
         for source_datum_id in source_data_ids:
             try:
-                sqla_source_datum = self.session.get(SQLASourceData, source_datum_id)
+                sqla_source_datum = session.get(SQLASourceData, source_datum_id)
 
                 if sqla_source_datum is None:
                     sqla_source_data_error_ids.append(source_datum_id)
@@ -307,9 +318,9 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
             except Exception as e:
                 sqla_source_data_error_ids.append(source_datum_id)
-                sqla_source_data_error_dict[
-                    f"ID {source_datum_id}"
-                ] = f"Error while getting source data from the database: {e}"
+                sqla_source_data_error_dict[f"ID {source_datum_id}"] = (
+                    f"Error while getting source data from the database: {e}"
+                )
                 continue
 
         if sqla_source_data_error_ids != []:
@@ -340,8 +351,8 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
         )
 
         try:
-            sqla_new_research_context.save(session=self.session)
-            self.session.commit()
+            sqla_new_research_context.save(session=session)
+            session.commit()
 
         except Exception as e:
             self.logger.error(f"Error while creating new research context: {e}")
@@ -367,10 +378,13 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             llm=core_llm,
         )
 
-    def list_research_contexts(self, client_id: int) -> ListResearchContextsDTO:
+    @session_context(session_generator)
+    def list_research_contexts(self, session: Session, client_id: int) -> ListResearchContextsDTO:
         """
         Lists all research contexts for a client.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param client_id: The ID of the user to list research contexts for.
         @type client_id: int
         @return: A DTO containing the result of the operation.
@@ -389,7 +403,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_client: SQLAClient | None = self.session.get(SQLAClient, client_id)
+        sqla_client: SQLAClient | None = session.get(SQLAClient, client_id)
 
         if sqla_client is None:
             self.logger.error(f"Client with ID {client_id} not found in the database")
@@ -412,12 +426,20 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
         return ListResearchContextsDTO(status=True, data=core_research_contexts)
 
+    @session_context(session_generator)
     def new_source_data(
-        self, client_id: int, source_data_name: str, protocol: ProtocolEnum, relative_path: str
+        self,
+        session: Session,
+        client_id: int,
+        source_data_name: str,
+        protocol: ProtocolEnum,
+        relative_path: str,
     ) -> NewSourceDataDTO:
         """
         Registers a new source data in the database for a given client.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param client_id: The ID of the client to create the source data for.
         @type client_id: int
         @param source_data_name: The name of the source data.
@@ -442,7 +464,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             return errorDTO
 
         # 1. Check that the client exists in the database
-        sqla_client = self.session.get(SQLAClient, client_id)
+        sqla_client = session.get(SQLAClient, client_id)
 
         if sqla_client is None:
             self.logger.error(f"Client with ID {client_id} not found in the database")
@@ -523,7 +545,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
         # 3. Check if the source data is already present in the database
         try:
             queried_source_data_list = (
-                self.session.query(SQLASourceData)
+                session.query(SQLASourceData)
                 .filter_by(
                     client_id=sqla_client.id,
                     protocol=sqla_source_data.protocol,
@@ -558,7 +580,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
         # 4. We used a triple composite index, so SD is unique, so we can commit it
         try:
             sqla_client.source_data.append(sqla_source_data)
-            self.session.commit()
+            session.commit()
 
             new_source_data = convert_sqla_source_data_to_core_source_data(sqla_source_data)
 
@@ -578,10 +600,13 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
             # TODO OLD: In the previous version (allowing for a list for source data, instead of just one): fix this: if the second element of the input list is a duplicate of the first one, the first one will be added (correct), the second one catched in the duplicates list (correct), but from the third one onwards everything will fail because SQLA had an error in the session
 
-    def list_source_data(self, client_id: int) -> ListSourceDataDTO:
+    @session_context(session_generator)
+    def list_source_data(self, session: Session, client_id: int) -> ListSourceDataDTO:
         """
         Lists source data for a given client.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param client_id: The ID of the client to list the source data for.
         @type client_id: int
         @return: A DTO containing the result of the operation.
@@ -601,7 +626,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             return errorDTO
 
         try:
-            sqla_client: SQLAClient | None = self.session.get(SQLAClient, client_id)
+            sqla_client: SQLAClient | None = session.get(SQLAClient, client_id)
 
         except Exception as e:
             self.logger.error(f"Could not query the database for client with ID {client_id}: {e}")

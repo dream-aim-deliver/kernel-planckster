@@ -53,7 +53,7 @@ def test_error_get_conversation_none_conversation_id(
 ) -> None:
     conversation_repository = app_initialization_container.sqla_conversation_repository()
 
-    get_conv_DTO: GetConversationDTO = conversation_repository.get_conversation(conversation_id=None)  # type: ignore
+    get_conv_DTO: GetConversationDTO = conversation_repository.get_conversation(conversation_id=None)
 
     assert get_conv_DTO.status == False
     assert get_conv_DTO.errorCode == -1

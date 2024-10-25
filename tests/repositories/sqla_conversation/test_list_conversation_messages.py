@@ -4,7 +4,7 @@ from faker import Faker
 from lib.core.dto.conversation_repository_dto import (
     ListConversationMessagesDTO,
 )
-from lib.core.entity.models import MessageBase
+from lib.core.entity.models import TMessageBase
 from lib.infrastructure.config.containers import ApplicationContainer
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
@@ -47,9 +47,9 @@ def test_list_conversation_messages(
 
         assert result is not None
 
-        list_conv_msgs_DTO: ListConversationMessagesDTO[
-            MessageBase
-        ] = conversation_repository.list_conversation_messages(conversation_id=result.id)
+        list_conv_msgs_DTO: ListConversationMessagesDTO[TMessageBase] = (  # type: ignore
+            conversation_repository.list_conversation_messages(conversation_id=result.id)
+        )
 
     assert list_conv_msgs_DTO.data is not None
 

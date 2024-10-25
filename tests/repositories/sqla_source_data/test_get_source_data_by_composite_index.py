@@ -51,7 +51,7 @@ def test_error_get_source_data_by_composite_index_either_input_is_none(
     sqla_source_data = fake_source_data
 
     dto = sqla_source_data_repository.get_source_data_by_composite_index(
-        client_id=None, protocol=sqla_source_data.protocol, relative_path=sqla_source_data.relative_path  # type: ignore
+        client_id=None, protocol=sqla_source_data.protocol, relative_path=sqla_source_data.relative_path
     )
 
     assert dto
@@ -61,7 +61,7 @@ def test_error_get_source_data_by_composite_index_either_input_is_none(
     assert dto.errorType == "ClientIDNotProvided"
 
     dto = sqla_source_data_repository.get_source_data_by_composite_index(
-        client_id=1, protocol=None, relative_path=sqla_source_data.relative_path  # type: ignore
+        client_id=1, protocol=None, relative_path=sqla_source_data.relative_path
     )
 
     assert dto
@@ -71,7 +71,7 @@ def test_error_get_source_data_by_composite_index_either_input_is_none(
     assert dto.errorType == "ProtocolNotProvided"
 
     dto = sqla_source_data_repository.get_source_data_by_composite_index(
-        client_id=1, protocol=sqla_source_data.protocol, relative_path=None  # type: ignore
+        client_id=1, protocol=sqla_source_data.protocol, relative_path=None
     )
 
     assert dto

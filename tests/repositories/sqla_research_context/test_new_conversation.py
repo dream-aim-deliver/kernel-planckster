@@ -52,7 +52,9 @@ def test_error_new_conversation_none_research_context_id(
 ) -> None:
     research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    conv_DTO: NewResearchContextConversationDTO = research_context_repository.new_conversation(research_context_id=None, conversation_title="test")  # type: ignore
+    conv_DTO: NewResearchContextConversationDTO = research_context_repository.new_conversation(
+        research_context_id=None, conversation_title="test"
+    )
 
     assert conv_DTO.status == False
     assert conv_DTO.errorCode == -1
@@ -66,7 +68,9 @@ def test_error_new_conversation_none_conversation_title(
 ) -> None:
     research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    conv_DTO: NewResearchContextConversationDTO = research_context_repository.new_conversation(research_context_id=1, conversation_title=None)  # type: ignore
+    conv_DTO: NewResearchContextConversationDTO = research_context_repository.new_conversation(
+        research_context_id=1, conversation_title=None
+    )
 
     assert conv_DTO.status == False
     assert conv_DTO.errorCode == -1

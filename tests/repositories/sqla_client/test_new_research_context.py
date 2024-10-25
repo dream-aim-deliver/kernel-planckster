@@ -90,7 +90,7 @@ def test_error_new_research_context_research_context_title_is_None(
     source_data_ids = [1, 2, 3]
 
     new_research_context_DTO: NewResearchContextDTO = sqla_client_repository.new_research_context(
-        research_context_title=research_context_title,  # type: ignore
+        research_context_title=research_context_title,
         research_context_description=research_context_description,
         client_sub=client_sub,
         llm_name=llm_name,
@@ -116,7 +116,7 @@ def test_error_new_research_context_description_is_None(
 
     new_research_context_DTO: NewResearchContextDTO = sqla_client_repository.new_research_context(
         research_context_title=research_context_title,
-        research_context_description=research_context_description,  # type: ignore
+        research_context_description=research_context_description,
         client_sub=client_sub,
         llm_name=llm_name,
         source_data_ids=source_data_ids,
@@ -142,7 +142,7 @@ def test_error_new_research_context_client_sub_is_None(
     new_research_context_DTO: NewResearchContextDTO = sqla_client_repository.new_research_context(
         research_context_title=research_context_title,
         research_context_description=research_context_description,
-        client_sub=client_sub,  # type: ignore
+        client_sub=client_sub,
         llm_name=llm_name,
         source_data_ids=source_data_ids,
     )
@@ -168,7 +168,7 @@ def test_error_new_research_context_llm_name_is_None(
         research_context_title=research_context_title,
         research_context_description=research_context_description,
         client_sub=client_sub,
-        llm_name=llm_name,  # type: ignore
+        llm_name=llm_name,
         source_data_ids=source_data_ids,
     )
 

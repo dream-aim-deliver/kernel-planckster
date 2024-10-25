@@ -66,7 +66,9 @@ def test_error_update_conversation_none_research_context_id(
 ) -> None:
     conversation_repository = app_initialization_container.sqla_conversation_repository()
 
-    conv_DTO: UpdateConversationDTO = conversation_repository.update_conversation(conversation_id=None, conversation_title="test")  # type: ignore
+    conv_DTO: UpdateConversationDTO = conversation_repository.update_conversation(
+        conversation_id=None, conversation_title="test"
+    )
 
     assert conv_DTO.status == False
     assert conv_DTO.errorCode == -1
@@ -80,7 +82,9 @@ def test_error_update_conversation_none_conversation_title(
 ) -> None:
     conversation_repository = app_initialization_container.sqla_conversation_repository()
 
-    conv_DTO: UpdateConversationDTO = conversation_repository.update_conversation(conversation_id=1, conversation_title=None)  # type: ignore
+    conv_DTO: UpdateConversationDTO = conversation_repository.update_conversation(
+        conversation_id=1, conversation_title=None
+    )
 
     assert conv_DTO.status == False
     assert conv_DTO.errorCode == -1

@@ -36,7 +36,7 @@ def test_error_get_client_by_sub_none_client_sub(
 ) -> None:
     client_repository = app_initialization_container.sqla_client_repository()
 
-    dto = client_repository.get_client_by_sub(client_sub=None)  # type: ignore
+    dto = client_repository.get_client_by_sub(client_sub=None)
 
     assert dto.status == False
     assert dto.errorCode == -1

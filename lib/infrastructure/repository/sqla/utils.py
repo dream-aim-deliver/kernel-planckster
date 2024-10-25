@@ -19,6 +19,33 @@ from lib.infrastructure.repository.sqla.models import (
     SQLAClient,
 )
 
+import functools
+from sqlalchemy.orm import Session
+from typing import Generator, Callable, Any, ParamSpec, Concatenate, TypeVar
+from contextlib import _GeneratorContextManager
+
+
+Param = ParamSpec("Param")
+SelfType = ParamSpec("SelfType")
+RetType = TypeVar("RetType")
+
+
+def session_context(
+    session_generator: Callable[SelfType, _GeneratorContextManager[Session]],
+    # session_generator: _GeneratorContextManager[Session],
+) -> Callable[[Callable[Concatenate[Any, Session, Param], RetType]], Callable[..., RetType]]:
+    def decorator(func: Callable[Concatenate[Any, Session, Param], RetType]) -> Callable[..., RetType]:
+        @functools.wraps(func)
+        def wrapper(self: Any, *args: Any, **kwargs: Any) -> RetType:
+
+            with session_generator(self) as session:
+                # return func(self, session, *[a for a in args if a != self], **kwargs)
+                return func(self, session, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
 
 def convert_sqla_client_to_core_client(sqla_client: SQLAClient) -> Client:
     """
