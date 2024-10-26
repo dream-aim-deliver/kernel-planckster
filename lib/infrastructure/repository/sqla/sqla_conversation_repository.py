@@ -53,7 +53,7 @@ class SQLAConversationRepository(ConversationRepository):
     def session_generator(self) -> _GeneratorContextManager[Session]:
         return self._session_generator
 
-    @session_context(session_generator)
+    @session_context()
     def get_conversation(self, session: Session, conversation_id: int) -> GetConversationDTO:
         """
         Gets a conversation by ID.
@@ -109,7 +109,7 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_conversation,
         )
 
-    @session_context(session_generator)
+    @session_context()
     def get_conversation_research_context(
         self,
         session: Session,
@@ -186,7 +186,7 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_research_context,
         )
 
-    @session_context(session_generator)
+    @session_context()
     def list_conversation_messages(
         self, session: Session, conversation_id: int
     ) -> ListConversationMessagesDTO[TMessageBase]:
@@ -265,7 +265,7 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_messages,
         )
 
-    @session_context(session_generator)
+    @session_context()
     def update_conversation(
         self,
         session: Session,
@@ -349,7 +349,7 @@ class SQLAConversationRepository(ConversationRepository):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-    @session_context(session_generator)
+    @session_context()
     def list_conversation_sources(
         self,
         session: Session,
@@ -454,7 +454,7 @@ class SQLAConversationRepository(ConversationRepository):
             data=core_source_data,
         )
 
-    @session_context(session_generator)
+    @session_context()
     def new_message(
         self,
         session: Session,

@@ -42,7 +42,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
     def session_generator(self) -> _GeneratorContextManager[Session]:
         return self._session_generator
 
-    @session_context(session_generator)
+    @session_context()
     def get_client(self, session: Session, client_id: int) -> GetClientDTO:
         """
         Gets a client by ID.
@@ -85,7 +85,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
         return GetClientDTO(status=True, data=core_user)
 
-    @session_context(session_generator)
+    @session_context()
     def get_client_by_sub(self, session: Session, client_sub: str) -> GetClientDTO:
         """
         Gets a client by SUB.
@@ -140,7 +140,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-    @session_context(session_generator)
+    @session_context()
     def new_research_context(
         self,
         session: Session,
@@ -318,9 +318,9 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
             except Exception as e:
                 sqla_source_data_error_ids.append(source_datum_id)
-                sqla_source_data_error_dict[f"ID {source_datum_id}"] = (
-                    f"Error while getting source data from the database: {e}"
-                )
+                sqla_source_data_error_dict[
+                    f"ID {source_datum_id}"
+                ] = f"Error while getting source data from the database: {e}"
                 continue
 
         if sqla_source_data_error_ids != []:
@@ -378,7 +378,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             llm=core_llm,
         )
 
-    @session_context(session_generator)
+    @session_context()
     def list_research_contexts(self, session: Session, client_id: int) -> ListResearchContextsDTO:
         """
         Lists all research contexts for a client.
@@ -426,7 +426,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
         return ListResearchContextsDTO(status=True, data=core_research_contexts)
 
-    @session_context(session_generator)
+    @session_context()
     def new_source_data(
         self,
         session: Session,
@@ -600,7 +600,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
             # TODO OLD: In the previous version (allowing for a list for source data, instead of just one): fix this: if the second element of the input list is a duplicate of the first one, the first one will be added (correct), the second one catched in the duplicates list (correct), but from the third one onwards everything will fail because SQLA had an error in the session
 
-    @session_context(session_generator)
+    @session_context()
     def list_source_data(self, session: Session, client_id: int) -> ListSourceDataDTO:
         """
         Lists source data for a given client.

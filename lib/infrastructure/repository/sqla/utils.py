@@ -30,17 +30,35 @@ SelfType = ParamSpec("SelfType")
 RetType = TypeVar("RetType")
 
 
-def session_context(
-    session_generator: Callable[SelfType, _GeneratorContextManager[Session]],
-    # session_generator: _GeneratorContextManager[Session],
-) -> Callable[[Callable[Concatenate[Any, Session, Param], RetType]], Callable[..., RetType]]:
+def session_context() -> Callable[[Callable[Concatenate[Any, Session, Param], RetType]], Callable[..., RetType]]:
+    """
+    A decorator that provides a SQLAlchemy session to the decorated function.
+    This must be used in a class method where the class has a `session_generator`.
+    The `session_generator` must be a generator that yields a SQLA session context manager.
+    The decorated function must have a `session` argument as it's second argument.
+    The first argument must be `self`.
+    This decorator wraps a function and ensures that a SQLAlchemy session is
+    created and passed to the function as a keyword argument. The session is
+    automatically closed after the function execution.
+
+    Returns:
+        Callable[[Callable[Concatenate[Any, Session, Param], RetType]], Callable[..., RetType]]:
+        A decorator that wraps the function and provides a session.
+
+    Example:
+    ```python
+        @session_context()
+        def my_function(self, session: Session, arg1, arg2):
+            # Function implementation that uses the session
+    ```
+    """
+
     def decorator(func: Callable[Concatenate[Any, Session, Param], RetType]) -> Callable[..., RetType]:
         @functools.wraps(func)
         def wrapper(self: Any, *args: Any, **kwargs: Any) -> RetType:
-
-            with session_generator(self) as session:
-                # return func(self, session, *[a for a in args if a != self], **kwargs)
-                return func(self, session, *args, **kwargs)
+            with self.session_generator() as session:
+                kwargs["session"] = session
+                return func(self, *args, **kwargs)
 
         return wrapper
 

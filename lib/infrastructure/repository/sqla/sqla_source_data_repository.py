@@ -1,9 +1,9 @@
+from collections.abc import Generator
 from typing import Callable
 from contextlib import _GeneratorContextManager
 from lib.core.dto.source_data_repository_dto import GetSourceDataByProtocolRelativePathDTO
 from lib.core.entity.models import ProtocolEnum
 from lib.core.ports.secondary.source_data_repository import SourceDataRepositoryOutputPort
-from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
 from sqlalchemy.orm import Session
 
@@ -14,20 +14,23 @@ from lib.infrastructure.repository.sqla.utils import (
 )
 
 
-class SQLASourceDataRepository(SourceDataRepositoryOutputPort):
+class SQLASourceDataRepository(SourceDataRepositoryOutputPort[Session]):
     """
     A SQLAlchemy implementation of the source data repository.
     """
 
-    def __init__(self, session_generator_factory: Callable[[], _GeneratorContextManager[Session]]) -> None:
+    def __init__(
+        self,
+        session_generator: Generator[Callable[[], _GeneratorContextManager[Session]], None, None],
+    ) -> None:
         super().__init__()
-        self._session_generator = session_generator_factory()
+        self._session_generator = session_generator
 
-    # @property
-    def session_generator(self) -> _GeneratorContextManager[Session]:
+    @property
+    def session_generator(self) -> Generator[Callable[[], _GeneratorContextManager[Session]], None, None]:
         return self._session_generator
 
-    @session_context(session_generator)
+    @session_context()
     def get_source_data_by_composite_index(
         self,
         session: Session,
