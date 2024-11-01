@@ -94,7 +94,9 @@ def test_error_list_conversations_research_context_id_is_None(
 ) -> None:
     sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    list_convs_DTO: ListResearchContextConversationsDTO = sqla_research_context_repository.list_conversations(research_context_id=None)  # type: ignore
+    list_convs_DTO: ListResearchContextConversationsDTO = sqla_research_context_repository.list_conversations(
+        research_context_id=None
+    )
 
     assert list_convs_DTO is not None
     assert list_convs_DTO.status == False

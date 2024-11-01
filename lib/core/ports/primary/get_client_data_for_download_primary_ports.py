@@ -2,6 +2,7 @@ from abc import abstractmethod
 from lib.core.ports.secondary.client_repository import ClientRepositoryOutputPort
 from lib.core.ports.secondary.file_repository import FileRepositoryOutputPort
 from lib.core.ports.secondary.source_data_repository import SourceDataRepositoryOutputPort
+from lib.core.sdk.repository import TSession
 from lib.core.sdk.presenter import BasePresenter
 from lib.core.sdk.usecase import BaseUseCase
 from lib.core.usecase_models.get_client_data_for_download_usecase_models import (
@@ -18,7 +19,7 @@ class GetClientDataForDownloadInputPort(
     def __init__(
         self,
         client_repository: ClientRepositoryOutputPort,
-        source_data_repository: SourceDataRepositoryOutputPort,
+        source_data_repository: SourceDataRepositoryOutputPort[TSession],
         file_repository: FileRepositoryOutputPort,
     ) -> None:
         self._client_repository = client_repository
@@ -30,7 +31,7 @@ class GetClientDataForDownloadInputPort(
         return self._client_repository
 
     @property
-    def source_data_repository(self) -> SourceDataRepositoryOutputPort:
+    def source_data_repository(self) -> SourceDataRepositoryOutputPort[TSession]:
         return self._source_data_repository
 
     @property

@@ -83,7 +83,7 @@ def test_error_list_source_data_research_context_id_is_None(
 ) -> None:
     research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    dto: ListSourceDataDTO = research_context_repository.list_source_data(research_context_id=None)  # type: ignore
+    dto: ListSourceDataDTO = research_context_repository.list_source_data(research_context_id=None)
 
     assert dto.status == False
     assert dto.errorCode == -1

@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Callable
+from contextlib import _GeneratorContextManager
 from lib.core.dto.research_context_repository_dto import (
     GetResearchContextDTO,
     GetResearchContextClientDTO,
@@ -17,23 +18,26 @@ from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_research_context_to_core_research_context,
     convert_sqla_source_data_to_core_source_data,
     convert_sqla_client_to_core_client,
+    session_context,
 )
 
 
 class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
-    def __init__(self, session_factory: TDatabaseFactory) -> None:
+    def __init__(self, session_generator_factory: Callable[[], _GeneratorContextManager[Session]]) -> None:
         super().__init__()
-        with session_factory() as session:
-            self._session = session
+        self._session_generator = session_generator_factory()
 
-    @property
-    def session(self) -> Session:
-        return self._session
+    # @property
+    def session_generator(self) -> _GeneratorContextManager[Session]:
+        return self._session_generator
 
-    def get_research_context(self, research_context_id: int) -> GetResearchContextDTO:
+    @session_context()
+    def get_research_context(self, session: Session, research_context_id: int) -> GetResearchContextDTO:
         """
         Gets a research context by ID.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param research_context_id: The ID of the research context to get.
         @type research_context_id: int
         @return: A DTO containing the result of the operation.
@@ -51,7 +55,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_research_context: SQLAResearchContext | None = self.session.get(SQLAResearchContext, research_context_id)
+        sqla_research_context: SQLAResearchContext | None = session.get(SQLAResearchContext, research_context_id)
 
         if sqla_research_context is None:
             self.logger.error(f"Research context {research_context_id} not found.")
@@ -71,10 +75,13 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
 
         return GetResearchContextDTO(status=True, data=core_research_context)
 
-    def get_research_context_client(self, research_context_id: int) -> GetResearchContextClientDTO:
+    @session_context()
+    def get_research_context_client(self, session: Session, research_context_id: int) -> GetResearchContextClientDTO:
         """
         Gets the user of a research context.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param research_context_id: The ID of the research context to get the user for.
         @type research_context_id: int
         @return: A DTO containing the result of the operation.
@@ -92,7 +99,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_research_context: SQLAResearchContext | None = self.session.get(SQLAResearchContext, research_context_id)
+        sqla_research_context: SQLAResearchContext | None = session.get(SQLAResearchContext, research_context_id)
 
         if sqla_research_context is None:
             self.logger.error(f"Research context {research_context_id} not found.")
@@ -124,10 +131,18 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
 
         return GetResearchContextClientDTO(status=True, data=core_user)
 
-    def new_conversation(self, research_context_id: int, conversation_title: str) -> NewResearchContextConversationDTO:
+    @session_context()
+    def new_conversation(
+        self,
+        session: Session,
+        research_context_id: int,
+        conversation_title: str,
+    ) -> NewResearchContextConversationDTO:
         """
         Creates a new conversation in the research context.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param research_context_id: The ID of the research context to create the conversation in.
         @type research_context_id: int
         @param conversation_title: The title of the conversation.
@@ -157,7 +172,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_research_context: SQLAResearchContext | None = self.session.get(SQLAResearchContext, research_context_id)
+        sqla_research_context: SQLAResearchContext | None = session.get(SQLAResearchContext, research_context_id)
 
         if sqla_research_context is None:
             self.logger.error(f"Research Context with ID {research_context_id} not found in the database.")
@@ -178,8 +193,8 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
         )
 
         try:
-            sqla_new_conversation.save(session=self.session)
-            self.session.commit()
+            sqla_new_conversation.save(session=session)
+            session.commit()
 
             return NewResearchContextConversationDTO(status=True, conversation_id=sqla_new_conversation.id)
 
@@ -195,10 +210,15 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-    def list_conversations(self, research_context_id: int) -> ListResearchContextConversationsDTO:
+    @session_context()
+    def list_conversations(self, session: Session, research_context_id: int) -> ListResearchContextConversationsDTO:
         """
         Lists all conversations in the research context.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
+        @param research_context_id: The ID of the research context to list source data for.
+        @type research_context_id: int
         @return: A DTO containing the result of the operation.
         @rtype: ListResearchContextConversationsDTO
         """
@@ -214,7 +234,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_research_context: SQLAResearchContext | None = self.session.get(SQLAResearchContext, research_context_id)
+        sqla_research_context: SQLAResearchContext | None = session.get(SQLAResearchContext, research_context_id)
 
         if sqla_research_context is None:
             self.logger.error(f"Research context {research_context_id} not found.")
@@ -240,10 +260,13 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             data=core_conversations,
         )
 
-    def list_source_data(self, research_context_id: int) -> ListSourceDataDTO:
+    @session_context()
+    def list_source_data(self, session: Session, research_context_id: int) -> ListSourceDataDTO:
         """
         Lists all source data related to a research context.
 
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
         @param research_context_id: The ID of the research context to list source data for.
         @type research_context_id: int
         @return: A DTO containing the result of the operation.
@@ -261,7 +284,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-        sqla_research_context: SQLAResearchContext | None = self.session.get(SQLAResearchContext, research_context_id)
+        sqla_research_context: SQLAResearchContext | None = session.get(SQLAResearchContext, research_context_id)
 
         if sqla_research_context is None:
             self.logger.error(f"Research context with ID {research_context_id} not found in the database.")

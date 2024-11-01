@@ -1,36 +1,54 @@
+from collections.abc import Generator
+from typing import Callable
+from contextlib import _GeneratorContextManager
 from lib.core.dto.source_data_repository_dto import GetSourceDataByProtocolRelativePathDTO
 from lib.core.entity.models import ProtocolEnum
 from lib.core.ports.secondary.source_data_repository import SourceDataRepositoryOutputPort
-from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
 from sqlalchemy.orm import Session
 
 from lib.infrastructure.repository.sqla.models import SQLASourceData
-from lib.infrastructure.repository.sqla.utils import convert_sqla_source_data_to_core_source_data
+from lib.infrastructure.repository.sqla.utils import (
+    convert_sqla_source_data_to_core_source_data,
+    session_context,
+)
 
 
-class SQLASourceDataRepository(SourceDataRepositoryOutputPort):
+class SQLASourceDataRepository(SourceDataRepositoryOutputPort[Session]):
     """
     A SQLAlchemy implementation of the source data repository.
     """
 
-    def __init__(self, session_factory: TDatabaseFactory) -> None:
+    def __init__(
+        self,
+        session_generator_factory: Generator[Callable[[], _GeneratorContextManager[Session]], None, None],
+    ) -> None:
         super().__init__()
-        with session_factory() as session:
-            self._session = session
+        self._session_generator = session_generator_factory()
 
     @property
-    def session(self) -> Session:
-        return self._session
+    def session_generator(self) -> Generator[Callable[[], _GeneratorContextManager[Session]], None, None]:
+        return self._session_generator
 
+    @session_context()
     def get_source_data_by_composite_index(
-        self, client_id: int, protocol: ProtocolEnum, relative_path: str
+        self,
+        session: Session,
+        client_id: int,
+        protocol: ProtocolEnum,
+        relative_path: str,
     ) -> GetSourceDataByProtocolRelativePathDTO:
         """
         Gets source data by its composite index.
 
-        @param lfn: The logical file name of the source data to get.
-        @type lfn: LFN
+        @param session: An open session provided by the context manager.
+        @type session: Optional[Session]
+        @param client_id: The ID of the client to get.
+        @type client_id: int
+        @param protocol: The protocol of the source data.
+        @type protocol: ProtocolEnum
+        @param relative_path: The relative path of the source data.
+        @type relative_path: str
         @return: A DTO containing the result of the operation.
         @rtype: GetSourceDataByLFNDTO
         """
@@ -65,7 +83,7 @@ class SQLASourceDataRepository(SourceDataRepositoryOutputPort):
             )
 
         try:
-            queried_source_data_list = self.session.query(SQLASourceData).filter_by(
+            queried_source_data_list = session.query(SQLASourceData).filter_by(
                 client_id=client_id,
                 protocol=protocol,
                 relative_path=relative_path,

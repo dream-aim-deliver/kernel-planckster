@@ -70,7 +70,9 @@ def test_error_get_research_context_client_id_is_None(
 ) -> None:
     sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    get_client_DTO: GetResearchContextClientDTO = sqla_research_context_repository.get_research_context_client(research_context_id=None)  # type: ignore
+    get_client_DTO: GetResearchContextClientDTO = sqla_research_context_repository.get_research_context_client(
+        research_context_id=None
+    )
 
     assert get_client_DTO.status == False
     assert get_client_DTO.errorCode == -1

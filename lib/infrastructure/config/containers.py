@@ -70,22 +70,22 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     # Repositories:
     sqla_client_repository: providers.Factory[SQLAClientRepository] = providers.Factory(
-        SQLAClientRepository, session_factory=db.provided.session
+        SQLAClientRepository, session_generator_factory=db.provided.session
     )
 
     sqla_conversation_repository: providers.Factory[SQLAConversationRepository] = providers.Factory(
         SQLAConversationRepository,
-        session_factory=db.provided.session,
+        session_generator_factory=db.provided.session,
     )
 
     sqla_research_context_repository: providers.Factory[SQLAReseachContextRepository] = providers.Factory(
         SQLAReseachContextRepository,
-        session_factory=db.provided.session,
+        session_generator_factory=db.provided.session,
     )
 
     sqla_source_data_repository: providers.Factory[SQLASourceDataRepository] = providers.Factory(
         SQLASourceDataRepository,
-        session_factory=db.provided.session,
+        session_generator_factory=db.provided.session,
     )
 
     minio_file_repository: providers.Factory[MinIOFileRepository] = providers.Factory(

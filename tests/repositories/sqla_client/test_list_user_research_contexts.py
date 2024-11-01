@@ -91,7 +91,7 @@ def test_error_list_research_contexts_client_id_is_none(
 ) -> None:
     sqla_client_repository = app_initialization_container.sqla_client_repository()
 
-    list_research_contexts_DTO: ListResearchContextsDTO = sqla_client_repository.list_research_contexts(client_id=None)  # type: ignore
+    list_research_contexts_DTO: ListResearchContextsDTO = sqla_client_repository.list_research_contexts(client_id=None)
 
     assert list_research_contexts_DTO is not None
     assert list_research_contexts_DTO.status == False
