@@ -62,7 +62,7 @@ class GetClientDataForDownloadUseCase(GetClientDataForDownloadInputPort):
                 )
 
             # 3. Check that the composite index exists in the DB as a SourceData
-            client_source_data_query_dto = source_data_repository.get_source_data_by_composite_index(
+            client_source_data_query_dto = source_data_repository.get_source_data_by_composite_index(  # type: ignore
                 client_id=client.id,
                 protocol=protocol,
                 relative_path=relative_path,

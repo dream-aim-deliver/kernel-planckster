@@ -21,10 +21,10 @@ class SQLASourceDataRepository(SourceDataRepositoryOutputPort[Session]):
 
     def __init__(
         self,
-        session_generator: Generator[Callable[[], _GeneratorContextManager[Session]], None, None],
+        session_generator_factory: Generator[Callable[[], _GeneratorContextManager[Session]], None, None],
     ) -> None:
         super().__init__()
-        self._session_generator = session_generator
+        self._session_generator = session_generator_factory()
 
     @property
     def session_generator(self) -> Generator[Callable[[], _GeneratorContextManager[Session]], None, None]:

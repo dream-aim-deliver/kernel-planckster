@@ -227,7 +227,7 @@ def test_extend_research_context_controller(
         assert view_model is not None
         assert isinstance(view_model, ExtendResearchContextViewModel)
 
-        assert view_model.research_context_id is not None
+        assert view_model.research_context_id > 0
 
         queried_new_research_context = session.get(SQLAResearchContext, view_model.research_context_id)
 

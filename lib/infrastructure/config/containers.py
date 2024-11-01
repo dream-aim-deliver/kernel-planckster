@@ -85,7 +85,7 @@ class ApplicationContainer(containers.DeclarativeContainer):
 
     sqla_source_data_repository: providers.Factory[SQLASourceDataRepository] = providers.Factory(
         SQLASourceDataRepository,
-        session_generator=db.provided.session,
+        session_generator_factory=db.provided.session,
     )
 
     minio_file_repository: providers.Factory[MinIOFileRepository] = providers.Factory(

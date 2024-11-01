@@ -26,7 +26,6 @@ from contextlib import _GeneratorContextManager
 
 
 Param = ParamSpec("Param")
-SelfType = ParamSpec("SelfType")
 RetType = TypeVar("RetType")
 
 
@@ -57,8 +56,9 @@ def session_context() -> Callable[[Callable[Concatenate[Any, Session, Param], Re
         @functools.wraps(func)
         def wrapper(self: Any, *args: Any, **kwargs: Any) -> RetType:
             with self.session_generator() as session:
-                kwargs["session"] = session
-                return func(self, *args, **kwargs)
+                # if "session" not in kwargs:
+                #     kwargs["session"] = session
+                return func(self, session, *args, **kwargs)
 
         return wrapper
 
