@@ -50,6 +50,7 @@ class ExtendResearchContextFastAPIFeature(
             existing_research_context_id: int,
             client_sub: str,
             llm_name: str,
+            external_id: str,
         ) -> NewResearchContextViewModel | None:
             try:
                 controller_parameters = ExtendResearchContextControllerParameters(
@@ -59,6 +60,7 @@ class ExtendResearchContextFastAPIFeature(
                     client_sub=client_sub,
                     llm_name=llm_name,
                     new_source_data_ids=new_source_data_ids,
+                    external_id=external_id,
                 )
             except ValidationError as ve:
                 raise HTTPException(status_code=400, detail=ve.errors())
