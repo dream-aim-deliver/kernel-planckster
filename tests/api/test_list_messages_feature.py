@@ -1,4 +1,5 @@
 import random
+from typing import Tuple
 import uuid
 from faker import Faker
 from lib.core.usecase.list_messages_usecase import ListMessagesUseCase
@@ -10,7 +11,7 @@ from lib.infrastructure.controller.list_messages_controller import (
     ListMessagesControllerParameters,
 )
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
-from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAConversation, SQLAResearchContext, SQLAClient
+from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAAgentMessage, SQLAConversation, SQLAResearchContext, SQLAClient, SQLAUserMessage
 
 
 def test_list_messages_usecase(
@@ -18,6 +19,7 @@ def test_list_messages_usecase(
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_client_with_conversation: SQLAClient,
+    fake_message_pair: Tuple[SQLAUserMessage, SQLAAgentMessage]
 ) -> None:
     usecase: ListMessagesUseCase = app_initialization_container.list_messages_feature.usecase()
 
@@ -58,6 +60,41 @@ def test_list_messages_usecase(
         queried_messages_contents = [piece.content for msg in response.message_list for piece in msg.message_contents]
 
         assert set(queried_messages_contents) == set(messages_contents)
+    
+
+    with db_session() as session:
+        conv = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+        assert conv is not None
+
+        new_messages = fake_message_pair
+        new_messages_contents = tuple([piece.content for message in new_messages for piece in message.message_contents])
+        messages_contents += new_messages_contents
+
+        for new_message in new_messages:
+            conv.messages.append(new_message)
+
+        conv.save(session=session, flush=True)
+        session.commit()
+
+    with db_session() as session:
+        queried_conv = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+        assert queried_conv is not None
+
+        request = ListMessagesRequest(conversation_id=queried_conv.id)
+        response = usecase.execute(request=request)
+
+        assert response is not None
+
+        assert isinstance(response, ListMessagesResponse)
+        assert response.message_list is not None
+        assert len(response.message_list) != 0
+
+        queried_messages_contents = [piece.content for msg in response.message_list for piece in msg.message_contents]
+
+        assert set(queried_messages_contents) == set(messages_contents)
+
+
+
 
 
 def test_list_messages_controller(
