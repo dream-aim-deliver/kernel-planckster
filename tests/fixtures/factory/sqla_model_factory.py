@@ -1,3 +1,4 @@
+import uuid
 from abc import ABC, abstractmethod
 from typing import Any, Set
 from faker import Faker
@@ -39,6 +40,7 @@ class SQLATemporaryModelFactory:
         sqla_research_context = SQLAResearchContext(
             title=research_context_name,
             description=research_context_description,
+            external_id=str(uuid.uuid4()),
             client=sqla_client,
         )
         llm = SQLALLM(

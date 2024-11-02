@@ -46,6 +46,7 @@ class NewResearchContextFastAPIFeature(
         def endpoint(
             research_context_title: str,
             research_context_description: str,
+            external_id: str,
             source_data_ids: list[int],
             client_sub: str | None = None,
             llm_name: str | None = None,
@@ -57,6 +58,7 @@ class NewResearchContextFastAPIFeature(
                     client_sub=client_sub,
                     llm_name=llm_name,
                     source_data_ids=source_data_ids,
+                    external_id=external_id,
                 )
             except ValidationError as ve:
                 raise HTTPException(status_code=400, detail=ve.errors())

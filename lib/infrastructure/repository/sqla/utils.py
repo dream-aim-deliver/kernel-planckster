@@ -58,6 +58,7 @@ def convert_sqla_research_context_to_core_research_context(
         id=sqla_research_context.id,
         title=sqla_research_context.title,
         description=sqla_research_context.description,
+        external_id=sqla_research_context.external_id,
     )
 
 

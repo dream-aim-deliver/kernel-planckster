@@ -2,7 +2,7 @@ from enum import Enum
 import os
 import re
 from pydantic import BaseModel, field_validator, model_validator
-from typing import TypeVar, List
+from typing import TypeVar, List, Optional
 from datetime import datetime
 
 
@@ -233,6 +233,7 @@ class ResearchContext(BaseSoftDeleteKernelPlancksterModel):
     id: int
     title: str
     description: str
+    external_id: str
 
 
 class VectorStore(BaseSoftDeleteKernelPlancksterModel):

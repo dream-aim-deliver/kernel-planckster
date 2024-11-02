@@ -22,6 +22,7 @@ class ListResearchContextsViewModel(BaseViewModel):
                             "description": "Research Context 1 Description",
                             "created_at": "2021-05-01T00:00:00",
                             "updated_at": "2021-05-01T00:00:00",
+                            "external_id": "b52761eb-4e00-4431-b676-133bc02d6c77",
                         },
                         {
                             "id": 2,
@@ -30,6 +31,7 @@ class ListResearchContextsViewModel(BaseViewModel):
                             "description": "Research Context 2 Description",
                             "created_at": "2021-05-01T00:00:00",
                             "updated_at": "2021-05-01T00:00:00",
+                            "external_id": "b52761eb-4e00-4431-b676-133bc02d6c77",
                         },
                     ],
                 }

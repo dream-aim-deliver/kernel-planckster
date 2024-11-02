@@ -36,6 +36,10 @@ class ExtendResearchContextControllerParameters(BaseControllerParameters):
         title="Existing Research Context ID",
         description="ID of the existing research context to be extended.",
     )
+    external_id: str = Field(
+        title="External ID",
+        description="The UUID that is used to trace vector stores and agents in the externally managed databases.",
+    )
 
 
 class ExtendResearchContextController(
@@ -67,4 +71,5 @@ class ExtendResearchContextController(
                 llm_name=parameters.llm_name,
                 new_source_data_ids=parameters.new_source_data_ids,
                 existing_research_context_id=parameters.existing_research_context_id,
+                external_id=parameters.external_id,
             )

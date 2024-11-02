@@ -1,4 +1,6 @@
 import random
+import uuid
+
 from faker import Faker
 from lib.core.dto.research_context_repository_dto import ListResearchContextConversationsDTO
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -56,10 +58,7 @@ def test_empty_list_conversations_in_research_context(
 ) -> None:
     sqla_research_context_repository = app_initialization_container.sqla_research_context_repository()
 
-    research_context = SQLAResearchContext(
-        title=fake.name(),
-        description=fake.text(),
-    )
+    research_context = SQLAResearchContext(title=fake.name(), description=fake.text(), external_id=str(uuid.uuid4()))
 
     client = fake_client
     client.research_contexts.append(research_context)

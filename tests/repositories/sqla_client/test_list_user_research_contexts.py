@@ -1,3 +1,5 @@
+import uuid
+
 from faker import Faker
 from lib.core.dto.client_repository_dto import ListResearchContextsDTO
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -20,6 +22,7 @@ def test_list_research_contexts_in_client(
         research_context = SQLAResearchContext(
             title=fake.name(),
             description=fake.text(),
+            external_id=str(uuid.uuid4()),
         )
         research_contexts.append(research_context)
 

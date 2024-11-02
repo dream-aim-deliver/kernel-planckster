@@ -41,6 +41,7 @@ def test_extend_research_context_usecase(
 
     client_with_context = fake_client_with_research_context_and_sources
     llm_name = fake.name()
+    external_id = str(uuid.uuid4())
 
     existing_research_context = random.choice(client_with_context.research_contexts)
     # Populate source data into the existing research context
@@ -98,6 +99,7 @@ def test_extend_research_context_usecase(
             llm_name=llm_name,
             new_source_data_ids=new_source_data_ids,
             existing_research_context_id=queried_existing_research_context.id,
+            external_id=external_id,
         )
         response = usecase.execute(request=request)
 
@@ -141,6 +143,7 @@ def test_extend_research_context_usecase(
             llm_name=llm_name,
             new_source_data_ids=queried_existing_source_data_ids,
             existing_research_context_id=queried_existing_research_context.id,
+            external_id=external_id,
         )
         redundant_response = usecase.execute(request=redundant_request)
 
@@ -164,6 +167,7 @@ def test_extend_research_context_controller(
 
     client_with_context = fake_client_with_research_context_and_sources
     llm_name = fake.name()
+    external_id = str(uuid.uuid4())
 
     existing_research_context = random.choice(client_with_context.research_contexts)
     # Populate source data into the existing research context
@@ -221,6 +225,7 @@ def test_extend_research_context_controller(
             llm_name=llm_name,
             new_source_data_ids=new_source_data_ids,
             existing_research_context_id=queried_existing_research_context.id,
+            external_id=external_id,
         )
         view_model = controller.execute(parameters=controller_parameters)
 
@@ -264,6 +269,7 @@ def test_extend_research_context_controller(
             llm_name=llm_name,
             new_source_data_ids=queried_existing_source_data_ids,
             existing_research_context_id=queried_existing_research_context.id,
+            external_id=external_id,
         )
         redundant_view_model = controller.execute(parameters=redundant_controller_parameters)
 

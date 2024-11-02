@@ -1,4 +1,6 @@
 import random
+import uuid
+
 from faker import Faker
 from lib.core.dto.research_context_repository_dto import GetResearchContextClientDTO
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -26,8 +28,7 @@ def test_get_research_context_client(
     rand_int_2 = random.randint(1, 10)
     for _ in range(rand_int_2):
         research_context = SQLAResearchContext(
-            title=fake.name(),
-            description=fake.text(),
+            title=fake.name(), description=fake.text(), external_id=str(uuid.uuid4())
         )
         research_contexts.append(research_context)
 

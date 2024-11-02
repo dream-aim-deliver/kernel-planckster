@@ -115,6 +115,7 @@ def test_conversation_without_messages(
     rc = SQLAResearchContext(
         title=fake.name(),
         description=fake.text(),
+        external_id=str(uuid.uuid4()),
         conversations=[conv],
     )
 

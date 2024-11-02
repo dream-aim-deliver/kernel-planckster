@@ -22,6 +22,7 @@ class ExtendResearchContextUseCase(ExtendResearchContextInputPort):
             llm_name = request.llm_name
             new_source_data_ids_req = request.new_source_data_ids
             existing_research_context_id = request.existing_research_context_id
+            external_id = request.external_id
 
             # 1. Get the client, by SUB, to then check if they have access to the source data
             client_by_sub_dto: GetClientDTO = client_repository.get_client_by_sub(client_sub=client_sub)
@@ -132,6 +133,7 @@ class ExtendResearchContextUseCase(ExtendResearchContextInputPort):
                 client_sub=client_sub,
                 llm_name=llm_name,
                 source_data_ids=final_source_data_list,
+                external_id=external_id,
             )
 
             if dto.status:

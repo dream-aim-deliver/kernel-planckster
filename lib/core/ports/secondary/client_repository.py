@@ -58,6 +58,7 @@ class ClientRepositoryOutputPort(ABC):
         research_context_description: str,
         client_sub: str,
         llm_name: str,
+        external_id: str,
         source_data_ids: List[int],
     ) -> NewResearchContextDTO:
         """
@@ -73,6 +74,8 @@ class ClientRepositoryOutputPort(ABC):
         @type llm_name: str
         @param source_data_ids: The IDs of the source data to create the research context for.
         @type source_data_ids: List[int]
+        @param external_id: The UUID that is used to trace vector stores and agents in the externally managed databases.
+        @type external_id: str
         @return: A DTO containing the result of the operation.
         @rtype: NewResearchContextDTO
         """
