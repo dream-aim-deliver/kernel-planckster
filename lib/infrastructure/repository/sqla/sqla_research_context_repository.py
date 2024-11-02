@@ -28,6 +28,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
 
     @property
     def session(self) -> Session:
+        self._session.expire_all()
         return self._session
 
     def get_research_context(self, research_context_id: int) -> GetResearchContextDTO:

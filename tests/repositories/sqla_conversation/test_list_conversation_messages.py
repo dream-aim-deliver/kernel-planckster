@@ -23,7 +23,7 @@ def test_list_conversation_messages(
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_client_with_conversation: SQLAClient,
-    fake_message_pair: Tuple[SQLAUserMessage, SQLAAgentMessage]
+    fake_message_pair: Tuple[SQLAUserMessage, SQLAAgentMessage],
 ) -> None:
     conversation_repository = app_initialization_container.sqla_conversation_repository()
 
@@ -68,7 +68,6 @@ def test_list_conversation_messages(
 
         for piece in message_contents:
             assert piece.content in messages_contents
-    
 
         conv = session.query(SQLAConversation).filter_by(title=conversation_title).first()
 
@@ -84,15 +83,13 @@ def test_list_conversation_messages(
         conv.save(session=session, flush=True)
         session.commit()
 
-
         conv = session.query(SQLAConversation).filter_by(title=conversation_title).first()
 
         assert conv is not None
 
-        new_dto: ListConversationMessagesDTO[
-            MessageBase
-        ] = conversation_repository.list_conversation_messages(conversation_id=conv.id)
-
+        new_dto: ListConversationMessagesDTO[MessageBase] = conversation_repository.list_conversation_messages(
+            conversation_id=conv.id
+        )
 
     assert new_dto.data is not None
     assert new_dto.status == True
@@ -106,10 +103,6 @@ def test_list_conversation_messages(
 
         for piece in new_message_contents:
             assert piece.content in messages_contents
-
-
-
-
 
 
 def test_error_list_conversation_messages_none_conversation_id(

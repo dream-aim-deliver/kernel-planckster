@@ -11,7 +11,14 @@ from lib.infrastructure.controller.list_messages_controller import (
     ListMessagesControllerParameters,
 )
 from lib.infrastructure.repository.sqla.database import TDatabaseFactory
-from lib.infrastructure.repository.sqla.models import SQLALLM, SQLAAgentMessage, SQLAConversation, SQLAResearchContext, SQLAClient, SQLAUserMessage
+from lib.infrastructure.repository.sqla.models import (
+    SQLALLM,
+    SQLAAgentMessage,
+    SQLAConversation,
+    SQLAResearchContext,
+    SQLAClient,
+    SQLAUserMessage,
+)
 
 
 def test_list_messages_usecase(
@@ -19,7 +26,7 @@ def test_list_messages_usecase(
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_client_with_conversation: SQLAClient,
-    fake_message_pair: Tuple[SQLAUserMessage, SQLAAgentMessage]
+    fake_message_pair: Tuple[SQLAUserMessage, SQLAAgentMessage],
 ) -> None:
     usecase: ListMessagesUseCase = app_initialization_container.list_messages_feature.usecase()
 
@@ -60,7 +67,6 @@ def test_list_messages_usecase(
         queried_messages_contents = [piece.content for msg in response.message_list for piece in msg.message_contents]
 
         assert set(queried_messages_contents) == set(messages_contents)
-    
 
     with db_session() as session:
         conv = session.query(SQLAConversation).filter_by(title=conversation_title).first()
@@ -92,9 +98,6 @@ def test_list_messages_usecase(
         queried_messages_contents = [piece.content for msg in response.message_list for piece in msg.message_contents]
 
         assert set(queried_messages_contents) == set(messages_contents)
-
-
-
 
 
 def test_list_messages_controller(
