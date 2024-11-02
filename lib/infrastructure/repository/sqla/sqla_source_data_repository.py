@@ -21,6 +21,7 @@ class SQLASourceDataRepository(SourceDataRepositoryOutputPort):
 
     @property
     def session(self) -> Session:
+        self._session.expire_all()
         return self._session
 
     def get_source_data_by_composite_index(

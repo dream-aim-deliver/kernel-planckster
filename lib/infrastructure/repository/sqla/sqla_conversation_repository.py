@@ -51,7 +51,7 @@ class SQLAConversationRepository(ConversationRepository):
 
     @property
     def session(self) -> Session:
-        #self._session.expire_all()
+        self._session.expire_all()
         return self._session
 
     def get_conversation(self, conversation_id: int) -> GetConversationDTO:
@@ -174,7 +174,6 @@ class SQLAConversationRepository(ConversationRepository):
             return errorDTO
 
         try:
-            #self.session.expire_all()
             sqla_conversation: SQLAConversation | None = self.session.get(SQLAConversation, conversation_id)
 
         except Exception as e:

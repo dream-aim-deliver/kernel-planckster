@@ -39,6 +39,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
     @property
     def session(self) -> Session:
+        self._session.expire_all()
         return self._session
 
     def get_client(self, client_id: int) -> GetClientDTO:
