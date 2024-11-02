@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 from sqlalchemy import (
     CheckConstraint,
@@ -334,6 +334,7 @@ class SQLAResearchContext(Base, SoftModelBase):  # type: ignore
         "SQLAVectorStore", back_populates="research_context", uselist=False
     )
     conversations: Mapped[List["SQLAConversation"]] = relationship("SQLAConversation", backref="research_context")
+    external_id: Mapped[str] = mapped_column(String, nullable=False)
 
 
 class SQLAConversation(Base, SoftModelBase):  # type: ignore

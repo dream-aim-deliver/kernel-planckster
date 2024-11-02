@@ -140,6 +140,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
         client_sub: str,
         llm_name: str,
         source_data_ids: List[int],
+        external_id: str,
     ) -> NewResearchContextDTO:
         """
         Creates a new research context for a client.
@@ -154,6 +155,8 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
         @type llm_name: str
         @param source_data_ids: The IDs of the source data to create the research context for.
         @type source_data_ids: List[int]
+        @param external_id: The UUID that is used to trace vector stores and agents in the externally managed databases.
+        @type external_id: str
         @return: A DTO containing the result of the operation.
         @rtype: NewResearchContextDTO
         """
@@ -204,6 +207,18 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
                 errorMessage="LLM name cannot be None",
                 errorName="LLM name not provided",
                 errorType="LLMNameNotProvided",
+            )
+            self.logger.error(f"{errorDTO}")
+            return errorDTO
+
+        if external_id is None:
+            self.logger.error("External ID cannot be None")
+            errorDTO = NewResearchContextDTO(
+                status=False,
+                errorCode=-1,
+                errorMessage="External ID cannot be None",
+                errorName="External ID not provided",
+                errorType="ExternalIDNotProvided",
             )
             self.logger.error(f"{errorDTO}")
             return errorDTO
@@ -337,12 +352,12 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             client_id=client_id,
             llm_id=llm_id,
             source_data=sqla_source_data,
+            external_id=external_id,
         )
 
         try:
             sqla_new_research_context.save(session=self.session)
             self.session.commit()
-
         except Exception as e:
             self.logger.error(f"Error while creating new research context: {e}")
             errorDTO = NewResearchContextDTO(

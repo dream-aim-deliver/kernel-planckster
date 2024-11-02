@@ -1,4 +1,6 @@
 import random
+import uuid
+
 from faker import Faker
 from lib.core.dto.research_context_repository_dto import ListSourceDataDTO
 from lib.infrastructure.config.containers import ApplicationContainer
@@ -58,6 +60,7 @@ def test_empty_list_source_data_of_research_context(
     research_context = SQLAResearchContext(
         title=fake.name(),
         description=fake.text(),
+        external_id=str(uuid.uuid4()),
         client=fake_client,
     )
 

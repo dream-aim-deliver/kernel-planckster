@@ -21,6 +21,9 @@ class NewResearchContextRequest(BaseRequest):
     source_data_ids: List[int] = Field(
         description="List of source data ids for which the research context is to be created."
     )
+    external_id: str = Field(
+        description="The UUID that is used to trace vector stores and agents in the externally managed databases."
+    )
 
 
 class NewResearchContextResponse(BaseResponse):

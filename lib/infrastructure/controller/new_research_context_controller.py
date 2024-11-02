@@ -32,6 +32,10 @@ class NewResearchContextControllerParameters(BaseControllerParameters):
         title="Source Data IDs",
         description="List of source data ids that will be tied to the research context to be created.",
     )
+    external_id: str = Field(
+        title="External ID",
+        description="The UUID that is used to trace vector stores and agents in the externally managed databases.",
+    )
 
 
 class NewResearchContextController(
@@ -60,4 +64,5 @@ class NewResearchContextController(
                 client_sub=parameters.client_sub,
                 llm_name=parameters.llm_name,
                 source_data_ids=parameters.source_data_ids,
+                external_id=parameters.external_id,
             )

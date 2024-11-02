@@ -25,6 +25,9 @@ class ExtendResearchContextRequest(BaseRequest):
         description="List of additional source data ids beyond those in the original research context."
     )
     existing_research_context_id: int = Field(description="ID of the existing research context to be extended.")
+    external_id: str = Field(
+        description="The UUID that is used to trace vector stores and agents in the externally managed databases."
+    )
 
 
 class ExtendResearchContextResponse(BaseResponse):

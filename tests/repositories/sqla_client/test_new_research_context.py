@@ -43,6 +43,7 @@ def test_create_new_research_context(
             client_sub=client_sub,
             llm_name=llm_name,
             source_data_ids=source_data_id_list,
+            external_id=str(uuid.uuid4()),
         )
 
         assert new_research_context_DTO.status == True
@@ -95,6 +96,7 @@ def test_error_new_research_context_research_context_title_is_None(
         client_sub=client_sub,
         llm_name=llm_name,
         source_data_ids=source_data_ids,
+        external_id=str(uuid.uuid4()),
     )
 
     assert new_research_context_DTO.status == False
@@ -120,6 +122,7 @@ def test_error_new_research_context_description_is_None(
         client_sub=client_sub,
         llm_name=llm_name,
         source_data_ids=source_data_ids,
+        external_id=str(uuid.uuid4()),
     )
 
     assert new_research_context_DTO.status == False
@@ -145,6 +148,7 @@ def test_error_new_research_context_client_sub_is_None(
         client_sub=client_sub,  # type: ignore
         llm_name=llm_name,
         source_data_ids=source_data_ids,
+        external_id=str(uuid.uuid4()),
     )
 
     assert new_research_context_DTO.status == False
@@ -170,12 +174,39 @@ def test_error_new_research_context_llm_name_is_None(
         client_sub=client_sub,
         llm_name=llm_name,  # type: ignore
         source_data_ids=source_data_ids,
+        external_id=str(uuid.uuid4()),
     )
 
     assert new_research_context_DTO.status == False
     assert new_research_context_DTO.errorCode == -1
     assert new_research_context_DTO.errorName == "LLM name not provided"
     assert new_research_context_DTO.errorType == "LLMNameNotProvided"
+
+
+def test_error_new_research_context_external_id_is_None(
+    app_initialization_container: ApplicationContainer, db_session: TDatabaseFactory
+) -> None:
+    sqla_client_repository = app_initialization_container.sqla_client_repository()
+
+    research_context_title = "test"
+    research_context_description = "Test description"
+    client_sub = "test"
+    llm_name = "test"
+    source_data_ids = [1, 2, 3]
+
+    new_research_context_DTO: NewResearchContextDTO = sqla_client_repository.new_research_context(
+        research_context_title=research_context_title,
+        research_context_description=research_context_description,
+        client_sub=client_sub,
+        llm_name=llm_name,  # type: ignore
+        source_data_ids=source_data_ids,
+        external_id=None,
+    )
+
+    assert new_research_context_DTO.status == False
+    assert new_research_context_DTO.errorCode == -1
+    assert new_research_context_DTO.errorName == "External ID not provided"
+    assert new_research_context_DTO.errorType == "ExternalIDNotProvided"
 
 
 def test_error_new_research_context_client_sub_not_found(
@@ -203,6 +234,7 @@ def test_error_new_research_context_client_sub_not_found(
             client_sub=client_sub,
             llm_name=llm_name,
             source_data_ids=source_data_ids,
+            external_id=str(uuid.uuid4()),
         )
 
         assert new_research_context_DTO.status == False
@@ -236,6 +268,7 @@ def test_error_new_research_context_llm_name_not_found(
             client_sub=client_sub,
             llm_name=llm_name,
             source_data_ids=source_data_ids,
+            external_id=str(uuid.uuid4()),
         )
 
         assert new_research_context_DTO.status == False
@@ -272,6 +305,7 @@ def test_error_new_research_context_source_data_ids_not_found(
             client_sub=client_sub,
             llm_name=llm_name,
             source_data_ids=source_data_ids,
+            external_id=str(uuid.uuid4()),
         )
 
         sqla_source_data_error_dict = {}

@@ -336,6 +336,7 @@ def research_context(
 
     fake_title = fake.name()
     fake_description = fake.text(max_nb_chars=70)
+    fake_external_id = uuid.uuid4()
 
     fake_conversations_init = tuple(
         conversation(random.randrange(1, up_bound_message_pairs_per_conversation + 1))
@@ -346,6 +347,7 @@ def research_context(
     return SQLAResearchContext(
         title=fake_title,
         description=fake_description,
+        external_id=str(fake_external_id),
         conversations=fake_conversations,
     )
 
