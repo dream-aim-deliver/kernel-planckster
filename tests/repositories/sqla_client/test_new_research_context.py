@@ -198,9 +198,9 @@ def test_error_new_research_context_external_id_is_None(
         research_context_title=research_context_title,
         research_context_description=research_context_description,
         client_sub=client_sub,
-        llm_name=llm_name,  # type: ignore
+        llm_name=llm_name,
         source_data_ids=source_data_ids,
-        external_id=None,
+        external_id=None,  # type: ignore
     )
 
     assert new_research_context_DTO.status == False

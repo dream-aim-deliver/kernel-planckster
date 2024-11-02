@@ -58,8 +58,8 @@ class ClientRepositoryOutputPort(ABC):
         research_context_description: str,
         client_sub: str,
         llm_name: str,
-        external_id: str,
         source_data_ids: List[int],
+        external_id: str,
     ) -> NewResearchContextDTO:
         """
         Creates a new research context for a client.
