@@ -1,4 +1,5 @@
 import random
+from typing import Tuple
 import uuid
 from faker import Faker
 from lib.core.dto.conversation_repository_dto import (
@@ -10,8 +11,10 @@ from lib.infrastructure.repository.sqla.database import TDatabaseFactory
 
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
+    SQLAAgentMessage,
     SQLAConversation,
     SQLAClient,
+    SQLAUserMessage,
 )
 
 
@@ -20,6 +23,7 @@ def test_list_conversation_messages(
     db_session: TDatabaseFactory,
     fake: Faker,
     fake_client_with_conversation: SQLAClient,
+    fake_message_pair: Tuple[SQLAUserMessage, SQLAAgentMessage]
 ) -> None:
     conversation_repository = app_initialization_container.sqla_conversation_repository()
 
@@ -64,6 +68,48 @@ def test_list_conversation_messages(
 
         for piece in message_contents:
             assert piece.content in messages_contents
+    
+
+        conv = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+
+        assert conv is not None
+
+        new_messages = fake_message_pair
+        new_messages_contents = tuple([piece.content for message in new_messages for piece in message.message_contents])
+        messages_contents += new_messages_contents
+
+        for message in new_messages:
+            conv.messages.append(message)
+
+        conv.save(session=session, flush=True)
+        session.commit()
+
+
+        conv = session.query(SQLAConversation).filter_by(title=conversation_title).first()
+
+        assert conv is not None
+
+        new_dto: ListConversationMessagesDTO[
+            MessageBase
+        ] = conversation_repository.list_conversation_messages(conversation_id=conv.id)
+
+
+    assert new_dto.data is not None
+    assert new_dto.status == True
+    assert new_dto.errorCode == None
+    assert isinstance(new_dto.data, list)
+
+    for new_dto_message in new_dto.data:
+        assert new_dto_message is not None
+        new_message_contents = new_dto_message.message_contents
+        assert new_message_contents is not None
+
+        for piece in new_message_contents:
+            assert piece.content in messages_contents
+
+
+
+
 
 
 def test_error_list_conversation_messages_none_conversation_id(
