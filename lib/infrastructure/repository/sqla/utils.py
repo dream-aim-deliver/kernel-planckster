@@ -47,7 +47,7 @@ def session_context() -> Callable[[Callable[Concatenate[Any, Session, Param], Re
 
     Example:
     ```python
-        @session_context()
+        @sexy_decorator_pipipi()
         def my_function(self, session: Session, arg1, arg2):
             # Function implementation that uses the session
     ```
@@ -89,7 +89,7 @@ def sexy_decorator_pipipi() -> Callable[[Callable[Concatenate[Any, Session, Para
 
     Example:
     ```python
-        @session_context()
+        @sexy_decorator_pipipi()
         def my_function(self, session: Session, arg1, arg2):
             # Function implementation that uses the session
     ```
@@ -100,7 +100,7 @@ def sexy_decorator_pipipi() -> Callable[[Callable[Concatenate[Any, Session, Para
         def wrapper(self: Any, *args: Any, **kwargs: Any) -> RetType:
             session = Database(
                 db_host="localhost",
-                db_port=5435,
+                db_port=5432,
                 db_user="postgres",
                 db_password="postgres",
                 db_name="kp-db",

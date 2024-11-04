@@ -11,6 +11,7 @@ from lib.infrastructure.repository.sqla.models import SQLASourceData
 from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_source_data_to_core_source_data,
     session_context,
+    sexy_decorator_pipipi,
 )
 
 
@@ -30,7 +31,7 @@ class SQLASourceDataRepository(SourceDataRepositoryOutputPort[Session]):
     def session_generator(self) -> Generator[Callable[[], _GeneratorContextManager[Session]], None, None]:
         return self._session_generator
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def get_source_data_by_composite_index(
         self,
         session: Session,

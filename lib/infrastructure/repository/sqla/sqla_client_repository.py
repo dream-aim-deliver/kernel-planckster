@@ -43,7 +43,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
     def session_generator(self) -> _GeneratorContextManager[Session]:
         return self._session_generator
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def get_client(self, session: Session, client_id: int) -> GetClientDTO:
         """
         Gets a client by ID.
@@ -86,7 +86,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
         return GetClientDTO(status=True, data=core_user)
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def get_client_by_sub(self, session: Session, client_sub: str) -> GetClientDTO:
         """
         Gets a client by SUB.
@@ -141,7 +141,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def new_research_context(
         self,
         session: Session,
@@ -379,7 +379,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
             llm=core_llm,
         )
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def list_research_contexts(self, session: Session, client_id: int) -> ListResearchContextsDTO:
         """
         Lists all research contexts for a client.
@@ -427,7 +427,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
         return ListResearchContextsDTO(status=True, data=core_research_contexts)
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def new_source_data(
         self,
         session: Session,

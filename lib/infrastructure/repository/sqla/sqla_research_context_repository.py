@@ -19,6 +19,7 @@ from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_source_data_to_core_source_data,
     convert_sqla_client_to_core_client,
     session_context,
+    sexy_decorator_pipipi,
 )
 
 
@@ -31,7 +32,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
     def session_generator(self) -> _GeneratorContextManager[Session]:
         return self._session_generator
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def get_research_context(self, session: Session, research_context_id: int) -> GetResearchContextDTO:
         """
         Gets a research context by ID.
@@ -75,7 +76,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
 
         return GetResearchContextDTO(status=True, data=core_research_context)
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def get_research_context_client(self, session: Session, research_context_id: int) -> GetResearchContextClientDTO:
         """
         Gets the user of a research context.
@@ -131,7 +132,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
 
         return GetResearchContextClientDTO(status=True, data=core_user)
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def new_conversation(
         self,
         session: Session,
@@ -210,7 +211,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             self.logger.error(f"{errorDTO}")
             return errorDTO
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def list_conversations(self, session: Session, research_context_id: int) -> ListResearchContextConversationsDTO:
         """
         Lists all conversations in the research context.
@@ -260,7 +261,7 @@ class SQLAReseachContextRepository(ResearchContextRepositoryOutputPort):
             data=core_conversations,
         )
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def list_source_data(self, session: Session, research_context_id: int) -> ListSourceDataDTO:
         """
         Lists all source data related to a research context.
