@@ -25,6 +25,7 @@ from lib.infrastructure.repository.sqla.utils import (
     convert_sqla_client_to_core_client,
     convert_core_source_data_to_sqla_source_data,
     convert_sqla_source_data_to_core_source_data,
+    sexy_decorator_pipipi,
     session_context,
 )
 
@@ -600,7 +601,7 @@ class SQLAClientRepository(ClientRepositoryOutputPort):
 
             # TODO OLD: In the previous version (allowing for a list for source data, instead of just one): fix this: if the second element of the input list is a duplicate of the first one, the first one will be added (correct), the second one catched in the duplicates list (correct), but from the third one onwards everything will fail because SQLA had an error in the session
 
-    @session_context()
+    @sexy_decorator_pipipi()
     def list_source_data(self, session: Session, client_id: int) -> ListSourceDataDTO:
         """
         Lists source data for a given client.

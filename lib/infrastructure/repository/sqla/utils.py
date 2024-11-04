@@ -8,6 +8,7 @@ from lib.core.entity.models import (
     SourceData,
     Client,
 )
+from lib.infrastructure.repository.sqla.database import Database
 from lib.infrastructure.repository.sqla.models import (
     SQLALLM,
     SQLAConversation,
@@ -58,7 +59,60 @@ def session_context() -> Callable[[Callable[Concatenate[Any, Session, Param], Re
             with self.session_generator() as session:
                 # if "session" not in kwargs:
                 #     kwargs["session"] = session
-                return func(self, session, *args, **kwargs)
+                try:
+                    output = func(self, session, *args, **kwargs)
+                except:
+                    session.rollback()
+                finally:
+                    session.close()
+                return output
+
+        return wrapper
+
+    return decorator
+
+
+def sexy_decorator_pipipi() -> Callable[[Callable[Concatenate[Any, Session, Param], RetType]], Callable[..., RetType]]:
+    """
+    A decorator that provides a SQLAlchemy session to the decorated function.
+    This must be used in a class method where the class has a `session_generator`.
+    The `session_generator` must be a generator that yields a SQLA session context manager.
+    The decorated function must have a `session` argument as it's second argument.
+    The first argument must be `self`.
+    This decorator wraps a function and ensures that a SQLAlchemy session is
+    created and passed to the function as a keyword argument. The session is
+    automatically closed after the function execution.
+
+    Returns:
+        Callable[[Callable[Concatenate[Any, Session, Param], RetType]], Callable[..., RetType]]:
+        A decorator that wraps the function and provides a session.
+
+    Example:
+    ```python
+        @session_context()
+        def my_function(self, session: Session, arg1, arg2):
+            # Function implementation that uses the session
+    ```
+    """
+
+    def decorator(func: Callable[Concatenate[Any, Session, Param], RetType]) -> Callable[..., RetType]:
+        @functools.wraps(func)
+        def wrapper(self: Any, *args: Any, **kwargs: Any) -> RetType:
+            session = Database(
+                db_host="localhost",
+                db_port=5435,
+                db_user="postgres",
+                db_password="postgres",
+                db_name="kp-db",
+            ).session_factory()
+            try:
+                output = func(self, session, *args, **kwargs)
+                return output
+            except Exception as e:
+                session.rollback()
+                raise e
+            finally:
+                session.close()
 
         return wrapper
 

@@ -1,6 +1,8 @@
 from contextlib import _GeneratorContextManager, contextmanager
-from typing import Any, Callable, Generator
-
+import functools
+from typing import Any, Callable, Concatenate, Generator, ParamSpec, TypeVar
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, orm, Engine
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.sql import text
@@ -17,10 +19,14 @@ class Database:
         self.__engine_url = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
         self.__engine = create_engine(self.__engine_url, echo=True)
         self.__session_factory = orm.scoped_session(
-            orm.sessionmaker(autoflush=False, autocommit=False, bind=self.__engine)
+            orm.sessionmaker(bind=self.__engine, autoflush=True, expire_on_commit=True, autocommit=False, future=True)
         )
         self.logger = logging.getLogger(self.__class__.__name__)
         self.create_db()
+
+    @property
+    def session_factory(self) -> scoped_session[Session]:
+        return self.__session_factory
 
     def create_db(self) -> None:
         if not database_exists(self.__engine.url):
@@ -29,15 +35,26 @@ class Database:
         else:
             self.logger.info(f"Database {self.__engine.url} already exists")
 
+    def simple_session(self) -> Session:
+        session: Session = self.__session_factory()
+        try:
+            return session
+        except Exception as e:
+            self.logger.exception("Session rollback because of exception")
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
     @contextmanager
     def session(self) -> Generator[Session, None, None]:
         session: Session = self.__session_factory()
         try:
             yield session
-        except Exception:
+        except Exception as e:
             self.logger.exception("Session rollback because of exception")
             session.rollback()
-            raise
+            raise e
         finally:
             session.close()
 
