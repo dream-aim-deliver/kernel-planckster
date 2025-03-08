@@ -224,7 +224,7 @@ def start() -> None:
 
     # Add CORS middleware
     default_origins = ["http://localhost", "http://localhost:3000", "http://localhost:8080"]
-    allowed_origins = os.getenv("KP_ALLOWED_ORIGINS", "").split(",")
+    allowed_origins = os.getenv("KP_FASTAPI_ALLOWED_ORIGINS", "").split(",")
     final_origins = default_origins + [x.strip() for x in allowed_origins if x.strip() != ""]
     print(f"Allowed origins: {final_origins}")
     app.add_middleware(
@@ -236,7 +236,16 @@ def start() -> None:
     )
     host = app.container.config.fastapi.host()  # type: ignore
     port = app.container.config.fastapi.port()  # type: ignore
-    uvicorn.run("lib.infrastructure.rest.main:create_app", host=host, port=port, proxy_headers=True, reload=False)
+    workers = app.container.config.fastapi.workers()  # type: ignore
+
+    uvicorn.run(
+        "lib.infrastructure.rest.main:create_app",
+        host=host,
+        port=port,
+        proxy_headers=True,
+        reload=False,
+        workers=workers,
+    )
 
 
 if __name__ == "__main__":
