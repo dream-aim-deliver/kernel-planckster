@@ -30,7 +30,6 @@ fastapi:
   debug: ${KP_FASTAPI_DEBUG:false}
   reload: ${KP_FASTAPI_RELOAD:false}
   workers: ${KP_FASTAPI_WORKERS:4}
-  allowed_origins: ${KP_FASTAPI_ALLOWED_ORIGINS}
 
 default_data:
   client_sub: "planckster-example@mpi-sws.org"
