@@ -224,7 +224,7 @@ def start() -> None:
 
     # Add CORS middleware
     default_origins = ["http://localhost", "http://localhost:3000", "http://localhost:8080"]
-    allowed_origins = os.getenv("KP_FASTAPI_ALLOWED_ORIGINS", "").split(",")
+    allowed_origins = os.getenv("KP_ALLOWED_ORIGINS", "").split(",")
     final_origins = default_origins + [x.strip() for x in allowed_origins if x.strip() != ""]
     print(f"Allowed origins: {final_origins}")
     app.add_middleware(
