@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kernel-planckster"
-version = "2.0.1"
+version = "2.0.2"
 description = "Core management system for Max Planck Institute Data Systems Group's Satellite Data Augmentation Project"
 authors = ["Mayank Sharma <imptodefeat@gmail.com>", "Luis Alejandro Bordo García <bgluiszz@gmail.com>"]
 license = "MIT"
