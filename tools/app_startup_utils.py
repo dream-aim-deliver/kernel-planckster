@@ -31,7 +31,8 @@ def is_minio_responsive(
     default_bucket: str,
 ) -> bool:
     try:
-        print(f"Trying to connect to MinIO at {host}:{port}")
+        print(f"Trying to connect to MinIO at {host}:{port} --- initializing default bucket '{default_bucket}'...")
+
         minio = Minio(
             f"{host}:{port}",
             access_key=access_key,
@@ -39,10 +40,19 @@ def is_minio_responsive(
             secure=secure,
             cert_check=cert_check,
         )
-        if not minio.bucket_exists(default_bucket):
+
+        bucket_exists = minio.bucket_exists(default_bucket)
+
+        if not bucket_exists:
+            print(f"Bucket '{default_bucket}' does not exist, creating it...")
             minio.make_bucket(default_bucket)
-        minio.remove_bucket(default_bucket)
+            print(f"Bucket '{default_bucket}' created successfully.")
+        else:
+            print(f"Bucket '{default_bucket}' already exists. Skipping creation...")
+
+        print("Success: MinIO is responsive.")
         return True
+
     except Exception as e:
         print(f"Failed to connect to MinIO with error: {e}")
         return False
